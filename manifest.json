@@ -1,0 +1,17 @@
+{
+  "name": "智慧名片管理系統",
+  "short_name": "名片系統",
+  "description": "融合 Gemini AI 與 Google Drive 的智慧名片管理工具",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#f8fafc",
+  "theme_color": "#6366f1",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "https://cdn.jsdelivr.net/npm/@tabler/icons-png@3.19.0/icons/address-book.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

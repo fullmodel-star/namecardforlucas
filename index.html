@@ -1,0 +1,3766 @@
+<!DOCTYPE html>
+<html lang="zh-TW" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>智慧名片管理系統 (終極完全體)</title>
+
+<link rel="manifest" href="./manifest.json">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="智慧名片">
+
+<!-- Tabler Icons 向量圖標庫 -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css">
+<!-- Google Identity Services (GSI) 庫 -->
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+<!-- 引入 Outfit 英文字型與 Noto Sans TC 中文字型 -->
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+<style>
+/* ============================================================================
+   [CSS] 全域變數與主題系統
+   ============================================================================ */
+:root {
+  /* 淺色模式變數 */
+  --bg-primary: #f8fafc;
+  --bg-secondary: #ffffff;
+  --bg-tertiary: #f1f5f9;
+  --bg-glass: rgba(255, 255, 255, 0.75);
+  
+  --text-primary: #0f172a;
+  --text-secondary: #475569;
+  --text-tertiary: #94a3b8;
+  
+  --border-color: #e2e8f0;
+  --border-color-glow: rgba(99, 102, 241, 0.15);
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -4px rgba(0, 0, 0, 0.05);
+  --shadow-glow: 0 0 20px rgba(99, 102, 241, 0.1);
+  
+  --accent: #6366f1;
+  --accent-hover: #4f46e5;
+  --accent-light: #e0e7ff;
+  --accent-gradient: linear-gradient(135deg, #6366f1 0%, #06b6d4 100%);
+  
+  --color-green: #10b981;
+  --color-green-bg: #ecfdf5;
+  --color-green-border: #a7f3d0;
+  
+  --color-amber: #f59e0b;
+  --color-amber-bg: #fffbeb;
+  --color-amber-border: #fde68a;
+  
+  --color-red: #ef4444;
+  --color-red-bg: #fef2f2;
+  --color-red-border: #fecaca;
+  
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+  
+  --font-sans: 'Outfit', 'Noto Sans TC', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+[data-theme="dark"] {
+  /* 深色模式變數 */
+  --bg-primary: #09090b;
+  --bg-secondary: #18181b;
+  --bg-tertiary: #27272a;
+  --bg-glass: rgba(24, 24, 27, 0.75);
+  
+  --text-primary: #f4f4f5;
+  --text-secondary: #a1a1aa;
+  --text-tertiary: #71717a;
+  
+  --border-color: #27272a;
+  --border-color-glow: rgba(129, 140, 248, 0.25);
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.5);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -2px rgba(0, 0, 0, 0.3);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.4), 0 4px 6px -4px rgba(0, 0, 0, 0.4);
+  --shadow-glow: 0 0 25px rgba(99, 102, 241, 0.2);
+  
+  --accent: #818cf8;
+  --accent-hover: #6366f1;
+  --accent-light: #1e1b4b;
+  --accent-gradient: linear-gradient(135deg, #6366f1 0%, #a78bfa 100%);
+  
+  --color-green: #34d399;
+  --color-green-bg: #064e3b;
+  --color-green-border: #065f46;
+  
+  --color-amber: #fbbf24;
+  --color-amber-bg: #78350f;
+  --color-amber-border: #92400e;
+  
+  --color-red: #f87171;
+  --color-red-bg: #7f1d1d;
+  --color-red-border: #991b1b;
+}
+
+/* ============================================================================
+   [CSS] 基礎重設與排版
+   ============================================================================ */
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: var(--font-sans);
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  min-height: 100vh;
+  transition: background-color 0.3s, color 0.3s;
+  overflow-x: hidden;
+  position: relative;
+}
+
+/* 輕量科技感背景光暈 (Ambient Glows) */
+body::before {
+  content: "";
+  position: fixed;
+  top: -10%;
+  left: -10%;
+  width: 50%;
+  height: 50%;
+  background: radial-gradient(circle, rgba(99, 102, 241, 0.08) 0%, rgba(99, 102, 241, 0) 70%);
+  z-index: -1;
+  pointer-events: none;
+}
+body::after {
+  content: "";
+  position: fixed;
+  bottom: -10%;
+  right: -10%;
+  width: 60%;
+  height: 60%;
+  background: radial-gradient(circle, rgba(6, 182, 212, 0.08) 0%, rgba(6, 182, 212, 0) 70%);
+  z-index: -1;
+  pointer-events: none;
+}
+[data-theme="dark"] body::before {
+  background: radial-gradient(circle, rgba(129, 140, 248, 0.12) 0%, rgba(129, 140, 248, 0) 70%);
+}
+[data-theme="dark"] body::after {
+  background: radial-gradient(circle, rgba(6, 182, 212, 0.12) 0%, rgba(6, 182, 212, 0) 70%);
+}
+
+.container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 1.5rem 1rem;
+}
+
+/* ============================================================================
+   [CSS] 頂部導覽與標題列
+   ============================================================================ */
+.app-header {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  padding: 1.25rem 1.75rem;
+  margin-bottom: 1.25rem;
+  box-shadow: var(--shadow-md);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+@supports (backdrop-filter: blur(1px)) {
+  .app-header {
+    background: var(--bg-glass);
+    backdrop-filter: blur(16px);
+  }
+}
+.app-title {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.app-logo {
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius-md);
+  background: var(--accent-gradient);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
+  font-size: 24px;
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+}
+.app-title-text h1 {
+  font-size: 24px; /* 字體加大 */
+  font-weight: 800; /* 更厚實 professional */
+  letter-spacing: -0.02em;
+  background: linear-gradient(135deg, #6366f1 0%, #06b6d4 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  display: inline-block;
+}
+.app-title-text .badges {
+  display: flex;
+  gap: 6px;
+  margin-top: 4px;
+}
+.badge {
+  font-size: 11px;
+  font-weight: 500;
+  padding: 2px 8px;
+  border-radius: 20px;
+  background: var(--bg-tertiary);
+  color: var(--text-secondary);
+  border: 1px solid var(--border-color);
+}
+.badge-green { background: var(--color-green-bg); color: var(--color-green); border-color: var(--color-green-border); }
+.badge-amber { background: var(--color-amber-bg); color: var(--color-amber); border-color: var(--color-amber-border); }
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* 按鈕樣式 */
+.btn {
+  padding: 8px 16px;
+  font-size: 13px;
+  font-weight: 500;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  font-family: inherit;
+  transition: var(--transition);
+  user-select: none;
+}
+.btn:hover {
+  background: var(--bg-tertiary);
+  border-color: var(--text-secondary);
+}
+.btn-primary {
+  background: var(--accent-gradient);
+  color: #ffffff;
+  border: none;
+  box-shadow: 0 4px 10px rgba(99, 102, 241, 0.2);
+}
+.btn-primary:hover {
+  opacity: 0.9;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 14px rgba(99, 102, 241, 0.3);
+}
+.btn-icon {
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  border-radius: 50%;
+}
+.btn-green { background: var(--color-green-bg); color: var(--color-green); border-color: var(--color-green-border); }
+.btn-green:hover { background: var(--color-green); color: white; }
+.btn-blue { background: var(--accent-light); color: var(--accent); border-color: var(--border-color-glow); }
+.btn-blue:hover { background: var(--accent); color: white; }
+.btn-amber { background: var(--color-amber-bg); color: var(--color-amber); border-color: var(--color-amber-border); }
+.btn-amber:hover { background: var(--color-amber); color: white; }
+.btn-red { background: var(--color-red-bg); color: var(--color-red); border-color: var(--color-red-border); }
+.btn-red:hover { background: var(--color-red); color: white; }
+
+/* ============================================================================
+   [CSS] 主分頁控制區與卡片容器
+   ============================================================================ */
+.main-card {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+  padding: 1.5rem;
+}
+
+.tabs {
+  display: flex;
+  gap: 6px;
+  background: var(--bg-tertiary);
+  border-radius: var(--radius-md);
+  padding: 4px;
+  margin-bottom: 1.5rem;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none; /* Firefox */
+}
+.tabs::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, Opera */
+}
+.tab {
+  flex: 1;
+  min-width: max-content;
+  white-space: nowrap;
+  padding: 9px 16px;
+  font-size: 13px;
+  font-weight: 500;
+  text-align: center;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  color: var(--text-secondary);
+  border: none;
+  background: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  font-family: inherit;
+  transition: var(--transition);
+}
+.tab:hover {
+  color: var(--text-primary);
+  background: rgba(0, 0, 0, 0.03);
+}
+[data-theme="dark"] .tab:hover {
+  background: rgba(255, 255, 255, 0.03);
+}
+.tab.active {
+  background: var(--bg-secondary);
+  color: var(--accent);
+  box-shadow: var(--shadow-sm);
+  font-weight: 600;
+}
+
+/* ============================================================================
+   [CSS] 3欄式名片庫版面 (Desktop Layout)
+   ============================================================================ */
+.cards-layout {
+  display: grid;
+  grid-template-columns: 240px 1fr 380px;
+  gap: 1.25rem;
+  align-items: start;
+}
+
+@media (max-width: 1200px) {
+  .cards-layout {
+    grid-template-columns: 220px 1fr;
+  }
+  .cards-detail-wrapper {
+    position: fixed;
+    right: -400px;
+    top: 0;
+    bottom: 0;
+    width: 380px;
+    z-index: 90;
+    background: var(--bg-secondary);
+    border-left: 1px solid var(--border-color);
+    box-shadow: -4px 0 24px rgba(0,0,0,0.15);
+    transition: right 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    padding: 1.5rem;
+    overflow-y: auto;
+  }
+  .cards-detail-wrapper.open {
+    right: 0;
+  }
+  .detail-panel-close-btn {
+    display: inline-flex !important;
+  }
+}
+
+@media (max-width: 768px) {
+  .cards-layout {
+    grid-template-columns: 1fr;
+  }
+  .cards-sidebar {
+    display: none;
+  }
+  .cards-detail-wrapper {
+    width: 100%;
+    right: -100%;
+  }
+}
+
+/* 1. 左側邊欄篩選區 */
+.cards-sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+.sidebar-section {
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 1rem;
+}
+.sidebar-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.searchrow-new input {
+  width: 100%;
+  padding: 8px 12px;
+  font-size: 13px;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  outline: none;
+  transition: var(--transition);
+}
+.searchrow-new input:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px var(--border-color-glow);
+}
+
+.group-filter-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.group-filter-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 10px;
+  font-size: 12px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  color: var(--text-secondary);
+  transition: var(--transition);
+}
+.group-filter-item:hover {
+  background: rgba(0,0,0,0.03);
+  color: var(--text-primary);
+}
+[data-theme="dark"] .group-filter-item:hover {
+  background: rgba(255,255,255,0.03);
+}
+.group-filter-item.active {
+  background: var(--accent-light);
+  color: var(--accent);
+  font-weight: 500;
+}
+.group-count {
+  font-size: 10px;
+  padding: 1px 6px;
+  border-radius: 10px;
+  background: var(--bg-secondary);
+  color: var(--text-tertiary);
+}
+
+.tag-filter-cloud {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  max-height: 180px;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+.tag-filter-chip {
+  padding: 3px 8px;
+  font-size: 11px;
+  border-radius: 20px;
+  border: 1px solid var(--border-color);
+  background: var(--bg-secondary);
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: var(--transition);
+}
+.tag-filter-chip:hover {
+  border-color: var(--text-secondary);
+  color: var(--text-primary);
+}
+.tag-filter-chip.active {
+  background: var(--text-primary);
+  color: var(--bg-secondary);
+  border-color: var(--text-primary);
+}
+
+/* 2. 中間名片格狀列表 */
+.cards-main {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+.cards-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.filter-chips {
+  display: flex;
+  gap: 6px;
+}
+.filter-chip {
+  padding: 5px 12px;
+  font-size: 12px;
+  font-weight: 500;
+  border-radius: 20px;
+  border: 1px solid var(--border-color);
+  background: var(--bg-secondary);
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: var(--transition);
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.filter-chip.active {
+  background: var(--accent);
+  color: #ffffff;
+  border-color: var(--accent);
+}
+.sort-selector {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+.sort-selector select {
+  padding: 4px 8px;
+  font-size: 12px;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  outline: none;
+  font-family: inherit;
+}
+
+.card-grid-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 12px;
+}
+
+/* 名片卡片視覺 (優化玻璃質感與 Hover 特效) */
+.biz-card {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 1rem;
+  cursor: pointer;
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.2s, box-shadow 0.2s;
+  position: relative;
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+}
+.biz-card:hover {
+  transform: translateY(-2px);
+  border-color: var(--accent);
+  box-shadow: var(--shadow-md), var(--shadow-glow);
+}
+[data-theme="dark"] .biz-card:hover {
+  border-color: rgba(129, 140, 248, 0.6);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4), 0 0 15px rgba(129, 140, 248, 0.15);
+}
+.biz-card.selected {
+  border-color: var(--accent);
+  box-shadow: var(--shadow-md), 0 0 0 1px var(--accent);
+}
+.biz-card.processed {
+  opacity: 0.85;
+}
+.biz-card .ribbon {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  font-size: 9px;
+  font-weight: 600;
+  padding: 1px 6px;
+  border-radius: 10px;
+}
+.ribbon-green { background: var(--color-green-bg); color: var(--color-green); border: 0.5px solid var(--color-green-border); }
+.ribbon-amber { background: var(--color-amber-bg); color: var(--color-amber); border: 0.5px solid var(--color-amber-border); }
+
+.card-hd-layout {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+.card-avatar {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: var(--accent-light);
+  color: var(--accent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 13px;
+  flex-shrink: 0;
+}
+.card-avatar.proc {
+  background: var(--color-green-bg);
+  color: var(--color-green);
+}
+.card-info {
+  min-width: 0;
+  flex: 1;
+}
+.card-name-text {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.card-title-text {
+  font-size: 11px;
+  color: var(--text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.card-org-text {
+  font-size: 11px;
+  color: var(--accent);
+  font-weight: 500;
+  margin-top: 1px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.card-tags-area {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 8px;
+  border-top: 1px solid var(--border-color);
+  padding-top: 6px;
+}
+.tag-mini {
+  font-size: 9px;
+  padding: 1px 5px;
+  background: var(--bg-tertiary);
+  color: var(--text-secondary);
+  border-radius: 4px;
+}
+
+/* 3. 右側詳情面板 */
+.detail-panel {
+  display: none;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  padding: 1.25rem;
+  box-shadow: var(--shadow-sm);
+  position: sticky;
+  top: 1.5rem;
+}
+.detail-panel.open {
+  display: block;
+}
+
+.detail-header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+.detail-header-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* 動態虛擬名片視覺 */
+.virtual-card-wrapper {
+  margin-bottom: 1.25rem;
+}
+.virtual-card {
+  width: 100%;
+  aspect-ratio: 1.6 / 1;
+  border-radius: var(--radius-md);
+  position: relative;
+  overflow: hidden;
+  color: #ffffff;
+  box-shadow: var(--shadow-lg);
+  padding: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  transition: var(--transition);
+}
+.virtual-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(130deg, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0) 60%);
+  z-index: 2;
+  pointer-events: none;
+}
+.virtual-card-glass {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.08);
+  backdrop-filter: blur(2px);
+  z-index: 1;
+}
+.virtual-card-body {
+  position: relative;
+  z-index: 3;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  justify-content: space-between;
+}
+.vc-hd {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.vc-logo {
+  font-size: 18px;
+  opacity: 0.9;
+}
+.vc-org {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  opacity: 0.85;
+}
+.vc-mid {
+  margin-top: auto;
+  margin-bottom: auto;
+}
+.vc-name {
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-shadow: 0 2px 4px rgba(0,0,0,0.15);
+}
+.vc-title-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 10px;
+  opacity: 0.85;
+  margin-top: 2px;
+}
+.vc-ft {
+  display: flex;
+  justify-content: space-between;
+  font-size: 9px;
+  opacity: 0.75;
+  border-top: 1px solid rgba(255,255,255,0.15);
+  padding-top: 6px;
+}
+.vc-contact-item {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* 虛擬名片主題配色 */
+.vc-theme-indigo { background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 50%, #a855f7 100%); }
+.vc-theme-emerald { background: linear-gradient(135deg, #0f766e 0%, #10b981 60%, #34d399 100%); }
+.vc-theme-charcoal { background: linear-gradient(135deg, #1e1b4b 0%, #18181b 60%, #3f3f46 100%); }
+.vc-theme-sunset { background: linear-gradient(135deg, #c2410c 0%, #ea580c 40%, #f97316 70%, #fcd34d 100%); }
+
+.vc-theme-selector {
+  display: flex;
+  gap: 4px;
+  margin-top: 8px;
+  justify-content: flex-end;
+}
+.theme-dot {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  cursor: pointer;
+  border: 1.5px solid var(--bg-secondary);
+  box-shadow: var(--shadow-sm);
+  transition: var(--transition);
+}
+.theme-dot:hover {
+  transform: scale(1.2);
+}
+
+/* 詳情頁欄位格狀排版 */
+.detail-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-top: 1rem;
+}
+.detail-grid-full {
+  grid-column: 1 / -1;
+}
+.detail-field-card {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 8px 12px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  transition: var(--transition);
+  min-height: 52px;
+  position: relative;
+}
+.detail-field-card.clickable {
+  cursor: pointer;
+}
+.detail-field-card.clickable:hover {
+  border-color: var(--accent);
+  background: var(--accent-light);
+}
+.df-label {
+  font-size: 9px;
+  font-weight: 600;
+  color: var(--text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 2px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.df-val {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-primary);
+  word-break: break-all;
+}
+.df-val a {
+  color: inherit;
+  text-decoration: none;
+}
+
+/* 快速社交按鈕 */
+.quick-social-btns {
+  position: absolute;
+  right: 8px;
+  top: 8px;
+  display: flex;
+  gap: 4px;
+}
+.btn-mini-social {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: 1px solid var(--border-color);
+  background: var(--bg-primary);
+  color: var(--text-secondary);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  cursor: pointer;
+  transition: var(--transition);
+}
+.btn-mini-social:hover {
+  background: var(--accent);
+  color: white;
+  border-color: var(--accent);
+}
+
+/* 原始照片預覽圖 */
+.detail-img-box {
+  grid-column: 1 / -1;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 10px;
+  margin-top: 8px;
+}
+.detail-img-box img {
+  width: 100%;
+  max-height: 160px;
+  object-fit: contain;
+  border-radius: var(--radius-sm);
+  background: #f1f5f9;
+  cursor: pointer;
+  transition: var(--transition);
+}
+.detail-img-box img:hover {
+  opacity: 0.9;
+  transform: scale(1.02);
+}
+
+.detail-actions-row {
+  display: flex;
+  gap: 6px;
+  margin-top: 1rem;
+  flex-wrap: wrap;
+}
+
+/* ============================================================================
+   [CSS] 數據分析儀表板 (CRM Dashboard)
+   ============================================================================ */
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+.db-card {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 1.25rem;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  box-shadow: var(--shadow-sm);
+}
+.db-card-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius-md);
+  background: var(--accent-light);
+  color: var(--accent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+}
+.db-card-info h4 {
+  font-size: 11px;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.db-card-info div {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-top: 2px;
+}
+
+.dashboard-details-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr; /* 對稱雙欄 */
+  gap: 1.25rem;
+}
+@media (max-width: 768px) {
+  .dashboard-details-grid {
+    grid-template-columns: 1fr;
+  }
+}
+.db-section {
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  padding: 1.25rem;
+}
+.db-section h3 {
+  font-size: 14px;
+  font-weight: 700;
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.db-progress-row {
+  margin-bottom: 12px;
+}
+.db-progress-label {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  margin-bottom: 4px;
+  color: var(--text-secondary);
+}
+.db-progress-bar-container {
+  height: 8px;
+  background: var(--bg-secondary);
+  border-radius: 4px;
+  overflow: hidden;
+  border: 0.5px solid var(--border-color);
+}
+.db-progress-fill {
+  height: 100%;
+  background: var(--accent-gradient);
+  border-radius: 4px;
+  transition: width 0.5s ease-out;
+}
+.db-list-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  margin-bottom: 6px;
+  font-size: 12px;
+}
+
+/* ============================================================================
+   [CSS] 批次掃描、重複偵測與設定面板
+   ============================================================================ */
+.batch-dropzone {
+  border: 2px dashed var(--accent);
+  border-radius: var(--radius-lg);
+  padding: 2.5rem;
+  text-align: center;
+  cursor: pointer;
+  background: var(--bg-tertiary);
+  color: var(--text-secondary);
+  transition: var(--transition);
+  margin-bottom: 1.25rem;
+}
+.batch-dropzone:hover, .batch-dropzone.drag {
+  background: var(--accent-light);
+  border-color: var(--accent-hover);
+}
+.batch-dropzone i {
+  font-size: 40px;
+  color: var(--accent);
+  margin-bottom: 8px;
+  display: block;
+}
+.batch-dropzone h3 {
+  font-size: 15px;
+  color: var(--text-primary);
+  margin-bottom: 4px;
+}
+.batch-dropzone p {
+  font-size: 11px;
+}
+
+.queue-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 1rem;
+}
+.queue-item {
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 10px 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.qi-title-row {
+  min-width: 0;
+  flex: 1;
+}
+.qi-name {
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.qi-status-text {
+  font-size: 10px;
+  margin-top: 2px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.progress-bar {
+  height: 6px;
+  background: var(--bg-tertiary);
+  border-radius: 3px;
+  overflow: hidden;
+  display: none;
+  margin-top: 1rem;
+}
+.progress-bar.show { display: block; }
+.progress-fill {
+  height: 100%;
+  background: var(--accent);
+  width: 0%;
+  transition: width 0.3s;
+}
+
+.dup-group {
+  border: 1px solid var(--color-amber-border);
+  background: var(--color-amber-bg);
+  border-radius: var(--radius-md);
+  padding: 1rem;
+  margin-bottom: 1rem;
+}
+.dup-group-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--color-amber);
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.dup-card-item {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  padding: 10px 14px;
+  margin-bottom: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.api-notice {
+  background: var(--color-amber-bg);
+  border: 1px solid var(--color-amber-border);
+  border-radius: var(--radius-md);
+  padding: 10px 14px;
+  font-size: 12px;
+  color: var(--color-amber);
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+.local-server-notice {
+  background: var(--color-red-bg);
+  border: 1px solid var(--color-red-border);
+  border-radius: var(--radius-md);
+  padding: 12px 16px;
+  font-size: 12px;
+  color: var(--color-red);
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+.local-server-notice code {
+  background: rgba(0,0,0,0.06);
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-family: monospace;
+}
+
+.settings-section-card {
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 1.25rem;
+  margin-bottom: 1rem;
+}
+.settings-section-card h3 {
+  font-size: 14px;
+  font-weight: 700;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.settings-input-group {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+  flex-wrap: wrap;
+}
+.settings-input-group input, .settings-input-group select {
+  flex: 1;
+  min-width: 150px;
+  padding: 8px 12px;
+  font-size: 13px;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  outline: none;
+}
+
+.setting-badge-manager {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 8px;
+  margin-bottom: 12px;
+}
+.manage-badge-chip {
+  padding: 4px 10px;
+  font-size: 11px;
+  border-radius: 20px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.manage-badge-chip button {
+  border: none;
+  background: transparent;
+  color: var(--color-red);
+  cursor: pointer;
+  font-weight: bold;
+}
+
+/* ============================================================================
+   [CSS] 表單 Modal 與 Lightbox 樣式
+   ============================================================================ */
+.modal-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.5);
+  z-index: 100;
+  align-items: flex-start;
+  justify-content: center;
+  padding-top: 3rem;
+  padding-bottom: 3rem;
+  overflow-y: auto;
+}
+.modal-overlay.open { display: flex; }
+.modal {
+  background: var(--bg-secondary);
+  border-radius: var(--radius-lg);
+  padding: 1.5rem;
+  width: 100%;
+  max-width: 520px;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2);
+  border: 1px solid var(--border-color);
+}
+.modal h2 {
+  font-size: 16px;
+  font-weight: 700;
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+.form-row {
+  margin-bottom: 8px;
+}
+.form-row-full {
+  grid-column: 1 / -1;
+}
+.form-row label {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  display: block;
+  margin-bottom: 4px;
+}
+.form-row input, .form-row select, .form-row textarea {
+  width: 100%;
+  padding: 8px 12px;
+  font-size: 13px;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+  outline: none;
+}
+.form-row input:focus, .form-row select:focus, .form-row textarea:focus {
+  border-color: var(--accent);
+  background: var(--bg-secondary);
+}
+
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 1.5rem;
+  border-top: 1px solid var(--border-color);
+  padding-top: 1rem;
+}
+
+.lightbox-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.85);
+  z-index: 200;
+  align-items: center;
+  justify-content: center;
+}
+.lightbox-overlay.open { display: flex; }
+.lightbox-content {
+  max-width: 90%;
+  max-height: 90%;
+  position: relative;
+}
+.lightbox-content img {
+  width: 100%;
+  height: auto;
+  max-height: 80vh;
+  object-fit: contain;
+  border-radius: var(--radius-sm);
+}
+.lightbox-close {
+  position: absolute;
+  top: -40px;
+  right: 0;
+  color: #ffffff;
+  font-size: 28px;
+  cursor: pointer;
+  background: transparent;
+  border: none;
+}
+
+.ai-thinking-box {
+  display: none;
+  align-items: center;
+  gap: 8px;
+  background: var(--accent-light);
+  border: 1px solid var(--border-color-glow);
+  padding: 10px 14px;
+  border-radius: var(--radius-md);
+  margin-bottom: 12px;
+  font-size: 12px;
+  color: var(--accent);
+}
+.ai-thinking-box.show { display: flex; }
+.ai-pulse-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--accent);
+  animation: pulse-wave 1s infinite;
+}
+.ai-pulse-dot:nth-child(2) { animation-delay: 0.2s; }
+.ai-pulse-dot:nth-child(3) { animation-delay: 0.4s; }
+@keyframes pulse-wave {
+  0%, 100% { opacity: 0.3; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.2); }
+}
+
+.toast {
+  position: fixed;
+  bottom: 2rem;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--text-primary);
+  color: var(--bg-primary);
+  font-size: 13px;
+  font-weight: 500;
+  padding: 8px 20px;
+  border-radius: 20px;
+  z-index: 999;
+  opacity: 0;
+  transition: opacity 0.25s;
+  pointer-events: none;
+  box-shadow: var(--shadow-lg);
+}
+.toast.show { opacity: 1; }
+
+.empty-state {
+  text-align: center;
+  padding: 3.5rem 1rem;
+  color: var(--text-tertiary);
+}
+.empty-state i { font-size: 48px; margin-bottom: 8px; color: var(--border-color); }
+</style>
+</head>
+<body>
+<div class="container">
+  
+  <!-- ==========================================================================
+       [HTML] 頂部標題與狀態導覽列
+       ========================================================================== -->
+  <header class="app-header">
+    <div class="app-title">
+      <div class="app-logo"><i class="ti ti-address-book"></i></div>
+      <div class="app-title-text">
+        <h1>智慧名片管理系統</h1>
+        <div class="badges">
+          <span class="badge" id="count-badge">0 張名片</span>
+          <span class="badge badge-green" id="proc-badge" style="display:none">0 已處理</span>
+          <span class="badge badge-amber" id="dup-badge" style="display:none">0 重複</span>
+        </div>
+      </div>
+    </div>
+    
+    <div class="header-actions">
+      <button class="btn btn-icon" id="theme-toggle-btn" onclick="toggleTheme()" title="切換主題">
+        <i class="ti ti-moon"></i>
+      </button>
+      <button class="btn btn-blue" onclick="openMyCardModal()"><i class="ti ti-user-circle"></i> 我的名片</button>
+      <button class="btn btn-primary" onclick="openFormModal()"><i class="ti ti-plus"></i> 手動新增</button>
+    </div>
+  </header>
+
+  <!-- ==========================================================================
+       [HTML] 主要分頁頁籤
+       ========================================================================== -->
+  <main class="main-card">
+    <div class="tabs">
+      <button class="tab active" id="tab-cards" onclick="switchTab('cards')"><i class="ti ti-layout-grid"></i> 名片庫</button>
+      <button class="tab" id="tab-dashboard" onclick="switchTab('dashboard')"><i class="ti ti-chart-bar"></i> 數據分析</button>
+      <button class="tab" id="tab-dups" onclick="switchTab('dups')"><i class="ti ti-copy"></i> 重複偵測</button>
+      <button class="tab" id="tab-batch" onclick="switchTab('batch')"><i class="ti ti-scan"></i> 批次同步</button>
+      <button class="tab" id="tab-settings" onclick="switchTab('settings')"><i class="ti ti-settings"></i> 應用設定</button>
+    </div>
+
+    <!-- 1. 名片庫分頁 -->
+    <div id="view-cards">
+      <div class="cards-layout">
+        
+        <!-- 左側篩選欄 -->
+        <aside class="cards-sidebar">
+          <div class="sidebar-section">
+            <label class="sidebar-label"><i class="ti ti-search"></i> 關鍵字搜尋</label>
+            <div class="searchrow-new">
+              <input type="text" id="search-input" placeholder="搜尋姓名、公司、標籤..." oninput="filterCards()" />
+            </div>
+          </div>
+          
+          <div class="sidebar-section">
+            <label class="sidebar-label"><i class="ti ti-folder"></i> 群組分類</label>
+            <div class="group-filter-list" id="group-filter-list">
+              <!-- JS 動態渲染 -->
+            </div>
+          </div>
+          
+          <div class="sidebar-section">
+            <label class="sidebar-label"><i class="ti ti-tags"></i> 標籤篩選</label>
+            <div class="tag-filter-cloud" id="tag-cloud">
+              <!-- JS 動態渲染 -->
+            </div>
+          </div>
+        </aside>
+
+        <!-- 中間名片網格區 -->
+        <section class="cards-main">
+          <div class="cards-toolbar">
+            <div class="filter-chips">
+              <button class="filter-chip active" id="fc-all" onclick="setProcessedFilter('all')">全部</button>
+              <button class="filter-chip" id="fc-unprocessed" onclick="setProcessedFilter('unprocessed')"><i class="ti ti-clock"></i> 未處理</button>
+              <button class="filter-chip" id="fc-processed" onclick="setProcessedFilter('processed')"><i class="ti ti-check"></i> 已處理</button>
+            </div>
+            
+            <div class="sort-selector">
+              <label for="sort-select"><i class="ti ti-sort-ascending"></i> 排序：</label>
+              <select id="sort-select" onchange="handleSortChange()">
+                <option value="time-desc">建立時間 (最新優先)</option>
+                <option value="time-asc">建立時間 (最早優先)</option>
+                <option value="name-asc">姓名排序 (A → Z)</option>
+                <option value="name-desc">姓名排序 (Z → A)</option>
+                <option value="org-asc">公司排序 (A → Z)</option>
+              </select>
+            </div>
+          </div>
+          
+          <div id="card-grid" class="card-grid-container"></div>
+        </section>
+
+        <!-- 右側詳情面板 -->
+        <aside class="cards-detail-wrapper" id="detail-wrapper">
+          <div class="detail-panel" id="detail-panel">
+            <!-- JS 動態渲染 -->
+          </div>
+        </aside>
+      </div>
+    </div>
+
+    <!-- 2. 數據分析 (CRM Dashboard) 分頁 (優化為大氣的對稱雙欄版面) -->
+    <div id="view-dashboard" style="display:none">
+      <div class="dashboard-grid">
+        <div class="db-card">
+          <div class="db-card-icon"><i class="ti ti-users"></i></div>
+          <div class="db-card-info">
+            <h4>名片總數量</h4>
+            <div id="db-stat-total">0</div>
+          </div>
+        </div>
+        <div class="db-card">
+          <div class="db-card-icon" style="color:var(--color-green); background:var(--color-green-bg)"><i class="ti ti-checkbox"></i></div>
+          <div class="db-card-info">
+            <h4>處理完成率</h4>
+            <div id="db-stat-rate">0%</div>
+          </div>
+        </div>
+        <div class="db-card">
+          <div class="db-card-icon" style="color:var(--accent); background:var(--accent-light)"><i class="ti ti-folder"></i></div>
+          <div class="db-card-info">
+            <h4>分類群組數</h4>
+            <div id="db-stat-groups">0</div>
+          </div>
+        </div>
+        <div class="db-card">
+          <div class="db-card-icon" style="color:var(--color-amber); background:var(--color-amber-bg)"><i class="ti ti-tags"></i></div>
+          <div class="db-card-info">
+            <h4>使用標籤數</h4>
+            <div id="db-stat-tags">0</div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="dashboard-details-grid">
+        <div class="db-section">
+          <h3><i class="ti ti-chart-pie"></i> 群組分佈比例</h3>
+          <div id="db-group-progress-list">
+            <!-- 動態生成 -->
+          </div>
+        </div>
+        
+        <div class="db-section">
+          <h3><i class="ti ti-tags"></i> 標籤雲分析</h3>
+          <div id="db-tag-cloud" style="display:flex; flex-wrap:wrap; gap:8px;">
+            <!-- 動態生成 -->
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 3. 重複偵測分頁 -->
+    <div id="view-dups" style="display:none">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.25rem">
+        <h2 style="font-size:15px;font-weight:700;display:flex;align-items:center;gap:6px;color:var(--color-amber)">
+          <i class="ti ti-copy"></i> 疑似重複名片清單
+        </h2>
+        <button class="btn" onclick="renderDupsTab()"><i class="ti ti-refresh"></i> 重新偵測</button>
+      </div>
+      <div id="dup-content"></div>
+    </div>
+
+    <!-- 4. 批次同步分頁 -->
+    <div id="view-batch" style="display:none">
+      <div id="api-notice-batch" class="api-notice" style="display:none">
+        <i class="ti ti-alert-triangle" style="flex-shrink:0;margin-top:1px"></i>
+        <span>AI 辨識需要 Gemini API 金鑰。請先到「設定」頁面填入。</span>
+      </div>
+      
+      <div style="background:var(--accent-light); border: 1px solid var(--border-color-glow); padding: 1.25rem; border-radius: var(--radius-lg); margin-bottom: 1.25rem; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px;">
+        <div style="flex:1; min-width:280px;">
+          <h3 style="font-size:14px; font-weight:700; color:var(--text-primary); display:flex; align-items:center; gap:6px;">
+            <i class="ti ti-brand-google-drive" style="color:var(--accent)"></i> 手機相簿雲端對接同步
+          </h3>
+          <p style="font-size:12px; color:var(--text-secondary); margin-top:2px;">
+            在手機上將名片拍照，上傳至 Google 雲端相簿的「未辨識」資料夾，即可在此一鍵導入！
+          </p>
+        </div>
+        <div style="display:flex; gap:8px;">
+          <button class="btn btn-blue" onclick="initSyncFolders()"><i class="ti ti-folder-plus"></i> 1. 初始化相簿資料夾</button>
+          <button class="btn btn-green" onclick="importDriveImages()"><i class="ti ti-refresh"></i> 2. 智慧同步導入</button>
+        </div>
+      </div>
+
+      <div class="batch-dropzone" id="drop-zone"
+        onclick="document.getElementById('batch-file-input').click()"
+        ondragover="event.preventDefault();this.classList.add('drag')"
+        ondragleave="this.classList.remove('drag')"
+        ondrop="handleBatchDrop(event)">
+        <i class="ti ti-cloud-upload"></i>
+        <h3>選取或拖曳本地名片圖片至此</h3>
+        <p>支援多張名片照片，亦可一張照片內擺放多張名片同時自動拆分。</p>
+        <input type="file" id="batch-file-input" accept="image/*" multiple style="display:none" onchange="handleBatchSelect(event)" />
+      </div>
+      
+      <div class="progress-bar" id="batch-progress-bar"><div class="progress-fill" id="batch-progress-fill"></div></div>
+      <div class="queue-list" id="batch-queue-list"></div>
+      
+      <div style="display:flex; gap:8px; margin-top:1.25rem">
+        <button class="btn btn-primary" id="btn-start-batch" onclick="startBatchProcessing()"><i class="ti ti-robot"></i> 開始 Gemini AI 批次辨識</button>
+        <button class="btn btn-red" onclick="clearBatchQueue()"><i class="ti ti-trash"></i> 清空佇列</button>
+      </div>
+    </div>
+
+    <!-- 5. 應用設定分頁 -->
+    <div id="view-settings" style="display:none">
+      
+      <div class="local-server-notice" id="local-server-notice" style="display:none">
+        <i class="ti ti-info-circle" style="font-size: 18px; margin-top: 1px;"></i>
+        <div>
+          <strong style="font-size:13px;">偵測到您目前直接雙擊開啟 HTML 檔案 (file:// 協定)</strong>
+          <p style="margin-top: 2px;">由於 Google OAuth 機制限制，在本地檔案模式下 Google 雲端登入與初始化將無法使用。若需要此功能，請使用本地伺服器啟動網頁，例如：在終端機執行 <code>python -m http.server 8000</code>，並瀏覽 <code>http://localhost:8000</code>。</p>
+        </div>
+      </div>
+
+      <!-- API 設定 -->
+      <div class="settings-section-card">
+        <h3><i class="ti ti-key" style="color:var(--accent)"></i> Google Gemini API 設定</h3>
+        <p style="font-size:12px; color:var(--text-secondary); margin-bottom:8px;">名片影像文字拆分與結構化核心引擎。</p>
+        <div class="settings-input-group">
+          <input type="password" id="settings-api-key" placeholder="貼上您的 Gemini API Key" />
+          <select id="settings-gemini-model" style="max-width:200px;">
+            <option value="gemini-2.5-flash">gemini-2.5-flash (推薦)</option>
+            <option value="gemini-2.0-flash">gemini-2.0-flash</option>
+            <option value="gemini-1.5-flash">gemini-1.5-flash</option>
+          </select>
+          <button class="btn btn-primary" onclick="saveGeminiSettings()"><i class="ti ti-device-floppy"></i> 儲存</button>
+          <button class="btn" onclick="testGeminiConnection()"><i class="ti ti-plug"></i> 測試連線</button>
+          <button class="btn btn-red" onclick="clearGeminiKey()" title="清除金鑰"><i class="ti ti-trash"></i></button>
+        </div>
+        <div id="settings-api-key-status" style="font-size:12px; margin-top:6px; font-weight:500;"></div>
+      </div>
+
+      <!-- 群組管理 -->
+      <div class="settings-section-card">
+        <h3><i class="ti ti-folder" style="color:var(--accent)"></i> 分類群組管理</h3>
+        <p style="font-size:12px; color:var(--text-secondary); margin-bottom:8px;">自訂名片群組類別。</p>
+        <div class="setting-badge-manager" id="badge-manager-groups"></div>
+        <div class="settings-input-group" style="max-width: 400px;">
+          <input type="text" id="new-group-input" placeholder="輸入新的群組名稱..." onkeydown="if(event.key==='Enter') addCustomGroup();" />
+          <button class="btn btn-primary" onclick="addCustomGroup()"><i class="ti ti-plus"></i> 新增</button>
+        </div>
+      </div>
+
+      <!-- 標籤管理 -->
+      <div class="settings-section-card">
+        <h3><i class="ti ti-tags" style="color:var(--accent)"></i> 標籤雲管理</h3>
+        <p style="font-size:12px; color:var(--text-secondary); margin-bottom:8px;">管理全域標籤。</p>
+        <div class="setting-badge-manager" id="badge-manager-tags"></div>
+        <div class="settings-input-group" style="max-width: 400px;">
+          <input type="text" id="new-tag-input" placeholder="輸入新的標籤名稱..." onkeydown="if(event.key==='Enter') addCustomTag();" />
+          <button class="btn btn-primary" onclick="addCustomTag()"><i class="ti ti-plus"></i> 新增</button>
+        </div>
+      </div>
+
+      <!-- 資料備份與還原 -->
+      <div class="settings-section-card">
+        <h3><i class="ti ti-database" style="color:var(--accent)"></i> 本地資料庫備份管理 (含名片圖片)</h3>
+        <div style="display:flex; gap:8px; flex-wrap:wrap;">
+          <button class="btn btn-green" onclick="exportFullJsonBackup()"><i class="ti ti-download"></i> 導出完整備份 (.json)</button>
+          <button class="btn btn-blue" onclick="document.getElementById('import-backup-file').click()"><i class="ti ti-upload"></i> 還原系統備份</button>
+          <input type="file" id="import-backup-file" accept=".json" style="display:none" onchange="importFullJsonBackup(event)" />
+        </div>
+      </div>
+
+      <!-- Google Drive 連線控制 -->
+      <div class="settings-section-card">
+        <h3><i class="ti ti-brand-google-drive" style="color:var(--accent)"></i> Google Drive 授權管理</h3>
+        <div id="gdrive-login-area">
+          <button class="btn btn-blue" onclick="triggerGoogleSignIn()"><i class="ti ti-brand-google"></i> 授權連結 Google 雲端帳號</button>
+        </div>
+        <div id="gdrive-logged-area" style="display:none">
+          <div style="display:flex; align-items:center; gap:12px; background:var(--bg-secondary); border:1px solid var(--border-color); padding:8px 16px; border-radius:var(--radius-md); max-width:400px;">
+            <div style="font-size:24px; color:var(--color-green)"><i class="ti ti-circle-check-filled"></i></div>
+            <div>
+              <div style="font-size:13px; font-weight:600;" id="gdrive-name">雲端帳號連結成功</div>
+              <div style="font-size:11px; color:var(--text-secondary);" id="gdrive-email">gdrive@gmail.com</div>
+            </div>
+            <button class="btn btn-red" style="margin-left:auto; padding:4px 10px; font-size:11px;" onclick="gdriveLogout()"><i class="ti ti-logout"></i> 中斷連線</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 危險操作 -->
+      <div class="settings-section-card" style="border-color:var(--color-red-border); background:var(--color-red-bg);">
+        <h3 style="color:var(--color-red)"><i class="ti ti-alert-triangle"></i> 危險控制台</h3>
+        <button class="btn btn-red" onclick="clearAllSystemData()"><i class="ti ti-trash"></i> 清空資料庫全部資料</button>
+      </div>
+
+    </div>
+  </main>
+</div>
+
+<!-- ==========================================================================
+     [HTML] 彈出式名片 QR Code 分享 Modal
+     ========================================================================== -->
+<div class="modal-overlay" id="qrcode-modal-bg" onclick="closeQrCodeModal()">
+  <div class="modal" style="max-width:380px; text-align:center;">
+    <h2><i class="ti ti-qrcode" style="color:var(--accent)"></i> 分享名片二維碼</h2>
+    <div style="background: white; padding:16px; display:inline-block; border-radius:var(--radius-md); border:1px solid var(--border-color); margin-top:1rem; margin-bottom:1rem;">
+      <img id="share-qrcode-img" src="" alt="vCard QR Code" style="width:200px; height:200px; display:block;" />
+    </div>
+    <p style="font-size:12px; color:var(--text-secondary); line-height:1.5; margin-bottom:1.5rem; padding:0 8px;">
+      讓對方使用手機相機或 LINE 掃描此二維碼，即可直接將此聯絡人儲存至其電話通訊錄中。
+    </p>
+    <button class="btn btn-primary" style="width:100%" onclick="closeQrCodeModal()">關閉視窗</button>
+  </div>
+</div>
+
+<!-- ==========================================================================
+     [HTML] 「我的個人名片」管理分享 Modal
+     ========================================================================== -->
+<div class="modal-overlay" id="mycard-modal-bg" onclick="closeMyCardModalBg(event)">
+  <div class="modal" id="mycard-modal-content"></div>
+</div>
+
+<!-- ==========================================================================
+     [HTML] AI 郵件追蹤信生成 Modal
+     ========================================================================== -->
+<div class="modal-overlay" id="ai-email-modal-bg" onclick="closeAiEmailModalBg(event)">
+  <div class="modal" style="max-width:560px;">
+    <h2><i class="ti ti-robot" style="color:var(--accent)"></i> AI 客戶拜訪追蹤郵件生成</h2>
+    
+    <div id="ai-email-setup-view">
+      <div class="form-row">
+        <label>聯絡信件情境</label>
+        <select id="ai-email-scene">
+          <option value="exhibition">展覽/會議拜訪後續聯繫 (Follow-up)</option>
+          <option value="proposal">商務合作提案發送 (Proposal)</option>
+          <option value="thankyou">感謝撥冗會面/簡報問候 (Thank you)</option>
+          <option value="holiday">年節或佳節問候 (Holiday Greetings)</option>
+        </select>
+      </div>
+      <div class="form-row">
+        <label>額外補充說明 (選填)</label>
+        <input type="text" id="ai-email-custom" placeholder="例如：提醒對方看我們的 AI 方案簡報、希望約下週三下午開會..." />
+      </div>
+      <div class="form-actions" style="margin-top:1.25rem;">
+        <button class="btn" onclick="closeAiEmailModal()">取消</button>
+        <button class="btn btn-primary" onclick="generateAiFollowUpEmail()"><i class="ti ti-sparkles"></i> 讓 Gemini AI 生成郵件</button>
+      </div>
+    </div>
+    
+    <div class="ai-thinking-box" id="ai-email-thinking" style="margin-top:1rem; margin-bottom:1rem;">
+      <div class="ai-pulse-dot"></div><div class="ai-pulse-dot"></div><div class="ai-pulse-dot"></div>
+      <span>Gemini AI 正在撰寫商務郵件草稿...</span>
+    </div>
+    
+    <div id="ai-email-result-view" style="display:none; margin-top:1rem;">
+      <div class="form-row">
+        <label>信件主旨</label>
+        <input type="text" id="ai-email-subject" />
+      </div>
+      <div class="form-row">
+        <label>信件內容</label>
+        <textarea id="ai-email-body" rows="10" style="font-family:inherit; resize:none; line-height:1.5;"></textarea>
+      </div>
+      <div class="form-actions" style="margin-top:1.25rem; display:flex; justify-content:space-between; flex-wrap:wrap; gap:8px;">
+        <button class="btn btn-green" onclick="sendEmailViaMailto()"><i class="ti ti-mail-forward"></i> 一鍵開啟郵件發送</button>
+        <div style="display:flex; gap:6px;">
+          <button class="btn" onclick="copyEmailText()"><i class="ti ti-copy"></i> 複製內容</button>
+          <button class="btn" onclick="backToEmailSetup()">重新設定</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 手動與修改名片表單的 Modal -->
+<div class="modal-overlay" id="form-modal-bg" onclick="closeFormModalBg(event)">
+  <div class="modal">
+    <h2 id="modal-title-text"><i class="ti ti-id" style="color:var(--accent)"></i> 名片詳細資訊</h2>
+    
+    <div class="ai-thinking-box" id="ai-thinking">
+      <div class="ai-pulse-dot"></div><div class="ai-pulse-dot"></div><div class="ai-pulse-dot"></div>
+      <span>Gemini AI 正在識別名片文字中...</span>
+    </div>
+
+    <div style="display:flex; gap:8px; margin-bottom:1rem">
+      <button class="btn btn-blue" style="flex:1" onclick="document.getElementById('single-file-input').click()">
+        <i class="ti ti-photo-scan"></i> 上傳名片圖片進行 AI 辨識帶入
+      </button>
+      <input type="file" id="single-file-input" accept="image/*" style="display:none" onchange="handleSingleScan(event)" />
+    </div>
+
+    <div class="form-grid">
+      <div class="form-row"><label>姓名</label><input type="text" id="f-name" placeholder="請輸入姓名" /></div>
+      <div class="form-row"><label>職稱</label><input type="text" id="f-title" placeholder="請輸入職稱" /></div>
+      <div class="form-row-full form-row"><label>公司 / 單位</label><input type="text" id="f-org" placeholder="請輸入公司名稱" /></div>
+      <div class="form-row"><label>部門</label><input type="text" id="f-dept" placeholder="請輸入部門" /></div>
+      <div class="form-row">
+        <label>分類群組</label>
+        <select id="f-group"></select>
+      </div>
+      <div class="form-row"><label>辦公電話</label><input type="text" id="f-phone" placeholder="電話" /></div>
+      <div class="form-row"><label>分機</label><input type="text" id="f-phoneExt" placeholder="分機" /></div>
+      <div class="form-row"><label>手機號碼</label><input type="text" id="f-mobile" placeholder="手機" /></div>
+      <div class="form-row"><label>傳真電話</label><input type="text" id="f-fax" placeholder="傳真" /></div>
+      <div class="form-row"><label>電子郵件 (Email)</label><input type="email" id="f-email" placeholder="Email" /></div>
+      <div class="form-row"><label>官方網站</label><input type="text" id="f-website" placeholder="網址" /></div>
+      <div class="form-row"><label>郵遞區號</label><input type="text" id="f-zip" placeholder="郵遞區號" /></div>
+      <div class="form-row"><label>地址</label><input type="text" id="f-addr" placeholder="完整地址" /></div>
+      
+      <div class="form-row-full form-row">
+        <label>名片標籤分類（點擊亮燈直接設定）</label>
+        <div style="background:var(--bg-tertiary); border:1px solid var(--border-color); border-radius:var(--radius-md); padding:10px;">
+          <div class="tag-filter-cloud" id="modal-tag-grid" style="max-height:100px;"></div>
+        </div>
+      </div>
+      
+      <div class="form-row-full form-row">
+        <label>名片備註欄</label>
+        <textarea id="f-note" placeholder="輸入隨手備忘筆記..." rows="2" style="font-family:inherit; resize:none;"></textarea>
+      </div>
+    </div>
+
+    <div class="form-actions">
+      <button class="btn" onclick="closeFormModal()">取消</button>
+      <button class="btn btn-primary" onclick="saveCardForm()"><i class="ti ti-device-floppy"></i> 儲存名片</button>
+    </div>
+  </div>
+</div>
+
+<!-- 原始照片 Lightbox 大圖 Modal -->
+<div class="lightbox-overlay" id="lightbox-bg" onclick="closeLightbox()">
+  <div class="lightbox-content" onclick="event.stopPropagation()">
+    <button class="lightbox-close" onclick="closeLightbox()">&times;</button>
+    <img src="" id="lightbox-img" alt="名片原圖" />
+  </div>
+</div>
+
+<!-- 提示訊息 Toast -->
+<div id="toast" class="toast"></div>
+
+<!-- ==========================================================================
+     [JavaScript] 主程式段落
+     ========================================================================== -->
+<script>
+// ============================================================================
+// 全域狀態管理與設定
+// ============================================================================
+let cardsList = [];
+let selectedCardId = null;
+let scanQueue = [];
+let isScanning = false;
+let activeProcessedFilter = 'all';
+let activeGroupFilter = '';
+let activeTagFilter = '';
+let searchKeyword = '';
+let currentFormModalTags = [];
+let currentSingleScanImageBase64 = null;
+
+// Google Drive 連接狀態
+let gdriveToken = null;
+let driveFolderCache = { root: null, unparsed: null, parsed: null };
+
+// Google Drive Client ID
+const GDRIVE_CLIENT_ID = '222322177485-dj77l1ut4qcs76l8hn861frpp6es7v4b.apps.googleusercontent.com';
+
+// 🎯 更新後的 7 大全新預設群組分類
+const DEFAULT_GROUPS = ['學校委員', '政府機關', '企業客戶', '資訊夥伴', '法人夥伴', '供應商夥伴', '其他'];
+const DEFAULT_TAGS = ['重要', '待聯絡', '開發中', '已簽約', '展覽認識'];
+
+function getCustomGroups() {
+  try {
+    const list = localStorage.getItem('bizcard_custom_groups');
+    if (list) {
+      const parsed = JSON.parse(list);
+      // 智慧遷移：如果使用者本機存的是舊的群組（包含重要客戶等），自動重置為最新的 7 大類別
+      if (parsed.includes('重要客戶') || parsed.includes('外部夥伴')) {
+        localStorage.setItem('bizcard_custom_groups', JSON.stringify(DEFAULT_GROUPS));
+        return DEFAULT_GROUPS;
+      }
+      return parsed;
+    }
+    return DEFAULT_GROUPS;
+  } catch(e) { return DEFAULT_GROUPS; }
+}
+
+function getCustomTags() {
+  try {
+    const list = localStorage.getItem('bizcard_custom_tags');
+    return list ? JSON.parse(list) : DEFAULT_TAGS;
+  } catch(e) { return DEFAULT_TAGS; }
+}
+
+function getGeminiApiKey() { return localStorage.getItem('bizcard_gemini_api_key') || ''; }
+function getGeminiModel() { return localStorage.getItem('bizcard_gemini_model') || 'gemini-2.5-flash'; }
+
+// ============================================================================
+// [1] 資料庫管理模組 (IndexedDB)
+// ============================================================================
+const DB_NAME = 'BizCardDB';
+const DB_VERSION = 1;
+let db = null;
+
+function dbInit() {
+  return new Promise((resolve, reject) => {
+    const request = indexedDB.open(DB_NAME, DB_VERSION);
+    
+    request.onupgradeneeded = function(e) {
+      const database = e.target.result;
+      
+      if (!database.objectStoreNames.contains('cards')) {
+        const cardStore = database.createObjectStore('cards', { keyPath: 'id' });
+        cardStore.createIndex('name', 'name', { unique: false });
+        cardStore.createIndex('org', 'org', { unique: false });
+        cardStore.createIndex('createdAt', 'createdAt', { unique: false });
+        cardStore.createIndex('group', 'group', { unique: false });
+      }
+      
+      if (!database.objectStoreNames.contains('images')) {
+        database.createObjectStore('images', { keyPath: 'id' });
+      }
+      console.log('[IndexedDB] 資料表結構初始化/升級成功！');
+    };
+    
+    request.onsuccess = function(e) {
+      db = e.target.result;
+      console.log('[IndexedDB] 連線成功！');
+      resolve(db);
+    };
+    
+    request.onerror = function(e) {
+      console.error('[IndexedDB] 連線失敗：', e.target.error);
+      reject(e.target.error);
+    };
+  });
+}
+
+async function dbGetAllCards() {
+  return new Promise((resolve, reject) => {
+    if (!db) return resolve([]);
+    const transaction = db.transaction(['cards'], 'readonly');
+    const store = transaction.objectStore('cards');
+    const request = store.getAll();
+    
+    request.onsuccess = () => resolve(request.result || []);
+    request.onerror = () => reject(request.error);
+  });
+}
+
+async function dbGetCardImage(id) {
+  return new Promise((resolve, reject) => {
+    if (!db) return resolve(null);
+    const transaction = db.transaction(['images'], 'readonly');
+    const store = transaction.objectStore('images');
+    const request = store.get(id);
+    
+    request.onsuccess = () => {
+      if (request.result) resolve(request.result.image);
+      else resolve(null);
+    };
+    request.onerror = () => reject(request.error);
+  });
+}
+
+async function dbSaveCard(card, imageBase64 = null) {
+  return new Promise((resolve, reject) => {
+    if (!db) return reject(new Error('資料庫未連線'));
+    
+    const stores = imageBase64 ? ['cards', 'images'] : ['cards'];
+    const transaction = db.transaction(stores, 'readwrite');
+    
+    transaction.objectStore('cards').put(card);
+    if (imageBase64) {
+      transaction.objectStore('images').put({ id: card.id, image: imageBase64 });
+    }
+    
+    transaction.oncomplete = () => resolve();
+    transaction.onerror = () => reject(transaction.error);
+  });
+}
+
+async function dbDeleteCard(id) {
+  return new Promise((resolve, reject) => {
+    if (!db) return reject(new Error('資料庫未連線'));
+    const transaction = db.transaction(['cards', 'images'], 'readwrite');
+    
+    transaction.objectStore('cards').delete(id);
+    transaction.objectStore('images').delete(id);
+    
+    transaction.oncomplete = () => resolve();
+    transaction.onerror = () => reject(transaction.error);
+  });
+}
+
+async function dbMigrateFromLocalStorage() {
+  const oldKey = 'bizcard_standalone_v1';
+  const oldData = localStorage.getItem(oldKey);
+  if (oldData) {
+    try {
+      const oldCards = JSON.parse(oldData);
+      if (Array.isArray(oldCards) && oldCards.length > 0) {
+        console.log(`[IndexedDB] 偵測到舊版 localStorage 名片共 ${oldCards.length} 筆，開始自動轉移...`);
+        for (const card of oldCards) {
+          if (!card.group) card.group = '其他';
+          await dbSaveCard(card, null);
+        }
+      }
+      localStorage.setItem('bizcard_standalone_v1_backup', oldData);
+      localStorage.removeItem(oldKey);
+    } catch(err) {
+      console.error('[IndexedDB] 舊資料遷移失敗：', err);
+    }
+  }
+}
+
+// ============================================================================
+// [2] Google API 與雲端同步模組
+// ============================================================================
+function initGoogleSignIn() {
+  if (window.location.protocol === 'file:') {
+    document.getElementById('local-server-notice').style.display = 'flex';
+  }
+  
+  if (typeof google === 'undefined' || !google.accounts) {
+    setTimeout(initGoogleSignIn, 1000);
+    return;
+  }
+  
+  const savedToken = localStorage.getItem('gdrive_token');
+  const savedUser = localStorage.getItem('gdrive_user');
+  if (savedToken && savedUser) {
+    gdriveToken = savedToken;
+    showGdriveLoggedIn(JSON.parse(savedUser));
+  }
+}
+
+async function ensureGoogleAuth() {
+  if (gdriveToken) return gdriveToken;
+  
+  if (typeof google === 'undefined' || !google.accounts) {
+    alert('Google API 庫尚未載入完成，請稍候再試。');
+    throw new Error('Google Auth SDK not ready');
+  }
+
+  return new Promise((resolve, reject) => {
+    const client = google.accounts.oauth2.initTokenClient({
+      client_id: GDRIVE_CLIENT_ID,
+      scope: 'https://www.googleapis.com/auth/drive.file https://www.googleapis.com/auth/drive.readonly',
+      callback: (resp) => {
+        if (resp.error) {
+          showToast('Google 雲端帳戶授權失敗');
+          reject(resp.error);
+        } else {
+          gdriveToken = resp.access_token;
+          localStorage.setItem('gdrive_token', gdriveToken);
+          const mockUser = { name: "雲端已授權用戶", email: "已連結 Google Drive" };
+          localStorage.setItem('gdrive_user', JSON.stringify(mockUser));
+          showGdriveLoggedIn(mockUser);
+          showToast('Google 雲端帳號連結成功！');
+          resolve(gdriveToken);
+        }
+      }
+    });
+    client.requestAccessToken();
+  });
+}
+
+function triggerGoogleSignIn() { ensureGoogleAuth().catch(err => console.error(err)); }
+
+function showGdriveLoggedIn(user) {
+  document.getElementById('gdrive-login-area').style.display = 'none';
+  const loggedArea = document.getElementById('gdrive-logged-area');
+  loggedArea.style.display = 'block';
+  document.getElementById('gdrive-email').textContent = user.email || 'gdrive@gmail.com';
+}
+
+function gdriveLogout() {
+  gdriveToken = null;
+  localStorage.removeItem('gdrive_token');
+  localStorage.removeItem('gdrive_user');
+  document.getElementById('gdrive-login-area').style.display = 'block';
+  document.getElementById('gdrive-logged-area').style.display = 'none';
+  showToast('已安全登出 Google 帳號');
+}
+
+async function fetchDrive(url, options = {}) {
+  options.headers = options.headers || {};
+  options.headers['Authorization'] = `Bearer ${gdriveToken}`;
+  const res = await fetch(url, options);
+  if (!res.ok) {
+    if (res.status === 401) {
+      gdriveLogout();
+      throw new Error('登入已過期，請重新授權連結 Google 雲端');
+    }
+    throw new Error(`雲端操作失敗，狀態碼: ${res.status}`);
+  }
+  return res;
+}
+
+async function findOrCreateFolder(name, parentId = null) {
+  let q = `name='${name}' and mimeType='application/vnd.google-apps.folder' and trashed=false`;
+  if (parentId) q += ` and '${parentId}' in parents`;
+  const res = await fetchDrive(`https://www.googleapis.com/drive/v3/files?q=${encodeURIComponent(q)}&fields=files(id)`);
+  const data = await res.json();
+  if (data.files && data.files.length > 0) return data.files[0].id;
+  
+  const meta = { name: name, mimeType: 'application/vnd.google-apps.folder' };
+  if (parentId) meta.parents = [parentId];
+  const createRes = await fetchDrive('https://www.googleapis.com/drive/v3/files', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(meta)
+  });
+  const folder = await createRes.json();
+  return folder.id;
+}
+
+async function initSyncFolders() {
+  try {
+    await ensureGoogleAuth();
+    showToast('正在建立 Google 雲端相簿目錄...');
+    const rootId = await findOrCreateFolder('名片管理系統_雲端同步');
+    driveFolderCache.root = rootId;
+    driveFolderCache.unparsed = await findOrCreateFolder('名片管理系統_未辨識', rootId);
+    driveFolderCache.parsed = await findOrCreateFolder('名片管理系統_已辨識', rootId);
+    alert(`✓ Google 雲端同步初始化成功！\n\n您可以在您的 Google Drive 中看見「名片管理系統_雲端同步」資料夾。\n未來只要將名片拍照丟入其子資料夾「名片管理系統_未辨識」中，即可在本系統使用一鍵同步導入！`);
+  } catch(e) {
+    alert('雲端同步初始化失敗：' + e.message);
+  }
+}
+
+async function importDriveImages() {
+  try {
+    await ensureGoogleAuth();
+    if (!driveFolderCache.unparsed) {
+      const rootId = await findOrCreateFolder('名片管理系統_雲端同步');
+      driveFolderCache.root = rootId;
+      driveFolderCache.unparsed = await findOrCreateFolder('名片管理系統_未辨識', rootId);
+      driveFolderCache.parsed = await findOrCreateFolder('名片管理系統_已辨識', rootId);
+    }
+    
+    showToast('正在讀取雲端「未辨識」照片清單...');
+    const q = `'${driveFolderCache.unparsed}' in parents and trashed=false`;
+    const res = await fetchDrive(`https://www.googleapis.com/drive/v3/files?q=${encodeURIComponent(q)}&fields=files(id,name,mimeType)`);
+    const data = await res.json();
+    
+    const files = data.files || [];
+    const imgFiles = files.filter(f => f.mimeType && f.mimeType.startsWith('image/'));
+    
+    if (imgFiles.length === 0) {
+      alert('您的 Google 雲端「名片管理系統_未辨識」資料夾目前空空如也喔，請先丟入名片拍照檔案。');
+      return;
+    }
+    
+    let importedCount = 0;
+    for (const file of imgFiles) {
+      if (scanQueue.some(x => x.driveId === file.id)) continue;
+      
+      const imgRes = await fetchDrive(`https://www.googleapis.com/drive/v3/files/${file.id}?alt=media`);
+      const blob = await imgRes.blob();
+      blob.name = file.name;
+      
+      scanQueue.push({
+        id: 'queue_' + crypto.randomUUID(),
+        file: blob,
+        status: 'wait',
+        driveId: file.id
+      });
+      importedCount++;
+    }
+    
+    renderBatchQueueList();
+    showToast(`✓ 成功從雲端導入 ${importedCount} 張新照片至等待佇列！`);
+  } catch(e) {
+    alert('智慧同步失敗：' + e.message);
+  }
+}
+
+async function moveDriveFile(fileId, oldParent, newParent) {
+  try {
+    await fetchDrive(`https://www.googleapis.com/drive/v3/files/${fileId}?addParents=${newParent}&removeParents=${oldParent}`, { method: 'PATCH' });
+  } catch(e) {
+    console.error('[Google Drive] 雲端已辨識照片移動歸檔失敗', e);
+  }
+}
+
+// ============================================================================
+// [3] Gemini AI 辨識與智慧預分類模組
+// ============================================================================
+function processAndResizeImage(fileOrBlob) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      const img = new Image();
+      img.onload = function() {
+        const canvas = document.createElement('canvas');
+        let width = img.width, height = img.height;
+        const MAX_SIDE = 1024;
+        
+        if (width > height) {
+          if (width > MAX_SIDE) { height = Math.round((height * MAX_SIDE) / width); width = MAX_SIDE; }
+        } else {
+          if (height > MAX_SIDE) { width = Math.round((width * MAX_SIDE) / height); height = MAX_SIDE; }
+        }
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, width, height);
+        resolve(canvas.toDataURL('image/jpeg', 0.85).split(',')[1]);
+      };
+      img.onerror = reject;
+      img.src = e.target.result;
+    };
+    reader.onerror = reject;
+    reader.readAsDataURL(fileOrBlob);
+  });
+}
+
+async function callGeminiAI(imageBase64) {
+  const key = getGeminiApiKey();
+  if (!key) throw new Error('API_KEY_EMPTY');
+  
+  const model = getGeminiModel();
+  const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`;
+  
+  // 🎯 Prompt 中融入智慧預分類指令與預設的 7 大類別
+  const prompt = `你是一個專業的多張名片文字視覺識別與分類專家。請仔細分析這張圖片（圖片中可能包含「一張」或「多張拍在一起」的名片）。
+請精準、獨立地提取每一張名片的文字內容，並「嚴格符合」以下 JSON 陣列格式輸出：
+[
+  {
+    "name": "姓名",
+    "title": "職稱",
+    "org": "公司或單位全銜",
+    "dept": "部門或組別",
+    "phone": "辦公室電話",
+    "phoneExt": "分機",
+    "mobile": "手機號碼",
+    "fax": "傳真",
+    "email": "電子郵件",
+    "website": "網址",
+    "zip": "郵遞區號",
+    "addr": "完整地址（必須包含完整的直轄市/縣市、行政區、路街街名與樓層，切勿遺漏前綴縣市字樣）",
+    "group": "根據公司性質與職稱，智慧將名片分類歸入以下群組之一：學校委員 (若屬大學/中小學/學術委員)、政府機關 (政府部門/公家單位/公會官員)、企業客戶 (一般私有企業/公司行號)、資訊夥伴 (科技或軟體公司/IT部門)、法人夥伴 (研究院/基金會/協會等社團法人)、供應商夥伴 (原材料/代工/供應鏈廠商)、其他 (若無明顯特徵)。(必須完全符合這七個字串之一)"
+  }
+]
+注意：不論圖片中只有 1 張還是有多張名片，都請「務必包裹在陣列 [ ] 內」回傳。請不要添加 any \`\`\`json 語法區塊記號，直接回傳乾淨的 JSON 字串。`;
+
+  const resp = await fetch(endpoint, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      contents: [{
+        parts: [
+          { text: prompt },
+          { inlineData: { mimeType: 'image/jpeg', data: imageBase64 } }
+        ]
+      }]
+    })
+  });
+  
+  if (!resp.ok) {
+    const errData = await resp.json().catch(() => ({}));
+    throw new Error(errData.error?.message || `HTTP ${resp.status}`);
+  }
+  
+  const apiData = await resp.json();
+  const rawText = apiData.candidates?.[0]?.content?.parts?.[0]?.text?.trim() || '[]';
+  const cleanJsonText = rawText.replace(/^```json\s*/i, '').replace(/```$/, '').trim();
+  return JSON.parse(cleanJsonText);
+}
+
+async function testGeminiConnection() {
+  const statusEl = document.getElementById('settings-api-key-status');
+  const key = document.getElementById('settings-api-key').value.trim();
+  if (!key) {
+    statusEl.innerHTML = '<span style="color:var(--color-red);">✖ 請先輸入 API 金鑰再行測試</span>';
+    return;
+  }
+  
+  statusEl.textContent = '⚡ 正在發送測試請求...';
+  const model = document.getElementById('settings-gemini-model').value;
+  const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`;
+  
+  try {
+    const resp = await fetch(endpoint, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        contents: [{ parts: [{ text: "Hello, reply 'OK' if you see this." }] }]
+      })
+    });
+    
+    if (resp.ok) {
+      statusEl.innerHTML = '<span style="color:var(--color-green);">✓ 連線成功！Gemini API 工作正常。</span>';
+      showToast('API Key 測試成功！');
+    } else {
+      const err = await resp.json().catch(() => ({}));
+      throw new Error(err.error?.message || `HTTP 狀態碼 ${resp.status}`);
+    }
+  } catch(e) {
+    statusEl.innerHTML = `<span style="color:var(--color-red);">✖ 連線失敗：${e.message}</span>`;
+  }
+}
+
+async function handleSingleScan(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  
+  const thinkingBox = document.getElementById('ai-thinking');
+  thinkingBox.classList.add('show');
+  
+  try {
+    const b64 = await processAndResizeImage(file);
+    currentSingleScanImageBase64 = b64;
+    
+    const parsedList = await callGeminiAI(b64);
+    
+    if (parsedList && parsedList.length > 0) {
+      const p = parsedList[0];
+      const fields = ['name','title','org','dept','phone','phoneExt','mobile','fax','email','website','zip','addr'];
+      fields.forEach(f => {
+        const el = document.getElementById('f-' + f);
+        if (el && p[f] !== undefined) el.value = p[f];
+      });
+      
+      // 🎯 AI 自動預分類選擇
+      const groupSelect = document.getElementById('f-group');
+      if (groupSelect && p.group) {
+        const customGroups = getCustomGroups();
+        if (customGroups.includes(p.group)) {
+          groupSelect.value = p.group;
+        } else {
+          groupSelect.value = '其他';
+        }
+      }
+      
+      if (parsedList.length > 1) {
+        for (let i = 1; i < parsedList.length; i++) {
+          const extraCard = {
+            ...parsedList[i],
+            id: 'card_' + crypto.randomUUID(),
+            processed: true,
+            createdAt: new Date().toLocaleDateString('zh-TW'),
+            tags: ['合併拍照導入'],
+            group: parsedList[i].group || '其他', // AI 自動預分類其餘名片
+            theme: 'indigo'
+          };
+          await dbSaveCard(extraCard, b64);
+          cardsList.unshift(extraCard);
+        }
+        showToast(`AI 辨識成功！主名片已帶入，其餘 ${parsedList.length - 1} 張已自動存入名片庫。`);
+      } else {
+        showToast('AI 辨識與智慧預分類完成！');
+      }
+    }
+  } catch(err) {
+    console.error(err);
+    if (err.message === 'API_KEY_EMPTY') {
+      alert('請先前往「設定」分頁配置您的 Gemini API Key！');
+    } else {
+      alert('辨識失敗：' + err.message);
+    }
+  } finally {
+    thinkingBox.classList.remove('show');
+    event.target.value = '';
+  }
+}
+
+async function handleMyCardScan(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  
+  const thinkingBox = document.getElementById('mycard-ai-thinking');
+  if (thinkingBox) thinkingBox.classList.add('show');
+  
+  try {
+    const b64 = await processAndResizeImage(file);
+    const parsedList = await callGeminiAI(b64);
+    
+    if (parsedList && parsedList.length > 0) {
+      const p = parsedList[0];
+      const fields = ['name','title','org','dept','phone','mobile','email','website','zip','addr'];
+      fields.forEach(f => {
+        const el = document.getElementById('my-' + f);
+        if (el && p[f] !== undefined) el.value = p[f];
+      });
+      showToast('AI 辨識成功！已自動帶入您的個人資料！');
+    }
+  } catch(err) {
+    console.error(err);
+    if (err.message === 'API_KEY_EMPTY') {
+      alert('請先前往「應用設定」分頁配置您的 Gemini API Key！');
+    } else {
+      alert('個人名片辨識失敗：' + err.message);
+    }
+  } finally {
+    if (thinkingBox) thinkingBox.classList.remove('show');
+    event.target.value = '';
+  }
+}
+
+// ============================================================================
+// [4] UI 渲染與互動模組
+// ============================================================================
+async function systemLoadAllData() {
+  await dbInit();
+  await dbMigrateFromLocalStorage();
+  
+  cardsList = await dbGetAllCards();
+  
+  const k = getGeminiApiKey();
+  if (k) {
+    document.getElementById('settings-api-key').value = k;
+    document.getElementById('settings-api-key-status').innerHTML = '<span style="color:var(--color-green);">✓ 金鑰已儲存於本地</span>';
+    document.getElementById('api-notice-batch').style.display = 'none';
+  } else {
+    document.getElementById('api-notice-batch').style.display = 'flex';
+  }
+  
+  document.getElementById('settings-gemini-model').value = getGeminiModel();
+  
+  initGoogleSignIn();
+  renderSidebarFilters();
+  renderSettingsBadgeManager();
+  renderCardsGrid();
+  renderDashboard();
+}
+
+function renderSidebarFilters() {
+  const groupFilterList = document.getElementById('group-filter-list');
+  const customGroups = getCustomGroups();
+  
+  const groupCounts = {};
+  cardsList.forEach(c => {
+    const g = c.group || '其他';
+    groupCounts[g] = (groupCounts[g] || 0) + 1;
+  });
+  
+  let groupHtml = `<div class="group-filter-item ${activeGroupFilter === '' ? 'active' : ''}" onclick="setGroupFilter('')">
+    <span>全部群組</span>
+    <span class="group-count">${cardsList.length}</span>
+  </div>`;
+  
+  customGroups.forEach(g => {
+    const count = groupCounts[g] || 0;
+    groupHtml += `<div class="group-filter-item ${activeGroupFilter === g ? 'active' : ''}" onclick="setGroupFilter('${g}')">
+      <span>${g}</span>
+      <span class="group-count">${count}</span>
+    </div>`;
+  });
+  groupFilterList.innerHTML = groupHtml;
+
+  const tagCloud = document.getElementById('tag-cloud');
+  const customTags = getCustomTags();
+  
+  const tagCounts = {};
+  cardsList.forEach(c => {
+    if (c.tags) {
+      c.tags.forEach(t => {
+        tagCounts[t] = (tagCounts[t] || 0) + 1;
+      });
+    }
+  });
+  
+  let tagHtml = `<button class="tag-filter-chip ${activeTagFilter === '' ? 'active' : ''}" onclick="setTagFilter('')">全部 (${cardsList.length})</button>`;
+  customTags.forEach(t => {
+    const count = tagCounts[t] || 0;
+    tagHtml += `<button class="tag-filter-chip ${activeTagFilter === t ? 'active' : ''}" onclick="setTagFilter('${t}')">#${t} (${count})</button>`;
+  });
+  tagCloud.innerHTML = tagHtml;
+  
+  document.getElementById('count-badge').textContent = cardsList.length + ' 張名片';
+  
+  const processedCount = cardsList.filter(c => c.processed).length;
+  const procBadge = document.getElementById('proc-badge');
+  procBadge.textContent = '✓ 已處理 ' + processedCount;
+  procBadge.style.display = processedCount ? 'inline-block' : 'none';
+  
+  const dups = detectAllDuplicateGroups();
+  const dupBadge = document.getElementById('dup-badge');
+  dupBadge.textContent = '⚠ 重複 ' + dups.length + ' 組';
+  dupBadge.style.display = dups.length ? 'inline-block' : 'none';
+  
+  const tabDups = document.getElementById('tab-dups');
+  tabDups.innerHTML = `<i class="ti ti-copy"></i> 重複偵測${dups.length ? ' (' + dups.length + ')' : ''}`;
+}
+
+function setGroupFilter(group) {
+  activeGroupFilter = group;
+  renderCardsGrid();
+  renderSidebarFilters();
+}
+
+function setTagFilter(tag) {
+  activeTagFilter = tag;
+  renderCardsGrid();
+  renderSidebarFilters();
+}
+
+function setProcessedFilter(filterVal) {
+  activeProcessedFilter = filterVal;
+  ['all', 'unprocessed', 'processed'].forEach(x => {
+    document.getElementById('fc-' + x).classList.toggle('active', x === filterVal);
+  });
+  renderCardsGrid();
+}
+
+function filterCards() {
+  searchKeyword = document.getElementById('search-input').value.toLowerCase().trim();
+  renderCardsGrid();
+}
+
+function handleSortChange() {
+  renderCardsGrid();
+}
+
+function getFilteredAndSortedCards() {
+  let list = [...cardsList];
+  
+  if (activeProcessedFilter === 'processed') list = list.filter(c => c.processed);
+  else if (activeProcessedFilter === 'unprocessed') list = list.filter(c => !c.processed);
+  
+  if (activeGroupFilter) {
+    list = list.filter(c => (c.group || '其他') === activeGroupFilter);
+  }
+  
+  if (activeTagFilter) {
+    list = list.filter(c => c.tags && c.tags.includes(activeTagFilter));
+  }
+  
+  if (searchKeyword) {
+    list = list.filter(c => 
+      [c.name, c.org, c.title, c.dept, c.email, c.phone, c.mobile, c.addr, c.note].some(f => f && f.toLowerCase().includes(searchKeyword)) ||
+      (c.tags && c.tags.some(t => t.toLowerCase().includes(searchKeyword)))
+    );
+  }
+  
+  const sortVal = document.getElementById('sort-select').value;
+  list.sort((a, b) => {
+    if (sortVal === 'time-desc') return new Date(b.createdAt || 0) - new Date(a.createdAt || 0);
+    if (sortVal === 'time-asc') return new Date(a.createdAt || 0) - new Date(b.createdAt || 0);
+    if (sortVal === 'name-asc') return (a.name || '').localeCompare(b.name || '', 'zh-TW');
+    if (sortVal === 'name-desc') return (b.name || '').localeCompare(a.name || '', 'zh-TW');
+    if (sortVal === 'org-asc') return (a.org || '').localeCompare(b.org || '', 'zh-TW');
+    return 0;
+  });
+  
+  return list;
+}
+
+function renderCardsGrid() {
+  const grid = document.getElementById('card-grid');
+  const filtered = getFilteredAndSortedCards();
+  
+  if (filtered.length === 0) {
+    grid.innerHTML = `<div class="empty-state" style="grid-column: 1 / -1;">
+      <i class="ti ti-inbox"></i>
+      <p>沒有符合條件的名片資料</p>
+    </div>`;
+    return;
+  }
+  
+  const dupList = detectAllDuplicateIds();
+  
+  grid.innerHTML = filtered.map(c => {
+    const isDup = dupList.has(c.id);
+    const badgeText = c.processed ? 
+      '<span class="ribbon ribbon-green"><i class="ti ti-check"></i> 已處理</span>' : 
+      (isDup ? '<span class="ribbon ribbon-amber"><i class="ti ti-copy"></i> 重複</span>' : '');
+      
+    const initials = c.name ? c.name.slice(0, 2) : '?';
+    
+    return `
+      <div class="biz-card ${selectedCardId === c.id ? 'selected' : ''} ${c.processed ? 'processed' : ''}" onclick="selectCard('${c.id}')">
+        ${badgeText}
+        <div class="card-hd-layout">
+          <div class="card-avatar ${c.processed ? 'proc' : ''}">${initials}</div>
+          <div class="card-info">
+            <h4 class="card-name-text">${c.name || '—'}</h4>
+            <div class="card-title-text">${c.title || ''}${c.dept ? ' · ' + c.dept : ''}</div>
+            <div class="card-org-text">${c.org || ''}</div>
+          </div>
+        </div>
+        ${c.tags && c.tags.length ? `
+          <div class="card-tags-area">
+            ${c.tags.slice(0, 3).map(t => `<span class="tag-mini">#${t}</span>`).join('')}
+            ${c.tags.length > 3 ? `<span class="tag-mini">+${c.tags.length - 3}</span>` : ''}
+          </div>
+        ` : ''}
+      </div>
+    `;
+  }).join('');
+}
+
+async function selectCard(id) {
+  selectedCardId = id;
+  renderCardsGrid();
+  
+  const c = cardsList.find(x => x.id === id);
+  const panel = document.getElementById('detail-panel');
+  const wrapper = document.getElementById('detail-wrapper');
+  
+  if (!c) {
+    panel.classList.remove('open');
+    wrapper.classList.remove('open');
+    return;
+  }
+  
+  panel.classList.add('open');
+  wrapper.classList.add('open');
+  
+  const imageBase64 = await dbGetCardImage(c.id);
+  const cleanMobile = (c.mobile || '').replace(/[^\d+]/g, '');
+  const cleanPhone = (c.phone || '').replace(/[^\d+]/g, '');
+  const mapUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(c.addr || '')}`;
+  const themeClass = `vc-theme-${c.theme || 'indigo'}`;
+  
+  panel.innerHTML = `
+    <div class="detail-header-row">
+      <div class="detail-header-title"><i class="ti ti-address-book"></i> 名片詳細資訊</div>
+      <button class="btn btn-icon detail-panel-close-btn" style="display:none; width:28px; height:28px;" onclick="closeDetailPanel()" title="關閉">
+        <i class="ti ti-x"></i>
+      </button>
+    </div>
+    
+    <div class="virtual-card-wrapper">
+      <div class="virtual-card ${themeClass}">
+        <div class="virtual-card-glass"></div>
+        <div class="virtual-card-body">
+          <div class="vc-hd">
+            <span class="vc-logo"><i class="ti ti-address-book"></i></span>
+            <span class="vc-org">${c.org || '未設定公司名稱'}</span>
+          </div>
+          <div class="vc-mid">
+            <div class="vc-name">${c.name || '未輸入姓名'}</div>
+            <div class="vc-title-row">
+              <span>${c.title || '無職稱'}</span>
+              ${c.dept ? '<span>·</span>' : ''}
+              <span>${c.dept || ''}</span>
+            </div>
+          </div>
+          <div class="vc-ft">
+            <div class="vc-contact-item"><i class="ti ti-phone"></i> ${c.mobile || c.phone || '無電話號碼'}</div>
+            <div class="vc-contact-item"><i class="ti ti-mail"></i> ${c.email || '無電子郵件'}</div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="vc-theme-selector">
+        <div class="theme-dot vc-theme-indigo" onclick="changeCardTheme('${c.id}', 'indigo')" title="皇家靛藍"></div>
+        <div class="theme-dot vc-theme-emerald" onclick="changeCardTheme('${c.id}', 'emerald')" title="森林翡翠"></div>
+        <div class="theme-dot vc-theme-charcoal" onclick="changeCardTheme('${c.id}', 'charcoal')" title="極致深曜"></div>
+        <div class="theme-dot vc-theme-sunset" onclick="changeCardTheme('${c.id}', 'sunset')" title="溫慢落日"></div>
+      </div>
+    </div>
+    
+    <div class="detail-grid">
+      <div class="detail-field-card ${c.phone ? 'clickable' : ''}">
+        <div class="df-label"><i class="ti ti-phone"></i> 辦公電話</div>
+        <div class="df-val">${c.phone ? `<a href="tel:${cleanPhone}">${c.phone}${c.phoneExt ? ' 分機 ' + c.phoneExt : ''}</a>` : '—'}</div>
+      </div>
+      
+      <div class="detail-field-card ${c.mobile ? 'clickable' : ''}">
+        <div class="df-label"><i class="ti ti-device-mobile"></i> 手機號碼</div>
+        <div class="df-val">${c.mobile ? `<a href="tel:${cleanMobile}">${c.mobile}</a>` : '—'}</div>
+        
+        <div class="quick-social-btns">
+          ${c.mobile ? `<button class="btn-mini-social" onclick="window.open('https://wa.me/${cleanMobile}', '_blank')" title="WhatsApp 快速通訊"><i class="ti ti-brand-whatsapp"></i></button>` : ''}
+          ${c.mobile ? `<button class="btn-mini-social" onclick="copyToClipboard('${c.mobile}', '已複製電話，可在 LINE 搜尋')" title="複製號碼"><i class="ti ti-copy"></i></button>` : ''}
+        </div>
+      </div>
+      
+      <div class="detail-field-card ${c.email ? 'clickable' : ''}">
+        <div class="df-label"><i class="ti ti-mail"></i> 電子郵件 (Email)</div>
+        <div class="df-val">${c.email ? `<a href="mailto:${c.email}">${c.email}</a>` : '—'}</div>
+      </div>
+      
+      <div class="detail-field-card ${c.website ? 'clickable' : ''}">
+        <div class="df-label"><i class="ti ti-world"></i> 官方網站</div>
+        <div class="df-val">${c.website ? `<a href="${c.website.startsWith('http') ? c.website : 'https://' + c.website}" target="_blank">${c.website}</a>` : '—'}</div>
+      </div>
+      
+      <div class="detail-field-card detail-grid-full ${c.addr ? 'clickable' : ''}">
+        <div class="df-label"><i class="ti ti-map-pin"></i> 地址</div>
+        <div class="df-val">${c.addr ? `<a href="${mapUrl}" target="_blank">${c.addr}</a>` : '—'}</div>
+      </div>
+      
+      <div class="detail-field-card detail-grid-full">
+        <div class="df-label"><i class="ti ti-tags"></i> 標籤與群組</div>
+        <div class="df-val">
+          <span style="font-weight:700; color:var(--accent);">[${c.group || '其他'}]</span> 
+          ${c.tags && c.tags.length ? c.tags.map(t => `#${t}`).join(' ') : '無標籤'}
+        </div>
+      </div>
+
+      <div class="detail-field-card detail-grid-full">
+        <div class="df-label"><i class="ti ti-note"></i> 備註筆記</div>
+        <div class="df-val">${c.note || '無備忘錄'}</div>
+      </div>
+      
+      ${imageBase64 ? `
+        <div class="detail-img-box">
+          <div class="df-label" style="margin-bottom: 6px;"><i class="ti ti-photo"></i> 原始名片拍照</div>
+          <img src="data:image/jpeg;base64,${imageBase64}" onclick="openLightbox('data:image/jpeg;base64,${imageBase64}')" title="點擊放大圖片" />
+        </div>
+      ` : ''}
+    </div>
+    
+    <div class="detail-actions-row">
+      <button class="btn btn-green" onclick="exportSingleVcf('${c.id}')"><i class="ti ti-download"></i> 導出 vCard</button>
+      <button class="btn btn-amber" onclick="openQrCodeModal('${c.id}')"><i class="ti ti-qrcode"></i> 分享二維碼</button>
+      <button class="btn btn-primary" onclick="openAiEmailModal('${c.id}')"><i class="ti ti-robot"></i> AI 拜訪信</button>
+      <button class="btn btn-blue" onclick="editCard('${c.id}')"><i class="ti ti-edit"></i> 修改</button>
+      <button class="btn btn-red" onclick="deleteCard('${c.id}')"><i class="ti ti-trash"></i></button>
+    </div>
+  `;
+}
+
+function closeDetailPanel() {
+  selectedCardId = null;
+  renderCardsGrid();
+  document.getElementById('detail-panel').classList.remove('open');
+  document.getElementById('detail-wrapper').classList.remove('open');
+}
+
+async function changeCardTheme(id, themeName) {
+  const c = cardsList.find(x => x.id === id);
+  if (c) {
+    c.theme = themeName;
+    await dbSaveCard(c);
+    selectCard(id);
+  }
+}
+
+function openLightbox(src) {
+  const overlay = document.getElementById('lightbox-bg');
+  const img = document.getElementById('lightbox-img');
+  img.src = src;
+  overlay.classList.add('open');
+}
+function closeLightbox() {
+  document.getElementById('lightbox-bg').classList.remove('open');
+}
+
+function switchTab(tabId) {
+  ['cards', 'dashboard', 'dups', 'batch', 'settings'].forEach(t => {
+    const el = document.getElementById('view-' + t);
+    if (el) el.style.display = t === tabId ? 'block' : 'none';
+    const btn = document.getElementById('tab-' + t);
+    if (btn) btn.classList.toggle('active', t === tabId);
+  });
+  
+  if (tabId === 'dups') renderDupsTab();
+  if (tabId === 'dashboard') renderDashboard();
+}
+
+// ============================================================================
+// [5] 匯出、匯入與備份模組
+// ============================================================================
+function cleanVcfVal(val) { return (val || '').trim().replace(/[,;\n]/g, ' '); }
+
+function cardToVcfString(c) {
+  let v = 'BEGIN:VCARD\nVERSION:3.0\n';
+  v += `FN:${cleanVcfVal(c.name)}\n`;
+  if (c.name) v += `N:${cleanVcfVal(c.name)};;;;\n`;
+  if (c.org) v += `ORG:${cleanVcfVal(c.org)}\n`;
+  if (c.title) v += `TITLE:${cleanVcfVal(c.title)}\n`;
+  if (c.dept) v += `NOTE:部門: ${cleanVcfVal(c.dept)}\n`;
+  if (c.phone) {
+    if (c.phoneExt) v += `TEL;TYPE=WORK,VOICE:${cleanVcfVal(c.phone)} ext ${cleanVcfVal(c.phoneExt)}\n`;
+    else v += `TEL;TYPE=WORK,VOICE:${cleanVcfVal(c.phone)}\n`;
+  }
+  if (c.mobile) v += `TEL;TYPE=CELL,VOICE:${cleanVcfVal(c.mobile)}\n`;
+  if (c.fax) v += `TEL;TYPE=WORK,FAX:${cleanVcfVal(c.fax)}\n`;
+  if (c.email) v += `EMAIL;TYPE=PREF,INTERNET:${cleanVcfVal(c.email)}\n`;
+  if (c.website) v += `URL:${cleanVcfVal(c.website)}\n`;
+  if (c.addr) {
+    v += `ADR;TYPE=WORK:;;${cleanVcfVal(c.addr)};;;${cleanVcfVal(c.zip || '')};\n`;
+    v += `LABEL;TYPE=WORK:${cleanVcfVal(c.addr)}\n`;
+  }
+  if (c.note) v += `NOTE:${cleanVcfVal(c.note)}\n`;
+  v += 'END:VCARD\n';
+  return v;
+}
+
+function exportSingleVcf(id) {
+  const c = cardsList.find(x => x.id === id);
+  if (!c) return;
+  const vcfString = cardToVcfString(c);
+  const blob = new Blob(['\ufeff' + vcfString], { type: 'text/vcard;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `${c.name || '聯絡人'}.vcf`;
+  a.click();
+  showToast('vCard 聯絡人匯出成功！');
+}
+
+function exportAllVcf() {
+  if (!cardsList.length) {
+    showToast('名片庫中沒有資料！');
+    return;
+  }
+  
+  const bigString = cardsList.map(c => cardToVcfString(c)).join('');
+  const blob = new Blob(['\ufeff' + bigString], { type: 'text/vcard;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = '聯絡人清單_全部匯出.vcf';
+  a.click();
+  showToast('全部名片打包 VCF 導出成功！');
+}
+
+async function exportFullJsonBackup() {
+  showToast('正在準備資料庫完整備份檔案...');
+  try {
+    const backupList = [];
+    for (const c of cardsList) {
+      const imageBase64 = await dbGetCardImage(c.id);
+      backupList.push({ card: c, image: imageBase64 });
+    }
+    
+    const blob = new Blob([JSON.stringify(backupList, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `名片系統完整備份_${new Date().toISOString().slice(0, 10)}.json`;
+    a.click();
+    showToast('✓ 完整備份導出成功！');
+  } catch(e) {
+    alert('備份導出失敗：' + e.message);
+  }
+}
+
+function importFullJsonBackup(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  
+  const reader = new FileReader();
+  reader.onload = async function(evt) {
+    try {
+      const parsed = JSON.parse(evt.target.result);
+      if (!Array.isArray(parsed)) {
+        alert('還原失敗：此備份檔案格式無效。');
+        return;
+      }
+      
+      if (confirm(`確認還原此備份？這將會匯入 ${parsed.length} 筆名片，若 ID 重複將會覆蓋。`)) {
+        for (const item of parsed) {
+          if (item.card && item.card.id) {
+            await dbSaveCard(item.card, item.image);
+          }
+        }
+        showToast('✓ 資料還原備份成功！');
+        cardsList = await dbGetAllCards();
+        renderSidebarFilters();
+        renderCardsGrid();
+        closeDetailPanel();
+        renderDashboard();
+      }
+    } catch(err) {
+      alert('無效的備份 JSON 檔案：' + err.message);
+    }
+  };
+  reader.readAsText(file);
+  event.target.value = '';
+}
+
+// ============================================================================
+// [6] 商業級功能 (QR 分享、AI拜訪信、CRM 數據儀表板、我的名片)
+// ============================================================================
+function openQrCodeModal(id) {
+  const c = cardsList.find(x => x.id === id);
+  if (!c) return;
+  
+  const vcfText = cardToVcfString(c);
+  const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(vcfText)}`;
+  
+  document.getElementById('share-qrcode-img').src = qrUrl;
+  document.getElementById('qrcode-modal-bg').classList.add('open');
+}
+
+function closeQrCodeModal() {
+  document.getElementById('qrcode-modal-bg').classList.remove('open');
+}
+
+let targetAiEmailCardId = null;
+
+function openAiEmailModal(id) {
+  targetAiEmailCardId = id;
+  document.getElementById('ai-email-setup-view').style.display = 'block';
+  document.getElementById('ai-email-result-view').style.display = 'none';
+  document.getElementById('ai-email-thinking').classList.remove('show');
+  document.getElementById('ai-email-custom').value = '';
+  document.getElementById('ai-email-modal-bg').classList.add('open');
+}
+
+function closeAiEmailModal() {
+  document.getElementById('ai-email-modal-bg').classList.remove('open');
+  targetAiEmailCardId = null;
+}
+
+function closeAiEmailModalBg(e) {
+  if (e.target === document.getElementById('ai-email-modal-bg')) closeAiEmailModal();
+}
+
+function backToEmailSetup() {
+  document.getElementById('ai-email-setup-view').style.display = 'block';
+  document.getElementById('ai-email-result-view').style.display = 'none';
+}
+
+async function generateAiFollowUpEmail() {
+  const key = getGeminiApiKey();
+  if (!key) {
+    alert('請先在設定中填入您的 Gemini API Key！');
+    return;
+  }
+  
+  const c = cardsList.find(x => x.id === targetAiEmailCardId);
+  if (!c) return;
+  
+  const scene = document.getElementById('ai-email-scene').value;
+  const customPrompt = document.getElementById('ai-email-custom').value.trim();
+  
+  let sceneName = '展覽會議拜訪後續聯繫';
+  if (scene === 'proposal') sceneName = '商務合作提案發送';
+  if (scene === 'thankyou') sceneName = '感謝撥冗會面/簡報問候';
+  if (scene === 'holiday') sceneName = '節日問候';
+  
+  const thinkingBox = document.getElementById('ai-email-thinking');
+  thinkingBox.classList.add('show');
+  document.getElementById('ai-email-setup-view').style.display = 'none';
+  
+  const prompt = `你是一個專業的商務開發與客戶關係經理。
+請根據以下收件人資料，為我撰寫一封格式完整、語氣得體、禮貌且商業專業的繁體中文開發/問候信件。
+
+收件人資料：
+姓名：${c.name || '客戶'}
+公司名稱：${c.org || '貴司'}
+職稱：${c.title || '經理'}
+
+信件情境：${sceneName}
+${customPrompt ? `特殊要求/信件重點：${customPrompt}` : ''}
+
+請務必精準輸出為以下 JSON 格式，不要加入任何 \`\`\`json 標記或 Markdown 代碼：
+{
+  "subject": "這是一封信件主旨",
+  "body": "這是一封完整的信件內文，包含開頭問候、正文、結尾敬語，請在適當地方保留 [我的姓名]、[我的公司]、[我的聯絡電話] 佔位符"
+}`;
+
+  try {
+    const model = getGeminiModel();
+    const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`;
+    
+    const resp = await fetch(endpoint, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        contents: [{ parts: [{ text: prompt }] }]
+      })
+    });
+    
+    if (!resp.ok) {
+      const err = await resp.json().catch(() => ({}));
+      throw new Error(err.error?.message || `HTTP ${resp.status}`);
+    }
+    
+    const apiData = await resp.json();
+    const raw = apiData.candidates?.[0]?.content?.parts?.[0]?.text?.trim() || '{}';
+    const clean = raw.replace(/^```json\s*/i, '').replace(/```$/, '').trim();
+    const parsed = JSON.parse(clean);
+    
+    document.getElementById('ai-email-subject').value = parsed.subject || '';
+    
+    const myCard = getMyCardData();
+    let bodyText = parsed.body || '';
+    if (myCard.name) bodyText = bodyText.replace(/\[我的姓名\]/g, myCard.name);
+    if (myCard.org) bodyText = bodyText.replace(/\[我的公司\]/g, myCard.org);
+    if (myCard.mobile || myCard.phone) bodyText = bodyText.replace(/\[我的聯絡電話\]/g, myCard.mobile || myCard.phone);
+    
+    document.getElementById('ai-email-body').value = bodyText;
+    
+    document.getElementById('ai-email-result-view').style.display = 'block';
+  } catch(e) {
+    alert('AI 生成失敗：' + e.message);
+    document.getElementById('ai-email-setup-view').style.display = 'block';
+  } finally {
+    thinkingBox.classList.remove('show');
+  }
+}
+
+function copyEmailText() {
+  const body = document.getElementById('ai-email-body').value;
+  copyToClipboard(body, '信件內容已複製到剪貼簿！');
+}
+
+function sendEmailViaMailto() {
+  const c = cardsList.find(x => x.id === targetAiEmailCardId);
+  if (!c || !c.email) {
+    alert('該聯絡人沒有填寫 Email 地址喔！');
+    return;
+  }
+  const subject = document.getElementById('ai-email-subject').value;
+  const body = document.getElementById('ai-email-body').value;
+  
+  const mailtoUrl = `mailto:${c.email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+  window.open(mailtoUrl, '_blank');
+}
+
+/**
+ * 數據分析分頁渲染 (重構為大氣的對稱雙欄版面)
+ */
+function renderDashboard() {
+  document.getElementById('db-stat-total').textContent = cardsList.length;
+  
+  const processed = cardsList.filter(c => c.processed).length;
+  const rate = cardsList.length ? Math.round((processed / cardsList.length) * 100) : 0;
+  document.getElementById('db-stat-rate').textContent = rate + '%';
+  
+  const customGroups = getCustomGroups();
+  document.getElementById('db-stat-groups').textContent = customGroups.length;
+  
+  const customTags = getCustomTags();
+  document.getElementById('db-stat-tags').textContent = customTags.length;
+  
+  // 1. 群組佔比分佈 (左欄)
+  const groupCounts = {};
+  cardsList.forEach(c => {
+    const g = c.group || '其他';
+    groupCounts[g] = (groupCounts[g] || 0) + 1;
+  });
+  
+  const progressList = document.getElementById('db-group-progress-list');
+  progressList.innerHTML = customGroups.map(g => {
+    const count = groupCounts[g] || 0;
+    const pct = cardsList.length ? Math.round((count / cardsList.length) * 100) : 0;
+    return `
+      <div class="db-progress-row">
+        <div class="db-progress-label">
+          <span>${g}</span>
+          <span style="font-weight:600;">${count} 張 (${pct}%)</span>
+        </div>
+        <div class="db-progress-bar-container">
+          <div class="db-progress-fill" style="width:${pct}%"></div>
+        </div>
+      </div>
+    `;
+  }).join('');
+  
+  // 2. 數據標籤雲 (右欄)
+  const tagCounts = {};
+  cardsList.forEach(c => {
+    if (c.tags) {
+      c.tags.forEach(t => { tagCounts[t] = (tagCounts[t] || 0) + 1; });
+    }
+  });
+  
+  const tagCloud = document.getElementById('db-tag-cloud');
+  const tagKeys = Object.keys(tagCounts);
+  if (tagKeys.length === 0) {
+    tagCloud.innerHTML = '<div style="font-size:12px; color:var(--text-tertiary);">暫無篩選標籤</div>';
+  } else {
+    tagCloud.innerHTML = tagKeys.sort((a,b)=>tagCounts[b]-tagCounts[a]).map(t => `
+      <span class="tag-filter-chip active" style="background:var(--bg-secondary); border-color:var(--border-color); color:var(--text-primary); cursor:default;">
+        #${t} (${tagCounts[t]})
+      </span>
+    `).join('');
+  }
+}
+
+/**
+ * 「我的個人名片」儲存與讀取
+ */
+function getMyCardData() {
+  const data = localStorage.getItem('bizcard_user_mycard');
+  return data ? JSON.parse(data) : { name: '', title: '', org: '', dept: '', phone: '', mobile: '', email: '', website: '', zip: '', addr: '', theme: 'indigo', image: '' };
+}
+
+function saveMyCardData(data) {
+  localStorage.setItem('bizcard_user_mycard', JSON.stringify(data));
+}
+
+function openMyCardModal() {
+  const myCard = getMyCardData();
+  renderMyCardModal(myCard, false);
+  document.getElementById('mycard-modal-bg').classList.add('open');
+}
+
+function closeMyCardModal() {
+  document.getElementById('mycard-modal-bg').classList.remove('open');
+}
+
+function closeMyCardModalBg(e) {
+  if (e.target === document.getElementById('mycard-modal-bg')) closeMyCardModal();
+}
+
+function renderMyCardModal(myCard, isEditMode) {
+  const content = document.getElementById('mycard-modal-content');
+  const vcfString = cardToVcfString(myCard);
+  const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(vcfString)}`;
+  
+  if (isEditMode) {
+    content.innerHTML = `
+      <h2><i class="ti ti-edit" style="color:var(--accent)"></i> 編輯我的個人名片</h2>
+      
+      <div style="display:flex; gap:8px; margin-bottom:1rem">
+        <button class="btn btn-blue" style="flex:1" onclick="document.getElementById('mycard-file-input').click()">
+          <i class="ti ti-photo-scan"></i> 拍照/上傳個人名片由 AI 自動填寫
+        </button>
+        <input type="file" id="mycard-file-input" accept="image/*" style="display:none" onchange="handleMyCardScan(event)" />
+      </div>
+
+      <div class="ai-thinking-box" id="mycard-ai-thinking" style="margin-bottom:1rem;">
+        <div class="ai-pulse-dot"></div><div class="ai-pulse-dot"></div><div class="ai-pulse-dot"></div>
+        <span>Gemini AI 正在識別您的個人名片...</span>
+      </div>
+
+      <div class="form-grid">
+        <div class="form-row"><label>姓名</label><input type="text" id="my-name" value="${myCard.name}" /></div>
+        <div class="form-row"><label>職稱</label><input type="text" id="my-title" value="${myCard.title}" /></div>
+        <div class="form-row-full form-row"><label>公司名稱</label><input type="text" id="my-org" value="${myCard.org}" /></div>
+        <div class="form-row"><label>部門</label><input type="text" id="my-dept" value="${myCard.dept}" /></div>
+        <div class="form-row">
+          <label>卡片主題顏色</label>
+          <select id="my-theme">
+            <option value="indigo" ${myCard.theme==='indigo'?'selected':''}>皇家靛藍</option>
+            <option value="emerald" ${myCard.theme==='emerald'?'selected':''}>森林翡翠</option>
+            <option value="charcoal" ${myCard.theme==='charcoal'?'selected':''}>極致深曜</option>
+            <option value="sunset" ${myCard.theme==='sunset'?'selected':''}>溫慢落日</option>
+          </select>
+        </div>
+        <div class="form-row"><label>聯絡電話</label><input type="text" id="my-phone" value="${myCard.phone}" /></div>
+        <div class="form-row"><label>手機號碼</label><input type="text" id="my-mobile" value="${myCard.mobile}" /></div>
+        <div class="form-row"><label>電子郵件 (Email)</label><input type="email" id="my-email" value="${myCard.email}" /></div>
+        <div class="form-row"><label>個人/公司網站</label><input type="text" id="my-website" value="${myCard.website}" /></div>
+        <div class="form-row"><label>郵遞區號</label><input type="text" id="my-zip" value="${myCard.zip}" /></div>
+        <div class="form-row"><label>地址</label><input type="text" id="my-addr" value="${myCard.addr}" /></div>
+      </div>
+      <div class="form-actions">
+        <button class="btn" onclick="cancelMyCardEdit()">取消</button>
+        <button class="btn btn-primary" onclick="saveMyCardForm()"><i class="ti ti-device-floppy"></i> 儲存設定</button>
+      </div>
+    `;
+  } else {
+    const hasData = myCard.name;
+    const themeClass = `vc-theme-${myCard.theme || 'indigo'}`;
+    
+    content.innerHTML = `
+      <h2><i class="ti ti-user-circle" style="color:var(--accent)"></i> 我的個人名片</h2>
+      
+      ${hasData ? `
+        <div class="virtual-card-wrapper">
+          <div class="virtual-card ${themeClass}">
+            <div class="virtual-card-glass"></div>
+            <div class="virtual-card-body">
+              <div class="vc-hd">
+                <span class="vc-logo"><i class="ti ti-user-circle"></i></span>
+                <span class="vc-org">${myCard.org || '未設定公司'}</span>
+              </div>
+              <div class="vc-mid">
+                <div class="vc-name">${myCard.name}</div>
+                <div class="vc-title-row">
+                  <span>${myCard.title || ''}</span>
+                  ${myCard.dept ? '<span>·</span>' : ''}
+                  <span>${myCard.dept || ''}</span>
+                </div>
+              </div>
+              <div class="vc-ft">
+                <div class="vc-contact-item"><i class="ti ti-phone"></i> ${myCard.mobile || myCard.phone || '無電話'}</div>
+                <div class="vc-contact-item"><i class="ti ti-mail"></i> ${myCard.email || '無電子郵件'}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div style="text-align:center; margin-top:1.25rem;">
+          <div style="background: white; padding:12px; display:inline-block; border-radius:var(--radius-md); border:1px solid var(--border-color); box-shadow:var(--shadow-sm);">
+            <img src="${qrUrl}" style="width:160px; height:160px; display:block;" alt="My QR Code" />
+          </div>
+          <p style="font-size:11px; color:var(--text-secondary); margin-top:8px; line-height:1.4; padding:0 12px;">
+            讓對方用手機相機掃描上方二維碼，即可直接在對方手機中將您儲存為通訊錄聯絡人！
+          </p>
+        </div>
+        
+        <div class="form-actions" style="display:flex; justify-content:space-between; flex-wrap:wrap; gap:8px;">
+          <div style="display:flex; gap:6px;">
+            <button class="btn btn-green" onclick="shareMyCardToSocial('whatsapp')" title="WhatsApp 傳送我的資料"><i class="ti ti-brand-whatsapp"></i></button>
+            <button class="btn" onclick="copyMyCardPlainText()" title="複製文字自我介紹"><i class="ti ti-copy"></i> 複製文字</button>
+          </div>
+          <div style="display:flex; gap:6px;">
+            <button class="btn btn-blue" onclick="downloadMyVcard()"><i class="ti ti-download"></i> vCard 檔</button>
+            <button class="btn btn-primary" onclick="enterMyCardEditMode()"><i class="ti ti-edit"></i> 編輯資料</button>
+          </div>
+        </div>
+      ` : `
+        <div class="empty-state">
+          <i class="ti ti-user-exclamation"></i>
+          <p>您尚未設定您的個人電子名片資訊</p>
+          <button class="btn btn-primary" style="margin-top:1rem;" onclick="enterMyCardEditMode()"><i class="ti ti-plus"></i> 立即填寫個人名片</button>
+        </div>
+      `}
+    `;
+  }
+}
+
+function enterMyCardEditMode() {
+  const myCard = getMyCardData();
+  renderMyCardModal(myCard, true);
+}
+
+function cancelMyCardEdit() {
+  const myCard = getMyCardData();
+  renderMyCardModal(myCard, false);
+}
+
+function saveMyCardForm() {
+  const nameVal = document.getElementById('my-name').value.trim();
+  if (!nameVal) {
+    alert('請填入您的姓名！');
+    return;
+  }
+  
+  const myCardObj = {
+    name: nameVal,
+    title: document.getElementById('my-title').value.trim(),
+    org: document.getElementById('my-org').value.trim(),
+    dept: document.getElementById('my-dept').value.trim(),
+    theme: document.getElementById('my-theme').value,
+    phone: document.getElementById('my-phone').value.trim(),
+    mobile: document.getElementById('my-mobile').value.trim(),
+    email: document.getElementById('my-email').value.trim(),
+    website: document.getElementById('my-website').value.trim(),
+    zip: document.getElementById('my-zip').value.trim(),
+    addr: document.getElementById('my-addr').value.trim(),
+    id: 'user_personal_card'
+  };
+  
+  saveMyCardData(myCardObj);
+  showToast('✓ 個人名片設定已儲存！');
+  renderMyCardModal(myCardObj, false);
+}
+
+function downloadMyVcard() {
+  const myCard = getMyCardData();
+  const vcfString = cardToVcfString(myCard);
+  const blob = new Blob(['\ufeff' + vcfString], { type: 'text/vcard;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `我的電子名片_${myCard.name}.vcf`;
+  a.click();
+  showToast('個人 vCard 匯出成功！');
+}
+
+function getMyCardPlainText() {
+  const myCard = getMyCardData();
+  return `您好！這是我的電子聯絡名片：
+姓名：${myCard.name}
+${myCard.org ? `公司：${myCard.org}` : ''}
+${myCard.title ? `職稱：${myCard.title}` : ''}
+${myCard.mobile ? `手機：${myCard.mobile}` : ''}
+${myCard.phone ? `電話：${myCard.phone}` : ''}
+${myCard.email ? `Email：${myCard.email}` : ''}
+${myCard.website ? `網站：${myCard.website}` : ''}`;
+}
+
+function copyMyCardPlainText() {
+  const text = getMyCardPlainText();
+  copyToClipboard(text, '個人名片文字介紹已複製到剪貼簿，可直接貼上至 LINE 或 LINE 群組！');
+}
+
+function shareMyCardToSocial(platform) {
+  const myCard = getMyCardData();
+  const text = getMyCardPlainText();
+  
+  if (platform === 'whatsapp') {
+    const url = `https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`;
+    window.open(url, '_blank');
+  }
+}
+
+// ============================================================================
+// 重複偵測與標籤/群組管理
+// ============================================================================
+function normField(s) { return (s || '').trim().toLowerCase().replace(/[-\s]/g, ''); }
+
+function detectAllDuplicateGroups() {
+  const groups = [];
+  const handledIds = new Set();
+  
+  cardsList.forEach(c => {
+    if (handledIds.has(c.id)) return;
+    const matches = cardsList.filter(d => {
+      if (d.id === c.id) return false;
+      const sameName = normField(c.name) && normField(d.name) && normField(c.name) === normField(d.name);
+      const sameEmail = normField(c.email) && normField(d.email) && normField(c.email) === normField(d.email);
+      const sameMobile = normField(c.mobile) && normField(d.mobile) && normField(c.mobile) === normField(d.mobile);
+      return sameName || sameEmail || sameMobile;
+    });
+    
+    if (matches.length > 0) {
+      const g = [c, ...matches];
+      g.forEach(x => handledIds.add(x.id));
+      groups.push(g);
+    }
+  });
+  return groups;
+}
+
+function detectAllDuplicateIds() {
+  const list = detectAllDuplicateGroups();
+  const ids = new Set();
+  list.forEach(gr => gr.forEach(c => ids.add(c.id)));
+  return ids;
+}
+
+function renderDupsTab() {
+  const groups = detectAllDuplicateGroups();
+  const content = document.getElementById('dup-content');
+  
+  if (groups.length === 0) {
+    content.innerHTML = `<div class="empty-state">
+      <i class="ti ti-circle-check" style="color:var(--color-green);"></i>
+      <p>太棒了！您的名片庫非常整潔，目前沒有發現任何疑似重複的資料。</p>
+    </div>`;
+    return;
+  }
+  
+  content.innerHTML = groups.map((g, index) => `
+    <div class="dup-group">
+      <div class="dup-group-title"><i class="ti ti-copy"></i> 第 ${index + 1} 組：疑似重複聯絡人 (${g[0].name})</div>
+      ${g.map(c => `
+        <div class="dup-card-item">
+          <div style="min-width:0; flex:1;">
+            <div style="font-size:13px; font-weight:600;">${c.name || '—'}</div>
+            <div style="font-size:11px; color:var(--text-secondary); margin-top:2px;">
+              ${c.org || '無公司'} · ${c.title || '無職稱'} | 手機: ${c.mobile || '無'} | Email: ${c.email || '無'}
+            </div>
+          </div>
+          <button class="btn btn-red" style="padding:4px 8px; font-size:11px;" onclick="deleteDupCard('${c.id}')">刪除此張</button>
+        </div>
+      `).join('')}
+    </div>
+  `).join('');
+}
+
+async function deleteDupCard(id) {
+  if (confirm('確定要刪除這張重複的名片嗎？此動作將無法還原。')) {
+    await dbDeleteCard(id);
+    cardsList = cardsList.filter(x => x.id !== id);
+    if (selectedCardId === id) closeDetailPanel();
+    updateBadgesOnly();
+    renderDupsTab();
+    renderCardsGrid();
+    renderDashboard();
+  }
+}
+
+function updateBadgesOnly() {
+  const processedCount = cardsList.filter(c => c.processed).length;
+  const procBadge = document.getElementById('proc-badge');
+  procBadge.textContent = '✓ 已處理 ' + processedCount;
+  procBadge.style.display = processedCount ? 'inline-block' : 'none';
+  
+  const dups = detectAllDuplicateGroups();
+  const dupBadge = document.getElementById('dup-badge');
+  dupBadge.textContent = '⚠ 重複 ' + dups.length + ' 組';
+  dupBadge.style.display = dups.length ? 'inline-block' : 'none';
+  
+  const tabDups = document.getElementById('tab-dups');
+  tabDups.innerHTML = `<i class="ti ti-copy"></i> 重複偵測${dups.length ? ' (' + dups.length + ')' : ''}`;
+  document.getElementById('count-badge').textContent = cardsList.length + ' 張名片';
+}
+
+// ============================================================================
+// 手動表單、新增與編輯 Modal 控制
+// ============================================================================
+function openFormModal(prepopulate = null) {
+  const modalBg = document.getElementById('form-modal-bg');
+  modalBg.classList.add('open');
+  
+  const fields = ['name','title','org','dept','phone','phoneExt','mobile','fax','email','website','zip','addr','note'];
+  const groupSelect = document.getElementById('f-group');
+  const customGroups = getCustomGroups();
+  groupSelect.innerHTML = customGroups.map(g => `<option value="${g}">${g}</option>`).join('');
+  
+  if (prepopulate) {
+    document.getElementById('modal-title-text').innerHTML = '<i class="ti ti-edit" style="color:var(--accent)"></i> 編輯名片資訊';
+    fields.forEach(f => {
+      const el = document.getElementById('f-' + f);
+      if (el) el.value = prepopulate[f] || '';
+    });
+    groupSelect.value = prepopulate.group || '其他';
+    document.getElementById('f-name').dataset.editId = prepopulate.id;
+    currentFormModalTags = prepopulate.tags ? [...prepopulate.tags] : [];
+  } else {
+    document.getElementById('modal-title-text').innerHTML = '<i class="ti ti-plus" style="color:var(--accent)"></i> 手動新增名片';
+    fields.forEach(f => {
+      const el = document.getElementById('f-' + f);
+      if (el) el.value = '';
+    });
+    groupSelect.value = '其他';
+    delete document.getElementById('f-name').dataset.editId;
+    currentFormModalTags = [];
+  }
+  currentSingleScanImageBase64 = null;
+  refreshModalTagGrid();
+}
+
+function refreshModalTagGrid() {
+  const grid = document.getElementById('modal-tag-grid');
+  const customTags = getCustomTags();
+  
+  grid.innerHTML = customTags.map(t => {
+    const isActive = currentFormModalTags.includes(t);
+    return `<button class="tag-filter-chip ${isActive ? 'active' : ''}" onclick="toggleModalTag('${t}', event)">${isActive ? '✓ ' : ''}${t}</button>`;
+  }).join('');
+}
+
+function toggleModalTag(tag, e) {
+  if (e) e.preventDefault();
+  const index = currentFormModalTags.indexOf(tag);
+  if (index !== -1) {
+    currentFormModalTags.splice(index, 1);
+  } else {
+    currentFormModalTags.push(tag);
+  }
+  refreshModalTagGrid();
+}
+
+function closeFormModal() {
+  document.getElementById('form-modal-bg').classList.remove('open');
+}
+
+function closeFormModalBg(e) {
+  if (e.target === document.getElementById('form-modal-bg')) closeFormModal();
+}
+
+function editCard(id) {
+  const c = cardsList.find(x => x.id === id);
+  if (c) openFormModal(c);
+}
+
+async function saveCardForm() {
+  const nameEl = document.getElementById('f-name');
+  const editId = nameEl.dataset.editId || '';
+  const id = editId || 'card_' + crypto.randomUUID();
+  
+  const cardObj = {
+    id: id,
+    processed: true,
+    createdAt: editId ? (cardsList.find(x=>x.id===editId)?.createdAt || new Date().toLocaleDateString('zh-TW')) : new Date().toLocaleDateString('zh-TW'),
+    name: nameEl.value.trim(),
+    title: document.getElementById('f-title').value.trim(),
+    org: document.getElementById('f-org').value.trim(),
+    dept: document.getElementById('f-dept').value.trim(),
+    phone: document.getElementById('f-phone').value.trim(),
+    phoneExt: document.getElementById('f-phoneExt').value.trim(),
+    mobile: document.getElementById('f-mobile').value.trim(),
+    fax: document.getElementById('f-fax').value.trim(),
+    email: document.getElementById('f-email').value.trim(),
+    website: document.getElementById('f-website').value.trim(),
+    zip: document.getElementById('f-zip').value.trim(),
+    addr: document.getElementById('f-addr').value.trim(),
+    note: document.getElementById('f-note').value.trim(),
+    group: document.getElementById('f-group').value,
+    tags: [...currentFormModalTags],
+    theme: editId ? (cardsList.find(x=>x.id===editId)?.theme || 'indigo') : 'indigo'
+  };
+  
+  if (!cardObj.name) {
+    alert('請至少填入姓名！');
+    return;
+  }
+  
+  await dbSaveCard(cardObj, currentSingleScanImageBase64);
+  
+  if (editId) {
+    const idx = cardsList.findIndex(x => x.id === editId);
+    if (idx !== -1) cardsList[idx] = cardObj;
+  } else {
+    cardsList.unshift(cardObj);
+  }
+  
+  closeFormModal();
+  renderSidebarFilters();
+  renderCardsGrid();
+  renderDashboard();
+  
+  if (selectedCardId === id) selectCard(id);
+  showToast(editId ? '名片欄位更新成功' : '成功手動新增名片');
+}
+
+async function deleteCard(id) {
+  if (confirm('確定要永久刪除此名片嗎？此動作將無法還原。')) {
+    await dbDeleteCard(id);
+    cardsList = cardsList.filter(x => x.id !== id);
+    if (selectedCardId === id) closeDetailPanel();
+    renderSidebarFilters();
+    renderCardsGrid();
+    renderDashboard();
+    showToast('名片已刪除');
+  }
+}
+
+// ============================================================================
+// 批次掃描邏輯與 Google Drive 對接
+// ============================================================================
+function handleBatchSelect(event) {
+  addFilesToBatchQueue([...event.target.files]);
+  event.target.value = '';
+}
+
+function handleBatchDrop(event) {
+  event.preventDefault();
+  document.getElementById('drop-zone').classList.remove('drag');
+  const files = [...event.dataTransfer.files].filter(f => f.type.startsWith('image/'));
+  if (files.length > 0) addFilesToBatchQueue(files);
+}
+
+function addFilesToBatchQueue(files) {
+  files.forEach(f => {
+    scanQueue.push({ id: 'queue_' + crypto.randomUUID(), file: f, status: 'wait' });
+  });
+  renderBatchQueueList();
+}
+
+function renderBatchQueueList() {
+  const list = document.getElementById('batch-queue-list');
+  if (scanQueue.length === 0) {
+    list.innerHTML = '';
+    return;
+  }
+  
+  list.innerHTML = scanQueue.map(q => {
+    let statusText = '等待辨識中';
+    let statusClass = 'color:var(--text-tertiary)';
+    if (q.status === 'scanning') { statusText = '⚡ Gemini AI 智慧分析分割中...'; statusClass = 'color:var(--accent); font-weight:bold;'; }
+    if (q.status === 'done') { statusText = '✓ 辨識完成並已匯入名片庫'; statusClass = 'color:var(--color-green);'; }
+    if (q.status === 'error') { statusText = `✖ 辨識失敗 (${q.errInfo || '未知原因'})`; statusClass = 'color:var(--color-red);'; }
+    
+    return `
+      <div class="queue-item">
+        <div class="qi-title-row">
+          <div class="qi-name">${q.file.name || '相簿雲端圖片'}</div>
+          <div class="qi-status-text" style="${statusClass}">
+            <i class="ti ti-loader"></i> ${statusText}
+          </div>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+async function startBatchProcessing() {
+  if (isScanning) return;
+  const waiting = scanQueue.filter(q => q.status === 'wait');
+  if (waiting.length === 0) {
+    alert('佇列中沒有等待辨識的照片喔！');
+    return;
+  }
+  
+  isScanning = true;
+  const pb = document.getElementById('batch-progress-bar');
+  const pf = document.getElementById('batch-progress-fill');
+  pb.classList.add('show');
+  
+  for (let i = 0; i < waiting.length; i++) {
+    const item = waiting[i];
+    item.status = 'scanning';
+    renderBatchQueueList();
+    
+    try {
+      const b64 = await processAndResizeImage(item.file);
+      const parsedList = await callGeminiAI(b64);
+      
+      parsedList.forEach(p => {
+        // 🎯 AI 自動預分類
+        const newCard = {
+          ...p,
+          id: 'card_' + crypto.randomUUID(),
+          processed: true,
+          createdAt: new Date().toLocaleDateString('zh-TW'),
+          group: p.group || '其他',
+          tags: parsedList.length > 1 ? ['多張合照導入'] : [],
+          theme: 'indigo'
+        };
+        dbSaveCard(newCard, b64);
+        cardsList.unshift(newCard);
+      });
+      
+      item.status = 'done';
+      
+      if (item.driveId && gdriveToken && driveFolderCache.parsed) {
+        await moveDriveFile(item.driveId, driveFolderCache.unparsed, driveFolderCache.parsed);
+      }
+    } catch(err) {
+      item.status = 'error';
+      item.errInfo = err.message === 'API_KEY_EMPTY' ? '請先填入 API Key' : err.message;
+    }
+    
+    pf.style.width = `${((i + 1) / waiting.length) * 100}%`;
+    renderBatchQueueList();
+    renderSidebarFilters();
+    renderCardsGrid();
+    renderDashboard();
+    
+    await new Promise(r => setTimeout(r, 1000));
+  }
+  
+  isScanning = false;
+  pb.classList.remove('show');
+  pf.style.width = '0%';
+  showToast('批次名片處理完成！');
+}
+
+function clearBatchQueue() {
+  if (isScanning) return;
+  scanQueue = [];
+  renderBatchQueueList();
+}
+
+// ============================================================================
+// 設定分頁管理（API儲存、自訂標籤與群組）
+// ============================================================================
+function saveGeminiSettings() {
+  const key = document.getElementById('settings-api-key').value.trim();
+  const model = document.getElementById('settings-gemini-model').value;
+  
+  if (!key) {
+    alert('請填入 Gemini API 金鑰！');
+    return;
+  }
+  
+  localStorage.setItem('bizcard_gemini_api_key', key);
+  localStorage.setItem('bizcard_gemini_model', model);
+  document.getElementById('settings-api-key-status').innerHTML = '<span style="color:var(--color-green);">✓ 設定儲存成功！</span>';
+  document.getElementById('api-notice-batch').style.display = 'none';
+  showToast('API Key 設定已更新儲存');
+}
+
+function clearGeminiKey() {
+  localStorage.removeItem('bizcard_gemini_api_key');
+  document.getElementById('settings-api-key').value = '';
+  document.getElementById('settings-api-key-status').innerHTML = '<span style="color:var(--color-red);">已清除金鑰</span>';
+  document.getElementById('api-notice-batch').style.display = 'flex';
+  showToast('已清除 API Key');
+}
+
+function renderSettingsBadgeManager() {
+  const customGroups = getCustomGroups();
+  const groupMgr = document.getElementById('badge-manager-groups');
+  groupMgr.innerHTML = customGroups.map(g => `
+    <span class="manage-badge-chip">
+      ${g}
+      <button onclick="deleteCustomGroup('${g}')" title="刪除群組">&times;</button>
+    </span>
+  `).join('');
+  
+  const customTags = getCustomTags();
+  const tagMgr = document.getElementById('badge-manager-tags');
+  tagMgr.innerHTML = customTags.map(t => `
+    <span class="manage-badge-chip">
+      ${t}
+      <button onclick="deleteCustomTag('${t}')" title="刪除標籤">&times;</button>
+    </span>
+  `).join('');
+}
+
+function addCustomGroup() {
+  const input = document.getElementById('new-group-input');
+  const gName = input.value.trim();
+  if (!gName) return;
+  
+  const groups = getCustomGroups();
+  if (groups.includes(gName)) {
+    alert('此群組已存在！');
+    return;
+  }
+  
+  groups.push(gName);
+  localStorage.setItem('bizcard_custom_groups', JSON.stringify(groups));
+  input.value = '';
+  renderSettingsBadgeManager();
+  renderSidebarFilters();
+  showToast(`已新增群組：${gName}`);
+}
+
+function deleteCustomGroup(groupName) {
+  let groups = getCustomGroups();
+  groups = groups.filter(g => g !== groupName);
+  localStorage.setItem('bizcard_custom_groups', JSON.stringify(groups));
+  renderSettingsBadgeManager();
+  renderSidebarFilters();
+  showToast(`已刪除群組：${groupName}`);
+}
+
+function addCustomTag() {
+  const input = document.getElementById('new-tag-input');
+  const tName = input.value.trim();
+  if (!tName) return;
+  
+  const tags = getCustomTags();
+  if (tags.includes(tName)) {
+    alert('此標籤已存在！');
+    return;
+  }
+  
+  tags.push(tName);
+  localStorage.setItem('bizcard_custom_tags', JSON.stringify(tags));
+  input.value = '';
+  renderSettingsBadgeManager();
+  renderSidebarFilters();
+  showToast(`已新增標籤：${tName}`);
+}
+
+function deleteCustomTag(tagName) {
+  let tags = getCustomTags();
+  tags = tags.filter(t => t !== tagName);
+  localStorage.setItem('bizcard_custom_tags', JSON.stringify(tags));
+  renderSettingsBadgeManager();
+  renderSidebarFilters();
+  showToast(`已刪除標籤：${tagName}`);
+}
+
+async function clearAllSystemData() {
+  if (confirm('重要警告！！！\n確定要永久清空資料庫內所有的名片與名片圖片嗎？\n清空後將無法復原！')) {
+    if (confirm('請再次確認是否真的要清空所有資料？')) {
+      const all = await dbGetAllCards();
+      for (const c of all) {
+        await dbDeleteCard(c.id);
+      }
+      cardsList = [];
+      closeDetailPanel();
+      renderSidebarFilters();
+      renderCardsGrid();
+      renderDashboard();
+      showToast('資料庫已完全清空');
+    }
+  }
+}
+
+// ============================================================================
+// 主題切換 (深色模式/淺色模式)
+// ============================================================================
+function toggleTheme() {
+  const html = document.documentElement;
+  const current = html.getAttribute('data-theme');
+  const isDark = current === 'dark';
+  const newTheme = isDark ? 'light' : 'dark';
+  
+  html.setAttribute('data-theme', newTheme);
+  localStorage.setItem('bizcard_theme', newTheme);
+  
+  const btnIcon = document.querySelector('#theme-toggle-btn i');
+  btnIcon.className = isDark ? 'ti ti-moon' : 'ti ti-sun';
+}
+
+function initTheme() {
+  const saved = localStorage.getItem('bizcard_theme') || 'light';
+  document.documentElement.setAttribute('data-theme', saved);
+  const btnIcon = document.querySelector('#theme-toggle-btn i');
+  if (btnIcon) {
+    btnIcon.className = saved === 'dark' ? 'ti ti-sun' : 'ti ti-moon';
+  }
+}
+
+// ============================================================================
+// 輕量化輔助函數
+// ============================================================================
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+function copyToClipboard(text, successMsg = '已複製到剪貼簿！') {
+  navigator.clipboard.writeText(text).then(() => {
+    showToast(successMsg);
+  }).catch(err => {
+    console.error('複製失敗：', err);
+  });
+}
+
+// 系統啟動進入點
+window.addEventListener('DOMContentLoaded', () => {
+  initTheme();
+  systemLoadAllData().catch(err => {
+    console.log('系統載入出錯：', err);
+    showToast('系統載入資料庫出錯，請刷新重試。');
+  });
+  
+  // 註冊 Service Worker 以支援 PWA 手機安裝與離線運作
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('./sw.js')
+      .then(reg => console.log('[PWA] Service Worker 註冊成功！'))
+      .catch(err => console.error('[PWA] Service Worker 註冊失敗：', err));
+  }
+});
+</script>
+</body>
+</html>
