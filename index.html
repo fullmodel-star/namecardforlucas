@@ -1545,7 +1545,7 @@ body::after {
           </p>
         </div>
         <div style="display:flex; gap:8px;">
-          <button class="btn btn-blue" onclick="initSyncFolders()"><i class="ti ti-folder-plus"></i> 1. 初始化相簿資料夾</button>
+          <button class="btn btn-blue" onclick="initSyncFolders()"><i class="ti ti-folder-plus"></i> 1. 初始化雲端資料夾</button>
           <button class="btn btn-green" onclick="importDriveImages()"><i class="ti ti-refresh"></i> 2. 智慧同步導入</button>
         </div>
       </div>
@@ -3805,7 +3805,7 @@ function renderBatchQueueList() {
     return `
       <div class="queue-item">
         <div class="qi-title-row">
-          <div class="qi-name">${q.file.name || '相簿雲端圖片'}</div>
+          <div class="qi-name">${q.file.name || '雲端硬碟圖片'}</div>
           <div class="qi-status-text" style="${statusClass}">
             <i class="${statusIcon}"></i> ${statusText}
           </div>
