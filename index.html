@@ -1596,6 +1596,16 @@ body::after {
           <button class="btn" onclick="testGeminiConnection()"><i class="ti ti-plug"></i> 測試連線</button>
           <button class="btn btn-red" onclick="clearGeminiKey()" title="清除金鑰"><i class="ti ti-trash"></i></button>
         </div>
+        <div class="settings-input-group" style="margin-top: 10px; align-items: center; gap: 8px;">
+          <label for="settings-gemini-delay" style="font-size: 12px; color: var(--text-secondary);">批次辨識間隔：</label>
+          <select id="settings-gemini-delay" style="max-width:180px; padding: 6px 10px;">
+            <option value="1">1 秒 (付費版/無限制)</option>
+            <option value="5" selected>5 秒 (免費版 15 RPM)</option>
+            <option value="10">10 秒 (保守防線)</option>
+            <option value="30">30 秒 (免費 Pro 版 2 RPM)</option>
+          </select>
+          <span style="font-size: 11px; color: var(--text-tertiary);">免費版建議設定為 5 秒以上，以避免觸發 15 RPM 限制。</span>
+        </div>
         <div id="settings-api-key-status" style="font-size:12px; margin-top:6px; font-weight:500;"></div>
       </div>
 
@@ -1854,6 +1864,7 @@ function getCustomTags() {
 
 function getGeminiApiKey() { return localStorage.getItem('bizcard_gemini_api_key') || ''; }
 function getGeminiModel() { return localStorage.getItem('bizcard_gemini_model') || 'gemini-2.5-flash'; }
+function getGeminiDelay() { return parseInt(localStorage.getItem('bizcard_gemini_delay') || '5', 10); }
 
 // ============================================================================
 // [1] 資料庫管理模組 (IndexedDB)
@@ -2137,7 +2148,12 @@ async function importDriveImages() {
 
 async function moveDriveFile(fileId, oldParent, newParent) {
   try {
-    await fetchDrive(`https://www.googleapis.com/drive/v3/files/${fileId}?addParents=${newParent}&removeParents=${oldParent}`, { method: 'PATCH' });
+    await fetchDrive(`https://www.googleapis.com/drive/v3/files/${fileId}?addParents=${newParent}&removeParents=${oldParent}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: '{}'
+    });
+    console.log(`[Google Drive] 檔案 ${fileId} 已成功移動歸檔`);
   } catch(e) {
     console.error('[Google Drive] 雲端已辨識照片移動歸檔失敗', e);
   }
@@ -2377,6 +2393,10 @@ async function systemLoadAllData() {
   }
   
   document.getElementById('settings-gemini-model').value = getGeminiModel();
+  
+  const delay = localStorage.getItem('bizcard_gemini_delay') || '5';
+  const delayEl = document.getElementById('settings-gemini-delay');
+  if (delayEl) delayEl.value = delay;
   
   initGoogleSignIn();
   renderSidebarFilters();
@@ -3498,16 +3518,18 @@ function renderBatchQueueList() {
   list.innerHTML = scanQueue.map(q => {
     let statusText = '等待辨識中';
     let statusClass = 'color:var(--text-tertiary)';
+    let statusIcon = 'ti ti-loader';
     if (q.status === 'scanning') { statusText = '⚡ Gemini AI 智慧分析分割中...'; statusClass = 'color:var(--accent); font-weight:bold;'; }
-    if (q.status === 'done') { statusText = '✓ 辨識完成並已匯入名片庫'; statusClass = 'color:var(--color-green);'; }
-    if (q.status === 'error') { statusText = `✖ 辨識失敗 (${q.errInfo || '未知原因'})`; statusClass = 'color:var(--color-red);'; }
+    if (q.status === 'cooldown') { statusText = `⏳ 頻率限制保護中，等待下一張 (剩餘 ${q.cooldownSec || 0} 秒)...`; statusClass = 'color:var(--color-amber); font-weight:bold;'; statusIcon = 'ti ti-clock'; }
+    if (q.status === 'done') { statusText = '✓ 辨識完成並已匯入名片庫'; statusClass = 'color:var(--color-green);'; statusIcon = 'ti ti-circle-check'; }
+    if (q.status === 'error') { statusText = `✖ 辨識失敗 (${q.errInfo || '未知原因'})`; statusClass = 'color:var(--color-red);'; statusIcon = 'ti ti-circle-x'; }
     
     return `
       <div class="queue-item">
         <div class="qi-title-row">
           <div class="qi-name">${q.file.name || '相簿雲端圖片'}</div>
           <div class="qi-status-text" style="${statusClass}">
-            <i class="ti ti-loader"></i> ${statusText}
+            <i class="${statusIcon}"></i> ${statusText}
           </div>
         </div>
       </div>
@@ -3527,6 +3549,8 @@ async function startBatchProcessing() {
   const pb = document.getElementById('batch-progress-bar');
   const pf = document.getElementById('batch-progress-fill');
   pb.classList.add('show');
+  
+  const delaySec = getGeminiDelay();
   
   for (let i = 0; i < waiting.length; i++) {
     const item = waiting[i];
@@ -3568,7 +3592,23 @@ async function startBatchProcessing() {
     renderCardsGrid();
     renderDashboard();
     
-    await new Promise(r => setTimeout(r, 1000));
+    // 如果不是最後一個項目，且有設定延遲，則進入冷卻延遲
+    if (i < waiting.length - 1 && delaySec > 0) {
+      const nextItem = waiting[i + 1];
+      const originalStatus = nextItem.status;
+      nextItem.status = 'cooldown';
+      renderBatchQueueList();
+      
+      for (let sec = delaySec; sec > 0; sec--) {
+        if (!isScanning) break;
+        nextItem.cooldownSec = sec;
+        renderBatchQueueList();
+        await new Promise(r => setTimeout(r, 1000));
+      }
+      
+      nextItem.status = originalStatus;
+      delete nextItem.cooldownSec;
+    }
   }
   
   isScanning = false;
@@ -3589,6 +3629,7 @@ function clearBatchQueue() {
 function saveGeminiSettings() {
   const key = document.getElementById('settings-api-key').value.trim();
   const model = document.getElementById('settings-gemini-model').value;
+  const delay = document.getElementById('settings-gemini-delay').value;
   
   if (!key) {
     alert('請填入 Gemini API 金鑰！');
@@ -3597,9 +3638,10 @@ function saveGeminiSettings() {
   
   localStorage.setItem('bizcard_gemini_api_key', key);
   localStorage.setItem('bizcard_gemini_model', model);
+  localStorage.setItem('bizcard_gemini_delay', delay);
   document.getElementById('settings-api-key-status').innerHTML = '<span style="color:var(--color-green);">✓ 設定儲存成功！</span>';
   document.getElementById('api-notice-batch').style.display = 'none';
-  showToast('API Key 設定已更新儲存');
+  showToast('API Key 與延遲設定已更新儲存');
 }
 
 function clearGeminiKey() {
