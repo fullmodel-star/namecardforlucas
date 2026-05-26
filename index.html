@@ -1538,10 +1538,10 @@ body::after {
       <div style="background:var(--accent-light); border: 1px solid var(--border-color-glow); padding: 1.25rem; border-radius: var(--radius-lg); margin-bottom: 1.25rem; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px;">
         <div style="flex:1; min-width:280px;">
           <h3 style="font-size:14px; font-weight:700; color:var(--text-primary); display:flex; align-items:center; gap:6px;">
-            <i class="ti ti-brand-google-drive" style="color:var(--accent)"></i> 手機相簿雲端對接同步
+            <i class="ti ti-brand-google-drive" style="color:var(--accent)"></i> Google 雲端硬碟同步
           </h3>
           <p style="font-size:12px; color:var(--text-secondary); margin-top:2px;">
-            在手機上將名片拍照，上傳至 Google 雲端相簿的「未辨識」資料夾，即可在此一鍵導入！
+            將名片拍照或存檔，上傳至 Google 雲端硬碟的「名片管理系統_雲端同步/名片管理系統_未辨識」資料夾，即可在此一鍵同步導入！
           </p>
         </div>
         <div style="display:flex; gap:8px;">
@@ -1872,7 +1872,7 @@ function getGeminiDelay() { return parseInt(localStorage.getItem('bizcard_gemini
 // [1] 資料庫管理模組 (IndexedDB)
 // ============================================================================
 const DB_NAME = 'BizCardDB';
-const DB_VERSION = 1;
+const DB_VERSION = 2;
 let db = null;
 
 function dbInit() {
@@ -1892,6 +1892,10 @@ function dbInit() {
       
       if (!database.objectStoreNames.contains('images')) {
         database.createObjectStore('images', { keyPath: 'id' });
+      }
+      
+      if (!database.objectStoreNames.contains('scan_queue')) {
+        database.createObjectStore('scan_queue', { keyPath: 'id' });
       }
       console.log('[IndexedDB] 資料表結構初始化/升級成功！');
     };
@@ -1966,6 +1970,48 @@ async function dbDeleteCard(id) {
   });
 }
 
+async function dbSaveQueueItem(item) {
+  return new Promise((resolve, reject) => {
+    if (!db) return reject(new Error('資料庫未連線'));
+    const transaction = db.transaction(['scan_queue'], 'readwrite');
+    transaction.objectStore('scan_queue').put(item);
+    transaction.oncomplete = () => resolve();
+    transaction.onerror = () => reject(transaction.error);
+  });
+}
+
+async function dbDeleteQueueItem(id) {
+  return new Promise((resolve, reject) => {
+    if (!db) return reject(new Error('資料庫未連線'));
+    const transaction = db.transaction(['scan_queue'], 'readwrite');
+    transaction.objectStore('scan_queue').delete(id);
+    transaction.oncomplete = () => resolve();
+    transaction.onerror = () => reject(transaction.error);
+  });
+}
+
+async function dbGetAllQueueItems() {
+  return new Promise((resolve, reject) => {
+    if (!db) return resolve([]);
+    const transaction = db.transaction(['scan_queue'], 'readonly');
+    const store = transaction.objectStore('scan_queue');
+    const request = store.getAll();
+    request.onsuccess = () => resolve(request.result || []);
+    request.onerror = () => reject(request.error);
+  });
+}
+
+async function dbClearQueue() {
+  return new Promise((resolve, reject) => {
+    if (!db) return resolve();
+    const transaction = db.transaction(['scan_queue'], 'readwrite');
+    const store = transaction.objectStore('scan_queue');
+    const request = store.clear();
+    request.onsuccess = () => resolve();
+    request.onerror = () => reject(request.error);
+  });
+}
+
 async function dbMigrateFromLocalStorage() {
   const oldKey = 'bizcard_standalone_v1';
   const oldData = localStorage.getItem(oldKey);
@@ -2019,7 +2065,7 @@ async function ensureGoogleAuth() {
   return new Promise((resolve, reject) => {
     const client = google.accounts.oauth2.initTokenClient({
       client_id: GDRIVE_CLIENT_ID,
-      scope: 'https://www.googleapis.com/auth/drive.file https://www.googleapis.com/auth/drive.readonly https://www.googleapis.com/auth/contacts',
+      scope: 'https://www.googleapis.com/auth/drive https://www.googleapis.com/auth/contacts',
       callback: (resp) => {
         if (resp.error) {
           showToast('Google 雲端帳戶授權失敗');
@@ -2090,7 +2136,7 @@ async function findOrCreateFolder(name, parentId = null) {
 async function initSyncFolders() {
   try {
     await ensureGoogleAuth();
-    showToast('正在建立 Google 雲端相簿目錄...');
+    showToast('正在建立 Google 雲端硬碟同步目錄...');
     const rootId = await findOrCreateFolder('名片管理系統_雲端同步');
     driveFolderCache.root = rootId;
     driveFolderCache.unparsed = await findOrCreateFolder('名片管理系統_未辨識', rootId);
@@ -2132,12 +2178,14 @@ async function importDriveImages() {
       const blob = await imgRes.blob();
       blob.name = file.name;
       
-      scanQueue.push({
+      const queueItem = {
         id: 'queue_' + crypto.randomUUID(),
         file: blob,
         status: 'wait',
         driveId: file.id
-      });
+      };
+      scanQueue.push(queueItem);
+      await dbSaveQueueItem(queueItem);
       importedCount++;
     }
     
@@ -2579,6 +2627,20 @@ async function systemLoadAllData() {
   const delay = localStorage.getItem('bizcard_gemini_delay') || '5';
   const delayEl = document.getElementById('settings-gemini-delay');
   if (delayEl) delayEl.value = delay;
+  
+  // 載入暫存的批次佇列
+  try {
+    const savedQueue = await dbGetAllQueueItems();
+    scanQueue = savedQueue.map(q => {
+      // 若上次因為關網頁而中斷，重置狀態為等待辨識
+      if (q.status === 'scanning' || q.status === 'cooldown') {
+        q.status = 'wait';
+      }
+      return q;
+    });
+  } catch(e) {
+    console.error('[IndexedDB] 載入暫存佇列失敗：', e);
+  }
   
   initGoogleSignIn();
   renderSidebarFilters();
@@ -3715,10 +3777,12 @@ function handleBatchDrop(event) {
   if (files.length > 0) addFilesToBatchQueue(files);
 }
 
-function addFilesToBatchQueue(files) {
-  files.forEach(f => {
-    scanQueue.push({ id: 'queue_' + crypto.randomUUID(), file: f, status: 'wait' });
-  });
+async function addFilesToBatchQueue(files) {
+  for (const f of files) {
+    const item = { id: 'queue_' + crypto.randomUUID(), file: f, status: 'wait' };
+    scanQueue.push(item);
+    await dbSaveQueueItem(item);
+  }
   renderBatchQueueList();
 }
 
@@ -3764,11 +3828,25 @@ async function startBatchProcessing() {
   const pf = document.getElementById('batch-progress-fill');
   pb.classList.add('show');
   
+  // 1. 自動修復解析：如果有雲端硬碟匯入的檔案且 cache 為空，重新載入 ID
+  const hasDriveItems = waiting.some(item => item.driveId);
+  if (hasDriveItems && gdriveToken && !driveFolderCache.parsed) {
+    try {
+      const rootId = await findOrCreateFolder('名片管理系統_雲端同步');
+      driveFolderCache.root = rootId;
+      driveFolderCache.unparsed = await findOrCreateFolder('名片管理系統_未辨識', rootId);
+      driveFolderCache.parsed = await findOrCreateFolder('名片管理系統_已辨識', rootId);
+    } catch(err) {
+      console.error('[Google Drive] 自動載入雲端資料夾快取失敗：', err);
+    }
+  }
+  
   const delaySec = getGeminiDelay();
   
   for (let i = 0; i < waiting.length; i++) {
     const item = waiting[i];
     item.status = 'scanning';
+    await dbSaveQueueItem(item);
     renderBatchQueueList();
     
     let success = false;
@@ -3800,6 +3878,7 @@ async function startBatchProcessing() {
         
         item.status = 'done';
         success = true;
+        await dbDeleteQueueItem(item.id); // 辨識成功，從佇列資料表移除以省容量
         
         if (item.driveId && gdriveToken && driveFolderCache.parsed) {
           await moveDriveFile(item.driveId, driveFolderCache.unparsed, driveFolderCache.parsed);
@@ -3820,10 +3899,12 @@ async function startBatchProcessing() {
           item.status = 'scanning';
           delete item.cooldownSec;
           delete item.errInfo;
+          await dbSaveQueueItem(item);
           renderBatchQueueList();
         } else {
           item.status = 'error';
           item.errInfo = err.message === 'API_KEY_EMPTY' ? '請先填入 API Key' : err.message;
+          await dbSaveQueueItem(item); // 儲存失敗狀態與錯誤訊息
           break; // 跳出重試迴圈
         }
       }
@@ -3860,9 +3941,10 @@ async function startBatchProcessing() {
   showToast('批次名片處理完成！');
 }
 
-function clearBatchQueue() {
+async function clearBatchQueue() {
   if (isScanning) return;
   scanQueue = [];
+  await dbClearQueue(); // 一併清空資料庫佇列
   renderBatchQueueList();
 }
 
