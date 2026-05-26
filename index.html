@@ -2019,7 +2019,7 @@ async function ensureGoogleAuth() {
   return new Promise((resolve, reject) => {
     const client = google.accounts.oauth2.initTokenClient({
       client_id: GDRIVE_CLIENT_ID,
-      scope: 'https://www.googleapis.com/auth/drive.file https://www.googleapis.com/auth/drive.readonly',
+      scope: 'https://www.googleapis.com/auth/drive.file https://www.googleapis.com/auth/drive.readonly https://www.googleapis.com/auth/contacts',
       callback: (resp) => {
         if (resp.error) {
           showToast('Google 雲端帳戶授權失敗');
@@ -2027,7 +2027,7 @@ async function ensureGoogleAuth() {
         } else {
           gdriveToken = resp.access_token;
           localStorage.setItem('gdrive_token', gdriveToken);
-          const mockUser = { name: "雲端已授權用戶", email: "已連結 Google Drive" };
+          const mockUser = { name: "雲端已授權用戶", email: "已連結 Google Drive & 通訊錄" };
           localStorage.setItem('gdrive_user', JSON.stringify(mockUser));
           showGdriveLoggedIn(mockUser);
           showToast('Google 雲端帳號連結成功！');
@@ -2158,6 +2158,181 @@ async function moveDriveFile(fileId, oldParent, newParent) {
     console.log(`[Google Drive] 檔案 ${fileId} 已成功移動歸檔`);
   } catch(e) {
     console.error('[Google Drive] 雲端已辨識照片移動歸檔失敗', e);
+  }
+}
+
+// ============================================================================
+// [2.5] Google People API 同步模組
+// ============================================================================
+async function fetchContactsApi(url, options = {}) {
+  options.headers = options.headers || {};
+  options.headers['Authorization'] = `Bearer ${gdriveToken}`;
+  const res = await fetch(url, options);
+  if (!res.ok) {
+    if (res.status === 401) {
+      gdriveLogout();
+      throw new Error('Google 登入已過期，請重新登入連結！');
+    }
+    const errText = await res.text();
+    throw new Error(`Google 通訊錄操作失敗 (HTTP ${res.status}): ${errText}`);
+  }
+  return res;
+}
+
+function buildGoogleContactBody(card) {
+  const body = {};
+  body.names = [{
+    givenName: card.name || '未命名聯絡人'
+  }];
+  
+  body.phoneNumbers = [];
+  if (card.mobile) {
+    body.phoneNumbers.push({
+      value: card.mobile,
+      type: 'mobile'
+    });
+  }
+  if (card.phone) {
+    let phoneVal = card.phone;
+    if (card.phoneExt) phoneVal += ` ext ${card.phoneExt}`;
+    body.phoneNumbers.push({
+      value: phoneVal,
+      type: 'work'
+    });
+  }
+  
+  if (card.org || card.title || card.dept) {
+    body.organizations = [{
+      name: card.org || '',
+      title: card.title || '',
+      department: card.dept || '',
+      type: 'work'
+    }];
+  }
+  
+  if (card.email) {
+    body.emailAddresses = [{
+      value: card.email,
+      type: 'work'
+    }];
+  }
+  
+  if (card.website) {
+    body.urls = [{
+      value: card.website,
+      type: 'work'
+    }];
+  }
+  
+  if (card.addr) {
+    body.addresses = [{
+      streetAddress: card.addr,
+      postalCode: card.zip || '',
+      type: 'work'
+    }];
+  }
+  
+  let noteText = '';
+  if (card.group) noteText += `群組: ${card.group}\n`;
+  if (card.tags && card.tags.length > 0) noteText += `標籤: ${card.tags.map(t => `#${t}`).join(' ')}\n`;
+  if (card.note) noteText += `備註: ${card.note}`;
+  
+  if (noteText.trim()) {
+    body.biographies = [{
+      value: noteText.trim(),
+      contentType: 'TEXT_PLAIN'
+    }];
+  }
+  
+  return body;
+}
+
+async function apiCreateGoogleContact(card) {
+  const body = buildGoogleContactBody(card);
+  const res = await fetchContactsApi('https://people.googleapis.com/v1/people:createContact', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body)
+  });
+  const data = await res.json();
+  return {
+    googleContactId: data.resourceName,
+    googleContactEtag: data.etag
+  };
+}
+
+async function apiGetGoogleContactEtag(resourceName) {
+  const res = await fetchContactsApi(`https://people.googleapis.com/v1/${encodeURI(resourceName)}?personFields=metadata`);
+  const data = await res.json();
+  return data.etag;
+}
+
+async function apiUpdateGoogleContact(resourceName, card) {
+  const etag = await apiGetGoogleContactEtag(resourceName);
+  const body = buildGoogleContactBody(card);
+  body.etag = etag;
+  
+  const fields = 'names,phoneNumbers,organizations,emailAddresses,urls,addresses,biographies';
+  const res = await fetchContactsApi(`https://people.googleapis.com/v1/${encodeURI(resourceName)}:updateContact?updatePersonFields=${fields}`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body)
+  });
+  const data = await res.json();
+  return data.etag;
+}
+
+async function apiDeleteGoogleContact(resourceName) {
+  await fetchContactsApi(`https://people.googleapis.com/v1/${encodeURI(resourceName)}:deleteContact`, {
+    method: 'DELETE'
+  });
+}
+
+async function syncContactToGoogle(id) {
+  const c = cardsList.find(x => x.id === id);
+  if (!c) return;
+  
+  if (!gdriveToken) {
+    try {
+      showToast('正在初始化 Google 帳號授權...');
+      await ensureGoogleAuth();
+    } catch(err) {
+      console.error(err);
+      alert('Google 授權失敗，無法同步通訊錄！');
+      return;
+    }
+  }
+  
+  showToast(c.googleContactId ? '正在同步更新至 Google 通訊錄...' : '正在同步新建至 Google 通訊錄...');
+  
+  try {
+    if (c.googleContactId) {
+      try {
+        await apiUpdateGoogleContact(c.googleContactId, c);
+        showToast('✓ Google 通訊錄聯絡人更新成功！');
+      } catch(updateErr) {
+        if (updateErr.message.includes('404') || updateErr.message.includes('NOT_FOUND')) {
+          if (confirm('偵測到此聯絡人已在 Google 端被刪除，是否要重新建立同步？')) {
+            const res = await apiCreateGoogleContact(c);
+            c.googleContactId = res.googleContactId;
+            await dbSaveCard(c);
+            showToast('✓ 成功重新同步至 Google 通訊錄！');
+          }
+        } else {
+          throw updateErr;
+        }
+      }
+    } else {
+      const res = await apiCreateGoogleContact(c);
+      c.googleContactId = res.googleContactId;
+      await dbSaveCard(c);
+      showToast('✓ 成功同步至 Google 通訊錄！');
+    }
+    selectCard(id);
+    renderCardsGrid();
+  } catch(e) {
+    console.error(e);
+    alert('Google 通訊錄同步失敗：' + e.message);
   }
 }
 
@@ -2684,6 +2859,11 @@ async function selectCard(id) {
         <div class="df-val">${c.note || '無備忘錄'}</div>
       </div>
       
+      <div class="detail-field-card detail-grid-full">
+        <div class="df-label"><i class="ti ti-brand-google"></i> Google 通訊錄同步狀態</div>
+        <div class="df-val">${c.googleContactId ? `<span style="color:var(--color-green); font-weight:600;"><i class="ti ti-circle-check-filled"></i> 已同步至 Google 通訊錄</span>` : '<span style="color:var(--text-tertiary);"><i class="ti ti-circle-x-filled"></i> 尚未同步</span>'}</div>
+      </div>
+      
       ${imageBase64 ? `
         <div class="detail-img-box">
           <div class="df-label" style="margin-bottom: 6px;"><i class="ti ti-photo"></i> 原始名片拍照</div>
@@ -2693,6 +2873,9 @@ async function selectCard(id) {
     </div>
     
     <div class="detail-actions-row">
+      ${c.googleContactId 
+        ? `<button class="btn btn-blue" onclick="syncContactToGoogle('${c.id}')" title="同步更新至 Google 通訊錄"><i class="ti ti-brand-google"></i> 更新 Google</button>`
+        : `<button class="btn" onclick="syncContactToGoogle('${c.id}')" title="同步至 Google 通訊錄"><i class="ti ti-brand-google"></i> 同步 Google</button>`}
       <button class="btn btn-green" onclick="exportSingleVcf('${c.id}')"><i class="ti ti-download"></i> 導出 vCard</button>
       <button class="btn btn-amber" onclick="openQrCodeModal('${c.id}')"><i class="ti ti-qrcode"></i> 分享二維碼</button>
       <button class="btn btn-primary" onclick="openAiEmailModal('${c.id}')"><i class="ti ti-robot"></i> AI 拜訪信</button>
@@ -3335,7 +3518,19 @@ function renderDupsTab() {
 }
 
 async function deleteDupCard(id) {
+  const c = cardsList.find(x => x.id === id);
   if (confirm('確定要刪除這張重複的名片嗎？此動作將無法還原。')) {
+    if (c && c.googleContactId && gdriveToken) {
+      if (confirm('偵測到此名片已同步至 Google 通訊錄，是否也同步從 Google 通訊錄中刪除？')) {
+        try {
+          await apiDeleteGoogleContact(c.googleContactId);
+          showToast('Google 通訊錄聯絡人已同步刪除');
+        } catch(e) {
+          console.error(e);
+          showToast('Google 聯絡人刪除失敗：' + e.message);
+        }
+      }
+    }
     await dbDeleteCard(id);
     cardsList = cardsList.filter(x => x.id !== id);
     if (selectedCardId === id) closeDetailPanel();
@@ -3482,7 +3677,19 @@ async function saveCardForm() {
 }
 
 async function deleteCard(id) {
+  const c = cardsList.find(x => x.id === id);
   if (confirm('確定要永久刪除此名片嗎？此動作將無法還原。')) {
+    if (c && c.googleContactId && gdriveToken) {
+      if (confirm('偵測到此名片已同步至 Google 通訊錄，是否也同步從 Google 通訊錄中刪除？')) {
+        try {
+          await apiDeleteGoogleContact(c.googleContactId);
+          showToast('Google 通訊錄聯絡人已同步刪除');
+        } catch(e) {
+          console.error(e);
+          showToast('Google 聯絡人刪除失敗：' + e.message);
+        }
+      }
+    }
     await dbDeleteCard(id);
     cardsList = cardsList.filter(x => x.id !== id);
     if (selectedCardId === id) closeDetailPanel();
