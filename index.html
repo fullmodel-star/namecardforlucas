@@ -1403,6 +1403,7 @@ body::after {
       <button class="tab" id="tab-dashboard" onclick="switchTab('dashboard')"><i class="ti ti-chart-bar"></i> 數據分析</button>
       <button class="tab" id="tab-dups" onclick="switchTab('dups')"><i class="ti ti-copy"></i> 重複偵測</button>
       <button class="tab" id="tab-batch" onclick="switchTab('batch')"><i class="ti ti-scan"></i> 批次同步</button>
+      <button class="tab" id="tab-graph" onclick="switchTab('graph')"><i class="ti ti-hierarchy-2"></i> 關聯圖</button>
       <button class="tab" id="tab-settings" onclick="switchTab('settings')"><i class="ti ti-settings"></i> 應用設定</button>
     </div>
 
@@ -1415,7 +1416,7 @@ body::after {
           <div class="sidebar-section">
             <label class="sidebar-label"><i class="ti ti-search"></i> 關鍵字搜尋</label>
             <div class="searchrow-new">
-              <input type="text" id="search-input" placeholder="搜尋姓名、公司、標籤..." oninput="filterCards()" />
+              <input type="text" id="search-input" placeholder="搜尋姓名、公司、電話、Email、地址、群組、標籤..." oninput="filterCards()" />
             </div>
           </div>
           
@@ -1562,6 +1563,7 @@ body::after {
       </div>
       
       <div class="progress-bar" id="batch-progress-bar"><div class="progress-fill" id="batch-progress-fill"></div></div>
+      <div id="batch-progress-stats" style="display:none;font-size:12px;color:var(--text-secondary);margin:6px 0 0;text-align:center;min-height:18px;"></div>
       <div class="queue-list" id="batch-queue-list"></div>
       
       <div style="display:flex; gap:8px; margin-top:1.25rem">
@@ -1570,7 +1572,28 @@ body::after {
       </div>
     </div>
 
-    <!-- 5. 應用設定分頁 -->
+    <!-- 5. 關聯圖分頁 -->
+    <div id="view-graph" style="display:none">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;flex-wrap:wrap;gap:8px;">
+        <h2 style="font-size:15px;font-weight:700;display:flex;align-items:center;gap:6px;color:var(--accent)">
+          <i class="ti ti-hierarchy-2"></i> 名片關聯圖
+        </h2>
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+          <label style="font-size:12px;color:var(--text-secondary);">連線依據：</label>
+          <select id="graph-link-by" onchange="renderGraphTab()" style="font-size:12px;padding:4px 8px;border-radius:var(--radius-sm);border:1px solid var(--border-color);background:var(--bg-secondary);color:var(--text-primary);">
+            <option value="org">同公司</option>
+            <option value="tag">同標籤</option>
+            <option value="group">同群組</option>
+          </select>
+          <button class="btn" onclick="renderGraphTab()"><i class="ti ti-refresh"></i> 重整</button>
+        </div>
+      </div>
+      <canvas id="graph-canvas" style="width:100%;border-radius:var(--radius-lg);background:var(--bg-tertiary);cursor:grab;display:block;touch-action:none;"></canvas>
+      <div id="graph-tooltip" style="display:none;position:fixed;background:var(--bg-secondary);border:1px solid var(--border-color);border-radius:var(--radius-md);padding:8px 12px;font-size:12px;pointer-events:none;z-index:9999;box-shadow:var(--shadow-md);max-width:200px;line-height:1.5;"></div>
+      <div style="margin-top:8px;font-size:11px;color:var(--text-tertiary);text-align:center;">點擊節點可跳至名片 · 拖曳移動節點 · 滾輪縮放</div>
+    </div>
+
+    <!-- 6. 應用設定分頁 -->
     <div id="view-settings" style="display:none">
       
       <div class="local-server-notice" id="local-server-notice" style="display:none">
@@ -1823,6 +1846,7 @@ let cardsList = [];
 let selectedCardId = null;
 let scanQueue = [];
 let isScanning = false;
+let graphSimulation = null;
 let activeProcessedFilter = 'all';
 let activeGroupFilter = '';
 let activeTagFilter = '';
@@ -2540,6 +2564,7 @@ async function handleSingleScan(event) {
       }
       
       if (parsedList.length > 1) {
+        const extraCards = [];
         for (let i = 1; i < parsedList.length; i++) {
           const extraCard = {
             ...parsedList[i],
@@ -2547,12 +2572,14 @@ async function handleSingleScan(event) {
             processed: true,
             createdAt: new Date().toLocaleDateString('zh-TW'),
             tags: ['合併拍照導入'],
-            group: parsedList[i].group || '其他', // AI 自動預分類其餘名片
+            group: parsedList[i].group || '其他',
             theme: 'indigo'
           };
           await dbSaveCard(extraCard, b64);
           cardsList.unshift(extraCard);
+          extraCards.push(extraCard);
         }
+        checkScanDuplicate(extraCards);
         showToast(`AI 辨識成功！主名片已帶入，其餘 ${parsedList.length - 1} 張已自動存入名片庫。`);
       } else {
         showToast('AI 辨識與智慧預分類完成！');
@@ -2752,8 +2779,8 @@ function getFilteredAndSortedCards() {
   }
   
   if (searchKeyword) {
-    list = list.filter(c => 
-      [c.name, c.org, c.title, c.dept, c.email, c.phone, c.mobile, c.addr, c.note].some(f => f && f.toLowerCase().includes(searchKeyword)) ||
+    list = list.filter(c =>
+      [c.name, c.org, c.title, c.dept, c.email, c.phone, c.phoneExt, c.mobile, c.fax, c.website, c.zip, c.addr, c.note, c.group].some(f => f && f.toLowerCase().includes(searchKeyword)) ||
       (c.tags && c.tags.some(t => t.toLowerCase().includes(searchKeyword)))
     );
   }
@@ -2974,15 +3001,16 @@ function closeLightbox() {
 }
 
 function switchTab(tabId) {
-  ['cards', 'dashboard', 'dups', 'batch', 'settings'].forEach(t => {
+  ['cards', 'dashboard', 'dups', 'batch', 'graph', 'settings'].forEach(t => {
     const el = document.getElementById('view-' + t);
     if (el) el.style.display = t === tabId ? 'block' : 'none';
     const btn = document.getElementById('tab-' + t);
     if (btn) btn.classList.toggle('active', t === tabId);
   });
-  
   if (tabId === 'dups') renderDupsTab();
   if (tabId === 'dashboard') renderDashboard();
+  if (tabId === 'graph') renderGraphTab();
+  if (tabId !== 'graph' && graphSimulation) { cancelAnimationFrame(graphSimulation); graphSimulation = null; }
 }
 
 // ============================================================================
@@ -3519,6 +3547,24 @@ function shareMyCardToSocial(platform) {
 // ============================================================================
 function normField(s) { return (s || '').trim().toLowerCase().replace(/[-\s]/g, ''); }
 
+function checkScanDuplicate(newCards) {
+  const newIds = new Set(newCards.map(c => c.id));
+  const existing = cardsList.filter(c => !newIds.has(c.id));
+  const dupNames = [];
+  newCards.forEach(nc => {
+    const found = existing.find(c => {
+      const sameName = normField(nc.name) && normField(c.name) && normField(nc.name) === normField(c.name);
+      const sameEmail = normField(nc.email) && normField(c.email) && normField(nc.email) === normField(c.email);
+      const sameMobile = normField(nc.mobile) && normField(c.mobile) && normField(nc.mobile) === normField(c.mobile);
+      return sameName || sameEmail || sameMobile;
+    });
+    if (found && nc.name) dupNames.push(nc.name);
+  });
+  if (dupNames.length > 0) {
+    showToast(`⚠ 偵測到疑似重複名片：${dupNames.join('、')}，請至「重複偵測」頁確認`);
+  }
+}
+
 function detectAllDuplicateGroups() {
   const groups = [];
   const handledIds = new Set();
@@ -3826,7 +3872,11 @@ async function startBatchProcessing() {
   isScanning = true;
   const pb = document.getElementById('batch-progress-bar');
   const pf = document.getElementById('batch-progress-fill');
+  const ps = document.getElementById('batch-progress-stats');
   pb.classList.add('show');
+  ps.style.display = 'block';
+  ps.textContent = `準備開始，共 ${waiting.length} 張待處理...`;
+  let doneCount = 0, failCount = 0;
   
   // 1. 自動修復解析：如果有雲端硬碟匯入的檔案且 cache 為空，重新載入 ID
   const hasDriveItems = waiting.some(item => item.driveId);
@@ -3861,6 +3911,7 @@ async function startBatchProcessing() {
         const b64 = await processAndResizeImage(item.file);
         const parsedList = await callGeminiAI(b64);
         
+        const batchNewCards = [];
         parsedList.forEach(p => {
           // 🎯 AI 自動預分類
           const newCard = {
@@ -3874,7 +3925,9 @@ async function startBatchProcessing() {
           };
           dbSaveCard(newCard, b64);
           cardsList.unshift(newCard);
+          batchNewCards.push(newCard);
         });
+        checkScanDuplicate(batchNewCards);
         
         item.status = 'done';
         success = true;
@@ -3910,7 +3963,9 @@ async function startBatchProcessing() {
       }
     }
     
+    if (success) doneCount++; else if (item.status === 'error') failCount++;
     pf.style.width = `${((i + 1) / waiting.length) * 100}%`;
+    ps.textContent = `處理中：${i + 1} / ${waiting.length} 張　完成 ${doneCount} 張${failCount ? `　失敗 ${failCount} 張` : ''}`;
     renderBatchQueueList();
     renderSidebarFilters();
     renderCardsGrid();
@@ -3938,7 +3993,8 @@ async function startBatchProcessing() {
   isScanning = false;
   pb.classList.remove('show');
   pf.style.width = '0%';
-  showToast('批次名片處理完成！');
+  ps.textContent = `✓ 批次完成：成功 ${doneCount} 張${failCount ? `，失敗 ${failCount} 張（請查看佇列詳情）` : ''}`;
+  showToast(`批次名片處理完成！成功 ${doneCount} 張${failCount ? `，失敗 ${failCount} 張` : ''}`);
 }
 
 async function clearBatchQueue() {
@@ -4098,6 +4154,191 @@ function initTheme() {
 // ============================================================================
 // 輕量化輔助函數
 // ============================================================================
+// ============================================================================
+// [7] 名片關聯圖模組
+// ============================================================================
+function renderGraphTab() {
+  const canvas = document.getElementById('graph-canvas');
+  if (!canvas) return;
+  if (graphSimulation) { cancelAnimationFrame(graphSimulation); graphSimulation = null; }
+
+  const container = canvas.parentElement;
+  const W = container.clientWidth || 800;
+  const H = Math.max(460, Math.min(660, window.innerHeight - 240));
+  canvas.width = W;
+  canvas.height = H;
+  canvas.style.height = H + 'px';
+
+  const ctx = canvas.getContext('2d');
+
+  if (cardsList.length === 0) {
+    ctx.fillStyle = '#94a3b8';
+    ctx.font = '14px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('名片庫目前沒有資料', W / 2, H / 2);
+    return;
+  }
+
+  const linkBy = document.getElementById('graph-link-by')?.value || 'org';
+
+  const nodes = cardsList.map(c => ({
+    id: c.id, card: c,
+    x: W / 2 + (Math.random() - 0.5) * W * 0.55,
+    y: H / 2 + (Math.random() - 0.5) * H * 0.55,
+    vx: 0, vy: 0, r: 18
+  }));
+
+  const edges = [];
+  for (let i = 0; i < nodes.length; i++) {
+    for (let j = i + 1; j < nodes.length; j++) {
+      const a = nodes[i].card, b = nodes[j].card;
+      let linked = false;
+      if (linkBy === 'org') linked = !!(a.org && b.org && normField(a.org) === normField(b.org));
+      else if (linkBy === 'tag') linked = !!(a.tags && b.tags && a.tags.some(t => b.tags.includes(t)));
+      else if (linkBy === 'group') linked = (a.group || '其他') === (b.group || '其他');
+      if (linked) edges.push({ s: nodes[i], t: nodes[j] });
+    }
+  }
+
+  const groupColors = {
+    '學校委員': '#6366f1', '政府機關': '#0ea5e9', '企業客戶': '#10b981',
+    '資訊夥伴': '#f59e0b', '法人夥伴': '#8b5cf6', '供應商夥伴': '#ec4899', '其他': '#94a3b8'
+  };
+
+  const transform = { x: 0, y: 0, scale: 1 };
+  let dragging = null, hoveredNode = null, mouseDownNode = null, mouseDownPos = null;
+
+  function toWorld(cx, cy) {
+    return { x: (cx - transform.x) / transform.scale, y: (cy - transform.y) / transform.scale };
+  }
+  function findNode(wx, wy) {
+    for (let i = nodes.length - 1; i >= 0; i--) {
+      if (Math.hypot(nodes[i].x - wx, nodes[i].y - wy) < nodes[i].r + 3) return nodes[i];
+    }
+    return null;
+  }
+  function canvasXY(e) {
+    const rect = canvas.getBoundingClientRect();
+    const src = e.touches ? e.touches[0] : e;
+    return { cx: (src.clientX - rect.left) * (canvas.width / rect.width), cy: (src.clientY - rect.top) * (canvas.height / rect.height) };
+  }
+
+  canvas.onmousedown = e => {
+    const { cx, cy } = canvasXY(e);
+    const w = toWorld(cx, cy);
+    const n = findNode(w.x, w.y);
+    if (n) { dragging = n; mouseDownNode = n; mouseDownPos = { x: w.x, y: w.y }; n.fx = n.x; n.fy = n.y; canvas.style.cursor = 'grabbing'; }
+  };
+  canvas.onmousemove = e => {
+    const { cx, cy } = canvasXY(e);
+    const w = toWorld(cx, cy);
+    const tip = document.getElementById('graph-tooltip');
+    if (dragging) {
+      dragging.x = w.x; dragging.y = w.y; dragging.fx = w.x; dragging.fy = w.y; dragging.vx = 0; dragging.vy = 0;
+    } else {
+      hoveredNode = findNode(w.x, w.y);
+      canvas.style.cursor = hoveredNode ? 'pointer' : 'grab';
+      if (hoveredNode) {
+        tip.style.display = 'block';
+        tip.style.left = (e.clientX + 14) + 'px';
+        tip.style.top = (e.clientY - 8) + 'px';
+        const c = hoveredNode.card;
+        tip.innerHTML = `<strong>${c.name || '—'}</strong>${c.title ? '<br>' + c.title : ''}${c.org ? '<br><span style="color:var(--text-secondary)">' + c.org + '</span>' : ''}`;
+      } else { tip.style.display = 'none'; }
+    }
+  };
+  canvas.onmouseup = e => {
+    if (dragging && mouseDownNode && mouseDownPos) {
+      const { cx, cy } = canvasXY(e);
+      const w = toWorld(cx, cy);
+      if (Math.hypot(w.x - mouseDownPos.x, w.y - mouseDownPos.y) < 6) {
+        selectCard(mouseDownNode.card.id);
+        switchTab('cards');
+      }
+      delete dragging.fx; delete dragging.fy;
+    }
+    dragging = null; mouseDownNode = null; mouseDownPos = null;
+    canvas.style.cursor = hoveredNode ? 'pointer' : 'grab';
+  };
+  canvas.onmouseleave = () => {
+    dragging = null; canvas.style.cursor = 'grab';
+    document.getElementById('graph-tooltip').style.display = 'none';
+  };
+  canvas.onwheel = e => {
+    e.preventDefault();
+    transform.scale = Math.min(3, Math.max(0.15, transform.scale * (e.deltaY < 0 ? 1.12 : 0.9)));
+  };
+
+  let tick_count = 0;
+  function tick() {
+    tick_count++;
+    const alpha = Math.max(0.01, 1 - tick_count / 300);
+
+    // Repulsion
+    for (let i = 0; i < nodes.length; i++) {
+      for (let j = i + 1; j < nodes.length; j++) {
+        const a = nodes[i], b = nodes[j];
+        const dx = b.x - a.x, dy = b.y - a.y;
+        const dist = Math.max(1, Math.hypot(dx, dy));
+        const f = (1800 / (dist * dist)) * alpha;
+        const fx = (dx / dist) * f, fy = (dy / dist) * f;
+        a.vx -= fx; a.vy -= fy; b.vx += fx; b.vy += fy;
+      }
+    }
+    // Edge attraction
+    edges.forEach(e => {
+      const dx = e.t.x - e.s.x, dy = e.t.y - e.s.y;
+      const dist = Math.max(1, Math.hypot(dx, dy));
+      const f = (dist - 90) * 0.04 * alpha;
+      const fx = (dx / dist) * f, fy = (dy / dist) * f;
+      e.s.vx += fx; e.s.vy += fy; e.t.vx -= fx; e.t.vy -= fy;
+    });
+    // Centering
+    nodes.forEach(n => { n.vx += (W / 2 - n.x) * 0.003; n.vy += (H / 2 - n.y) * 0.003; });
+    // Integrate
+    nodes.forEach(n => {
+      if (n.fx !== undefined) return;
+      n.vx *= 0.85; n.vy *= 0.85;
+      n.x = Math.max(n.r, Math.min(W - n.r, n.x + n.vx));
+      n.y = Math.max(n.r, Math.min(H - n.r, n.y + n.vy));
+    });
+
+    // Render
+    ctx.clearRect(0, 0, W, H);
+    ctx.save();
+    ctx.translate(transform.x, transform.y);
+    ctx.scale(transform.scale, transform.scale);
+
+    // Edges
+    ctx.lineWidth = 1.2;
+    ctx.strokeStyle = 'rgba(148,163,184,0.3)';
+    edges.forEach(e => {
+      ctx.beginPath(); ctx.moveTo(e.s.x, e.s.y); ctx.lineTo(e.t.x, e.t.y); ctx.stroke();
+    });
+
+    // Nodes
+    nodes.forEach(n => {
+      const color = groupColors[n.card.group || '其他'] || '#94a3b8';
+      const isSel = n.card.id === selectedCardId;
+      const isHov = n === hoveredNode;
+      ctx.beginPath();
+      ctx.arc(n.x, n.y, n.r + (isSel ? 4 : 0), 0, Math.PI * 2);
+      ctx.fillStyle = color + (isSel || isHov ? 'ff' : 'dd');
+      ctx.fill();
+      if (isSel) { ctx.strokeStyle = '#fff'; ctx.lineWidth = 2.5; ctx.stroke(); }
+      ctx.fillStyle = '#fff';
+      ctx.font = `bold ${isSel ? 10 : 9}px sans-serif`;
+      ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.fillText((n.card.name || '?').slice(0, 2), n.x, n.y);
+    });
+
+    ctx.restore();
+    graphSimulation = requestAnimationFrame(tick);
+  }
+  tick();
+}
+
 function showToast(msg) {
   const t = document.getElementById('toast');
   t.textContent = msg;
