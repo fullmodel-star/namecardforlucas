@@ -1671,6 +1671,21 @@ body::after {
         <h3><i class="ti ti-address-book" style="color:var(--accent)"></i> 通訊錄整合管理</h3>
         <p style="font-size:12px;color:var(--text-secondary);margin-bottom:14px;">將名片庫與手機通訊錄互動：批次推送至 Google / 匯出 VCF / 從手機通訊錄匯入。</p>
 
+        <!-- 精靈入口 -->
+        <div style="background:var(--accent-light);border:1px solid var(--border-color-glow);border-radius:var(--radius-md);padding:14px 16px;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;">
+          <div>
+            <div style="font-size:13px;font-weight:700;color:var(--text-primary);display:flex;align-items:center;gap:6px;">
+              <i class="ti ti-wand" style="color:var(--accent);"></i> 智慧一鍵同步精靈
+            </div>
+            <div style="font-size:11px;color:var(--text-secondary);margin-top:3px;">自動掃描重複 → 選目標 → 一次完成 VCF 匯出 ＋ Google 推送</div>
+          </div>
+          <button class="btn btn-primary" onclick="openSmartSyncModal()">
+            <i class="ti ti-rocket"></i> 啟動精靈
+          </button>
+        </div>
+
+        <hr style="border:none;border-top:1px solid var(--border-color);margin:0 0 14px;">
+
         <!-- ① VCF 匯出入 -->
         <div style="margin-bottom:14px;">
           <div style="font-size:12px;font-weight:600;color:var(--text-primary);margin-bottom:6px;display:flex;align-items:center;gap:6px;">
@@ -1743,6 +1758,13 @@ body::after {
 
     </div>
   </main>
+</div>
+
+<!-- ==========================================================================
+     [HTML] 智慧一鍵同步精靈 Modal
+     ========================================================================== -->
+<div class="modal-overlay" id="smart-sync-modal-bg" onclick="closeSmartSyncModalBg(event)">
+  <div class="modal" id="smart-sync-modal-content" style="max-width:660px;"></div>
 </div>
 
 <!-- ==========================================================================
@@ -4313,7 +4335,226 @@ function initTheme() {
 // 輕量化輔助函數
 // ============================================================================
 // ============================================================================
-// [7] 名片關聯圖模組
+// [7] 智慧一鍵同步精靈
+// ============================================================================
+function openSmartSyncModal() {
+  document.getElementById('smart-sync-modal-bg').classList.add('open');
+  renderSmartSyncStep1();
+}
+function closeSmartSyncModal() {
+  document.getElementById('smart-sync-modal-bg').classList.remove('open');
+}
+function closeSmartSyncModalBg(e) {
+  if (e.target === document.getElementById('smart-sync-modal-bg')) closeSmartSyncModal();
+}
+
+function _syncStepBar(active) {
+  const labels = ['① 清理重複', '② 選目標', '③ 完成'];
+  return `<div style="display:flex;gap:0;margin-bottom:1.5rem;border-radius:var(--radius-md);overflow:hidden;border:1px solid var(--border-color);">
+    ${labels.map((l, i) => {
+      const done = i < active - 1;
+      const cur  = i === active - 1;
+      const bg   = done ? 'var(--color-green)' : cur ? 'var(--accent)' : 'var(--bg-tertiary)';
+      const color= (done || cur) ? '#fff' : 'var(--text-tertiary)';
+      return `<div style="flex:1;padding:8px;text-align:center;font-size:12px;font-weight:700;background:${bg};color:${color};">${l}${done ? ' ✓' : ''}</div>`;
+    }).join('')}
+  </div>`;
+}
+
+function renderSmartSyncStep1() {
+  const modal = document.getElementById('smart-sync-modal-content');
+  const dups  = detectAllDuplicateGroups();
+
+  const dupHTML = dups.length === 0
+    ? `<div style="text-align:center;padding:28px 0;color:var(--color-green);">
+         <i class="ti ti-circle-check" style="font-size:38px;"></i>
+         <div style="font-size:14px;font-weight:600;margin-top:8px;">名片庫整潔！無重複資料 🎉</div>
+       </div>`
+    : dups.map((g, idx) => `
+        <div style="border:1px solid var(--color-amber-border);border-radius:var(--radius-md);padding:10px 12px;margin-bottom:8px;background:var(--color-amber-bg);">
+          <div style="font-size:12px;font-weight:700;color:var(--color-amber);margin-bottom:6px;">
+            <i class="ti ti-copy"></i> 第 ${idx+1} 組：${g[0].name || '未命名'}（共 ${g.length} 張）
+          </div>
+          ${g.map(c => `
+            <div style="display:flex;align-items:center;gap:8px;padding:4px 0;font-size:12px;">
+              <div style="flex:1;min-width:0;">
+                <strong>${c.name || '—'}</strong>
+                <span style="color:var(--text-secondary);margin-left:6px;">${c.org || ''}${c.mobile ? ' · ' + c.mobile : ''}</span>
+              </div>
+              <button onclick="smartSyncDeleteDup('${c.id}')"
+                style="border:none;background:var(--color-red-bg);color:var(--color-red);border-radius:4px;padding:3px 10px;cursor:pointer;font-size:11px;flex-shrink:0;">
+                <i class="ti ti-trash"></i> 刪除
+              </button>
+            </div>`).join('')}
+        </div>`).join('');
+
+  modal.innerHTML = `
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.25rem;">
+      <h2 style="margin:0;font-size:15px;"><i class="ti ti-wand" style="color:var(--accent)"></i> 智慧一鍵同步精靈</h2>
+      <button onclick="closeSmartSyncModal()" style="border:none;background:none;cursor:pointer;font-size:22px;color:var(--text-tertiary);line-height:1;padding:0 4px;">×</button>
+    </div>
+    ${_syncStepBar(1)}
+    <div style="font-size:13px;font-weight:600;margin-bottom:10px;color:var(--text-primary);">
+      ${dups.length > 0 ? `偵測到 <strong>${dups.length}</strong> 組疑似重複，刪除後再繼續：` : '重複檢查通過，可直接繼續：'}
+    </div>
+    <div style="max-height:340px;overflow-y:auto;margin-bottom:1.25rem;">${dupHTML}</div>
+    <div style="display:flex;justify-content:flex-end;gap:8px;">
+      <button class="btn" onclick="closeSmartSyncModal()">取消</button>
+      <button class="btn btn-primary" onclick="renderSmartSyncStep2()">
+        下一步：選擇匯出目標 <i class="ti ti-arrow-right"></i>
+      </button>
+    </div>`;
+}
+
+async function smartSyncDeleteDup(id) {
+  if (!confirm('確定刪除此張重複名片？')) return;
+  await dbDeleteCard(id);
+  cardsList = cardsList.filter(c => c.id !== id);
+  if (selectedCardId === id) closeDetailPanel();
+  updateBadgesOnly();
+  renderCardsGrid();
+  renderDashboard();
+  renderSmartSyncStep1();
+}
+
+function renderSmartSyncStep2() {
+  const modal    = document.getElementById('smart-sync-modal-content');
+  const total    = cardsList.length;
+  const unsynced = cardsList.filter(c => !c.googleContactId).length;
+  const synced   = total - unsynced;
+
+  modal.innerHTML = `
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.25rem;">
+      <h2 style="margin:0;font-size:15px;"><i class="ti ti-wand" style="color:var(--accent)"></i> 智慧一鍵同步精靈</h2>
+      <button onclick="closeSmartSyncModal()" style="border:none;background:none;cursor:pointer;font-size:22px;color:var(--text-tertiary);line-height:1;padding:0 4px;">×</button>
+    </div>
+    ${_syncStepBar(2)}
+    <div style="font-size:13px;font-weight:600;margin-bottom:14px;">共 <strong>${total}</strong> 張名片，請選擇匯出目標（可多選）：</div>
+
+    <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:1.5rem;">
+      <label id="lbl-vcf" style="display:flex;align-items:flex-start;gap:12px;padding:14px;border-radius:var(--radius-md);border:2px solid var(--border-color);cursor:pointer;background:var(--bg-secondary);transition:var(--transition);">
+        <input type="checkbox" id="sync-opt-vcf" style="width:18px;height:18px;margin-top:1px;cursor:pointer;" onchange="updateSyncLabel()">
+        <div>
+          <div style="font-size:13px;font-weight:700;display:flex;align-items:center;gap:6px;">
+            <i class="ti ti-file-export" style="color:var(--color-green);"></i> 匯出 VCF 檔案
+          </div>
+          <div style="font-size:11px;color:var(--text-secondary);margin-top:3px;">下載 .vcf 檔 → 手機開啟即可匯入 iOS / Android 通訊錄，適合備份與分享。</div>
+        </div>
+      </label>
+
+      <label id="lbl-google" style="display:flex;align-items:flex-start;gap:12px;padding:14px;border-radius:var(--radius-md);border:2px solid var(--border-color);cursor:pointer;background:var(--bg-secondary);transition:var(--transition);">
+        <input type="checkbox" id="sync-opt-google" style="width:18px;height:18px;margin-top:1px;cursor:pointer;" onchange="updateSyncLabel()">
+        <div>
+          <div style="font-size:13px;font-weight:700;display:flex;align-items:center;gap:6px;">
+            <i class="ti ti-brand-google" style="color:#4285F4;"></i> 同步至 Google 通訊錄
+          </div>
+          <div style="font-size:11px;color:var(--text-secondary);margin-top:3px;">
+            推送至 Google → Android 自動同步，iOS 設 Google 帳號亦可使用。<br>
+            <span style="color:var(--color-green);">已同步 ${synced} 張</span>・
+            <span style="color:var(--color-amber);">待推送 ${unsynced} 張</span>
+          </div>
+        </div>
+      </label>
+    </div>
+
+    <div style="display:flex;justify-content:space-between;gap:8px;">
+      <button class="btn" onclick="renderSmartSyncStep1()"><i class="ti ti-arrow-left"></i> 上一步</button>
+      <button class="btn btn-primary" id="btn-execute-sync" onclick="executeSmartSync()" disabled>
+        <i class="ti ti-rocket"></i> 開始同步
+      </button>
+    </div>`;
+}
+
+function updateSyncLabel() {
+  const vcf    = document.getElementById('sync-opt-vcf')?.checked;
+  const google = document.getElementById('sync-opt-google')?.checked;
+  const lVcf   = document.getElementById('lbl-vcf');
+  const lGoog  = document.getElementById('lbl-google');
+  if (lVcf)  { lVcf.style.borderColor  = vcf    ? 'var(--color-green)' : 'var(--border-color)'; lVcf.style.background  = vcf    ? 'var(--color-green-bg)' : 'var(--bg-secondary)'; }
+  if (lGoog) { lGoog.style.borderColor = google ? '#4285F4'            : 'var(--border-color)'; lGoog.style.background = google ? 'rgba(66,133,244,0.07)' : 'var(--bg-secondary)'; }
+  const btn = document.getElementById('btn-execute-sync');
+  if (btn) btn.disabled = !(vcf || google);
+}
+
+async function executeSmartSync() {
+  const doVcf    = document.getElementById('sync-opt-vcf')?.checked;
+  const doGoogle = document.getElementById('sync-opt-google')?.checked;
+  const modal    = document.getElementById('smart-sync-modal-content');
+
+  modal.innerHTML = `
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.25rem;">
+      <h2 style="margin:0;font-size:15px;"><i class="ti ti-wand" style="color:var(--accent)"></i> 智慧一鍵同步精靈</h2>
+    </div>
+    ${_syncStepBar(3)}
+    <div id="ss-log" style="font-size:12px;color:var(--text-secondary);line-height:2.1;min-height:130px;max-height:260px;overflow-y:auto;"></div>
+    <div class="progress-bar show" style="margin-top:10px;"><div class="progress-fill" id="ss-pf" style="width:0%;transition:width 0.3s;"></div></div>
+    <div id="ss-result" style="margin-top:16px;"></div>`;
+
+  const logEl    = document.getElementById('ss-log');
+  const pfEl     = document.getElementById('ss-pf');
+  const resultEl = document.getElementById('ss-result');
+  const addLog   = msg => { logEl.innerHTML += `<div>${msg}</div>`; logEl.scrollTop = 9999; };
+
+  const unsynced     = cardsList.filter(c => !c.googleContactId);
+  const totalSteps   = (doVcf ? 1 : 0) + (doGoogle ? unsynced.length || 1 : 0);
+  let   completedSteps = 0;
+  const progress = () => { completedSteps++; pfEl.style.width = `${Math.min(99, (completedSteps / totalSteps) * 100)}%`; };
+
+  // ① VCF
+  if (doVcf) {
+    addLog('📄 正在產生 VCF 檔案…');
+    try { exportAllVcf(); addLog('✅ VCF 匯出成功，檔案已下載！'); }
+    catch(e) { addLog(`❌ VCF 匯出失敗：${e.message}`); }
+    progress();
+  }
+
+  // ② Google
+  if (doGoogle) {
+    if (unsynced.length === 0) {
+      addLog('☁️ Google 通訊錄：全部名片均已同步，無需再推送。');
+      progress();
+    } else {
+      addLog(`☁️ 開始推送至 Google 通訊錄（共 ${unsynced.length} 張）…`);
+      if (!gdriveToken) {
+        try { addLog('🔑 正在授權 Google 帳號…'); await ensureGoogleAuth(); addLog('✅ Google 授權成功！'); }
+        catch(e) { addLog('❌ Google 授權失敗，已略過 Google 同步。'); }
+      }
+      if (gdriveToken) {
+        let done = 0, fail = 0;
+        for (let i = 0; i < unsynced.length; i++) {
+          const c = unsynced[i];
+          try {
+            const res = await apiCreateGoogleContact(c);
+            c.googleContactId = res.googleContactId;
+            await dbSaveCard(c);
+            done++;
+            if (done % 5 === 0 || i === unsynced.length - 1) addLog(`  → 已推送 ${done} / ${unsynced.length} 張`);
+          } catch(e) { fail++; addLog(`  ⚠️ ${c.name || '未命名'} 失敗：${e.message}`); }
+          progress();
+          if (i < unsynced.length - 1) await new Promise(r => setTimeout(r, 380));
+        }
+        addLog(fail === 0 ? `✅ Google 同步完成！推送 ${done} 張` : `⚠️ 完成：成功 ${done} 張，失敗 ${fail} 張`);
+      }
+    }
+  }
+
+  pfEl.style.width = '100%';
+  // Update step bar to all green
+  modal.querySelector('[style*="display:flex;gap:0"]').innerHTML = ['① 清理重複 ✓','② 選目標 ✓','③ 完成 ✓']
+    .map(l => `<div style="flex:1;padding:8px;text-align:center;font-size:12px;font-weight:700;background:var(--color-green);color:#fff;">${l}</div>`).join('');
+
+  resultEl.innerHTML = `
+    <div style="text-align:center;padding:16px 0 8px;">
+      <i class="ti ti-circle-check" style="font-size:40px;color:var(--color-green);"></i>
+      <div style="font-size:15px;font-weight:700;margin-top:6px;">同步完成！</div>
+    </div>
+    <button class="btn btn-primary" style="width:100%;margin-top:8px;" onclick="closeSmartSyncModal()">✓ 關閉</button>`;
+
+  renderCardsGrid(); renderSidebarFilters(); renderDashboard();
+}
+
+// ============================================================================
+// [8] 名片關聯圖模組
 // ============================================================================
 function renderGraphTab() {
   const canvas = document.getElementById('graph-canvas');
