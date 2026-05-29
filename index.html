@@ -2209,11 +2209,22 @@ function gdriveLogout() {
   showToast('已安全登出 Google 帳號');
 }
 
-async function fetchDrive(url, options = {}) {
+async function fetchDrive(url, options = {}, _retried = false) {
   options.headers = options.headers || {};
   options.headers['Authorization'] = `Bearer ${gdriveToken}`;
   const res = await fetch(url, options);
   if (!res.ok) {
+    if (res.status === 401 && !_retried) {
+      // Token expired — silently re-auth and retry once
+      gdriveToken = null;
+      localStorage.removeItem('gdrive_token');
+      try {
+        await ensureGoogleAuth();
+        return fetchDrive(url, options, true);
+      } catch(e) {
+        throw new Error('Google 雲端登入已過期，自動重新授權失敗，請手動重新連結。');
+      }
+    }
     if (res.status === 401) {
       gdriveLogout();
       throw new Error('登入已過期，請重新授權連結 Google 雲端');
@@ -3132,9 +3143,14 @@ async function selectCard(id) {
         <div class="df-label"><i class="ti ti-world"></i> 官方網站</div>
         <div class="df-val">${c.website ? `<a href="${c.website.startsWith('http') ? c.website : 'https://' + c.website}" target="_blank">${c.website}</a>` : '—'}</div>
       </div>
-      
+
+      <div class="detail-field-card">
+        <div class="df-label"><i class="ti ti-device-fax"></i> 傳真電話</div>
+        <div class="df-val">${c.fax || '—'}</div>
+      </div>
+
       <div class="detail-field-card detail-grid-full ${c.addr ? 'clickable' : ''}">
-        <div class="df-label"><i class="ti ti-map-pin"></i> 地址</div>
+        <div class="df-label"><i class="ti ti-map-pin"></i> 地址${c.zip ? `（郵遞區號 ${c.zip}）` : ''}</div>
         <div class="df-val">${c.addr ? `<a href="${mapUrl}" target="_blank">${c.addr}</a>` : '—'}</div>
       </div>
       
@@ -3225,9 +3241,9 @@ function cardToVcfString(c) {
   let v = 'BEGIN:VCARD\nVERSION:3.0\n';
   v += `FN:${cleanVcfVal(c.name)}\n`;
   if (c.name) v += `N:${cleanVcfVal(c.name)};;;;\n`;
-  if (c.org) v += `ORG:${cleanVcfVal(c.org)}\n`;
+  // ORG 欄位：公司;部門（VCF 3.0 標準格式）
+  if (c.org || c.dept) v += `ORG:${cleanVcfVal(c.org)}${c.dept ? ';' + cleanVcfVal(c.dept) : ''}\n`;
   if (c.title) v += `TITLE:${cleanVcfVal(c.title)}\n`;
-  if (c.dept) v += `NOTE:部門: ${cleanVcfVal(c.dept)}\n`;
   if (c.phone) {
     if (c.phoneExt) v += `TEL;TYPE=WORK,VOICE:${cleanVcfVal(c.phone)} ext ${cleanVcfVal(c.phoneExt)}\n`;
     else v += `TEL;TYPE=WORK,VOICE:${cleanVcfVal(c.phone)}\n`;
@@ -3240,7 +3256,10 @@ function cardToVcfString(c) {
     v += `ADR;TYPE=WORK:;;${cleanVcfVal(c.addr)};;;${cleanVcfVal(c.zip || '')};\n`;
     v += `LABEL;TYPE=WORK:${cleanVcfVal(c.addr)}\n`;
   }
-  if (c.note) v += `NOTE:${cleanVcfVal(c.note)}\n`;
+  // 合併備註（避免雙 NOTE 欄位問題）
+  const noteParts = [];
+  if (c.note) noteParts.push(cleanVcfVal(c.note));
+  if (noteParts.length) v += `NOTE:${noteParts.join(' | ')}\n`;
   v += 'END:VCARD\n';
   return v;
 }
@@ -3781,8 +3800,9 @@ function checkScanDuplicate(newCards) {
     const found = existing.find(c => {
       const sameName = normField(nc.name) && normField(c.name) && normField(nc.name) === normField(c.name);
       const sameEmail = normField(nc.email) && normField(c.email) && normField(nc.email) === normField(c.email);
+      // 手機相同但姓名不同可能是不同人(共用總機)，需搭配姓名或Email才算重複
       const sameMobile = normField(nc.mobile) && normField(c.mobile) && normField(nc.mobile) === normField(c.mobile);
-      return sameName || sameEmail || sameMobile;
+      return sameName || sameEmail || (sameMobile && (sameName || sameEmail));
     });
     if (found && nc.name) dupNames.push(nc.name);
   });
@@ -3801,8 +3821,9 @@ function detectAllDuplicateGroups() {
       if (d.id === c.id) return false;
       const sameName = normField(c.name) && normField(d.name) && normField(c.name) === normField(d.name);
       const sameEmail = normField(c.email) && normField(d.email) && normField(c.email) === normField(d.email);
+      // 手機相同但姓名不同可能是不同人(共用總機)，需搭配姓名或Email才算重複
       const sameMobile = normField(c.mobile) && normField(d.mobile) && normField(c.mobile) === normField(d.mobile);
-      return sameName || sameEmail || sameMobile;
+      return sameName || sameEmail || (sameMobile && (sameName || sameEmail));
     });
     
     if (matches.length > 0) {
@@ -4541,6 +4562,8 @@ function updateSyncLabel() {
 async function executeSmartSync() {
   const doVcf    = document.getElementById('sync-opt-vcf')?.checked;
   const doGoogle = document.getElementById('sync-opt-google')?.checked;
+  // ⚠️ 必須在替換 innerHTML 之前讀取 radio 值，否則 DOM 已消失
+  const vcfMode  = document.querySelector('input[name="vcf-mode"]:checked')?.value || 'new';
   const modal    = document.getElementById('smart-sync-modal-content');
 
   modal.innerHTML = `
@@ -4564,7 +4587,6 @@ async function executeSmartSync() {
 
   // ① VCF
   if (doVcf) {
-    const vcfMode = document.querySelector('input[name="vcf-mode"]:checked')?.value || 'new';
     addLog(vcfMode === 'new' ? '📄 正在產生增量 VCF（只含新增名片）…' : '📄 正在產生全部名片 VCF…');
     try {
       const n = vcfMode === 'new' ? exportNewVcf() : exportAllVcf();

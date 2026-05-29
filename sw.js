@@ -1,4 +1,4 @@
-const CACHE_NAME = 'bizcard-pwa-v6';
+const CACHE_NAME = 'bizcard-pwa-v7';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
