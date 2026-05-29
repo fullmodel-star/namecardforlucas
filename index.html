@@ -2144,10 +2144,18 @@ function initGoogleSignIn() {
   }
   
   const savedToken = localStorage.getItem('gdrive_token');
-  const savedUser = localStorage.getItem('gdrive_user');
-  if (savedToken && savedUser) {
+  const savedUser  = localStorage.getItem('gdrive_user');
+  const savedTs    = parseInt(localStorage.getItem('gdrive_token_ts') || '0');
+  const tokenAge   = Date.now() - savedTs; // ms
+  if (savedToken && savedUser && tokenAge < 55 * 60 * 1000) {
+    // Token still valid (<55 min)
     gdriveToken = savedToken;
     showGdriveLoggedIn(JSON.parse(savedUser));
+  } else if (savedToken) {
+    // Token exists but expired — show UI as logged-in but clear token so next call triggers re-auth
+    localStorage.removeItem('gdrive_token');
+    if (savedUser) showGdriveLoggedIn(JSON.parse(savedUser));
+    console.log('[Google] 儲存的 token 已到期，下次操作將自動重新授權。');
   }
 }
 
@@ -2170,6 +2178,7 @@ async function ensureGoogleAuth() {
         } else {
           gdriveToken = resp.access_token;
           localStorage.setItem('gdrive_token', gdriveToken);
+          localStorage.setItem('gdrive_token_ts', Date.now().toString());
           const mockUser = { name: "雲端已授權用戶", email: "已連結 Google Drive & 通訊錄" };
           localStorage.setItem('gdrive_user', JSON.stringify(mockUser));
           showGdriveLoggedIn(mockUser);
@@ -2309,14 +2318,26 @@ async function moveDriveFile(fileId, oldParent, newParent) {
 // ============================================================================
 // [2.5] Google People API 同步模組
 // ============================================================================
-async function fetchContactsApi(url, options = {}) {
+async function fetchContactsApi(url, options = {}, _retried = false) {
   options.headers = options.headers || {};
   options.headers['Authorization'] = `Bearer ${gdriveToken}`;
   const res = await fetch(url, options);
   if (!res.ok) {
+    if (res.status === 401 && !_retried) {
+      // Token expired — silently re-auth and retry once
+      console.log('[Google] 401 偵測到 token 到期，嘗試重新授權…');
+      gdriveToken = null;
+      localStorage.removeItem('gdrive_token');
+      try {
+        await ensureGoogleAuth();
+        return fetchContactsApi(url, options, true);
+      } catch(e) {
+        throw new Error('Google 登入已過期，自動重新授權失敗，請手動重新連結 Google 帳號。');
+      }
+    }
     if (res.status === 401) {
       gdriveLogout();
-      throw new Error('Google 登入已過期，請重新登入連結！');
+      throw new Error('Google 登入已過期，請至「應用設定」重新授權 Google 帳號。');
     }
     const errText = await res.text();
     throw new Error(`Google 通訊錄操作失敗 (HTTP ${res.status}): ${errText}`);
@@ -2517,6 +2538,7 @@ async function importFromContactPicker() {
         note: '',
         processed: false,
         createdAt: new Date().toLocaleDateString('zh-TW'),
+        createdAtTs: Date.now(),
         tags: ['手機通訊錄匯入'],
         group: '其他',
         theme: 'indigo'
@@ -2751,6 +2773,7 @@ async function handleSingleScan(event) {
             id: 'card_' + crypto.randomUUID(),
             processed: true,
             createdAt: new Date().toLocaleDateString('zh-TW'),
+            createdAtTs: Date.now(),
             tags: ['合併拍照導入'],
             group: parsedList[i].group || '其他',
             theme: 'indigo'
@@ -3236,21 +3259,44 @@ function exportSingleVcf(id) {
   showToast('vCard 聯絡人匯出成功！');
 }
 
-function exportAllVcf() {
-  if (!cardsList.length) {
-    showToast('名片庫中沒有資料！');
-    return;
-  }
-  
-  const bigString = cardsList.map(c => cardToVcfString(c)).join('');
-  const blob = new Blob(['\ufeff' + bigString], { type: 'text/vcard;charset=utf-8' });
+function _doVcfDownload(cards, filename) {
+  const bigString = cards.map(c => cardToVcfString(c)).join('');
+  const blob = new Blob(['﻿' + bigString], { type: 'text/vcard;charset=utf-8' });
   const url = URL.createObjectURL(blob);
-  
   const a = document.createElement('a');
-  a.href = url;
-  a.download = '聯絡人清單_全部匯出.vcf';
-  a.click();
-  showToast('全部名片打包 VCF 導出成功！');
+  a.href = url; a.download = filename; a.click();
+  URL.revokeObjectURL(url);
+}
+
+function exportAllVcf() {
+  if (!cardsList.length) { showToast('名片庫中沒有資料！'); return 0; }
+  _doVcfDownload(cardsList, '聯絡人清單_全部匯出.vcf');
+  localStorage.setItem('last_vcf_export_ts', Date.now().toString());
+  showToast(`全部 ${cardsList.length} 張名片 VCF 匯出成功！`);
+  return cardsList.length;
+}
+
+function getCardCreateTime(c) {
+  if (c.createdAtTs) return c.createdAtTs;
+  if (c.createdAt) { const d = new Date(c.createdAt); if (!isNaN(d)) return d.getTime(); }
+  return 0;
+}
+
+function getNewVcfCount() {
+  const lastTs = parseInt(localStorage.getItem('last_vcf_export_ts') || '0');
+  if (!lastTs) return cardsList.length;
+  return cardsList.filter(c => getCardCreateTime(c) > lastTs).length;
+}
+
+function exportNewVcf() {
+  const lastTs = parseInt(localStorage.getItem('last_vcf_export_ts') || '0');
+  const newCards = lastTs === 0 ? [...cardsList] : cardsList.filter(c => getCardCreateTime(c) > lastTs);
+  if (newCards.length === 0) { showToast('上次匯出後沒有新增名片，無需重複匯出！'); return 0; }
+  const dateStr = new Date().toLocaleDateString('zh-TW').split('/').join('-');
+  _doVcfDownload(newCards, `新增名片_${dateStr}.vcf`);
+  localStorage.setItem('last_vcf_export_ts', Date.now().toString());
+  showToast(`✓ 匯出 ${newCards.length} 張新增名片！`);
+  return newCards.length;
 }
 
 async function exportFullJsonBackup() {
@@ -3923,6 +3969,7 @@ async function saveCardForm() {
     id: id,
     processed: true,
     createdAt: editId ? (cardsList.find(x=>x.id===editId)?.createdAt || new Date().toLocaleDateString('zh-TW')) : new Date().toLocaleDateString('zh-TW'),
+    createdAtTs: editId ? (cardsList.find(x=>x.id===editId)?.createdAtTs || Date.now()) : Date.now(),
     name: nameEl.value.trim(),
     title: document.getElementById('f-title').value.trim(),
     org: document.getElementById('f-org').value.trim(),
@@ -4099,6 +4146,7 @@ async function startBatchProcessing() {
             id: 'card_' + crypto.randomUUID(),
             processed: true,
             createdAt: new Date().toLocaleDateString('zh-TW'),
+            createdAtTs: Date.now(),
             group: p.group || '其他',
             tags: parsedList.length > 1 ? ['多張合照導入'] : [],
             theme: 'indigo'
@@ -4434,11 +4482,21 @@ function renderSmartSyncStep2() {
     <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:1.5rem;">
       <label id="lbl-vcf" style="display:flex;align-items:flex-start;gap:12px;padding:14px;border-radius:var(--radius-md);border:2px solid var(--border-color);cursor:pointer;background:var(--bg-secondary);transition:var(--transition);">
         <input type="checkbox" id="sync-opt-vcf" style="width:18px;height:18px;margin-top:1px;cursor:pointer;" onchange="updateSyncLabel()">
-        <div>
+        <div style="flex:1;">
           <div style="font-size:13px;font-weight:700;display:flex;align-items:center;gap:6px;">
             <i class="ti ti-file-export" style="color:var(--color-green);"></i> 匯出 VCF 檔案
           </div>
-          <div style="font-size:11px;color:var(--text-secondary);margin-top:3px;">下載 .vcf 檔 → 手機開啟即可匯入 iOS / Android 通訊錄，適合備份與分享。</div>
+          <div style="font-size:11px;color:var(--text-secondary);margin-top:3px;">下載 .vcf 檔 → 手機開啟即可匯入 iOS / Android 通訊錄。</div>
+          <div style="margin-top:8px;display:flex;gap:12px;flex-wrap:wrap;">
+            <label style="display:flex;align-items:center;gap:5px;font-size:12px;cursor:pointer;">
+              <input type="radio" name="vcf-mode" value="new" checked style="cursor:pointer;">
+              <span>只匯出新增 <strong id="vcf-new-count"></strong> <span style="color:var(--color-green);font-weight:600;">✓ 不重複</span></span>
+            </label>
+            <label style="display:flex;align-items:center;gap:5px;font-size:12px;cursor:pointer;">
+              <input type="radio" name="vcf-mode" value="all" style="cursor:pointer;">
+              <span>全部匯出（${total} 張）</span>
+            </label>
+          </div>
         </div>
       </label>
 
@@ -4463,6 +4521,10 @@ function renderSmartSyncStep2() {
         <i class="ti ti-rocket"></i> 開始同步
       </button>
     </div>`;
+  // Fill new-card count after render
+  const newCount = getNewVcfCount();
+  const el = document.getElementById('vcf-new-count');
+  if (el) el.textContent = `(${newCount} 張)`;
 }
 
 function updateSyncLabel() {
@@ -4502,9 +4564,12 @@ async function executeSmartSync() {
 
   // ① VCF
   if (doVcf) {
-    addLog('📄 正在產生 VCF 檔案…');
-    try { exportAllVcf(); addLog('✅ VCF 匯出成功，檔案已下載！'); }
-    catch(e) { addLog(`❌ VCF 匯出失敗：${e.message}`); }
+    const vcfMode = document.querySelector('input[name="vcf-mode"]:checked')?.value || 'new';
+    addLog(vcfMode === 'new' ? '📄 正在產生增量 VCF（只含新增名片）…' : '📄 正在產生全部名片 VCF…');
+    try {
+      const n = vcfMode === 'new' ? exportNewVcf() : exportAllVcf();
+      addLog(n > 0 ? `✅ VCF 匯出成功（${n} 張），檔案已下載！` : '⚠️ 沒有新增名片需要匯出。');
+    } catch(e) { addLog(`❌ VCF 匯出失敗：${e.message}`); }
     progress();
   }
 
