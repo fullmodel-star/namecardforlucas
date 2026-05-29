@@ -1666,6 +1666,57 @@ body::after {
         </div>
       </div>
 
+      <!-- 通訊錄整合管理 -->
+      <div class="settings-section-card">
+        <h3><i class="ti ti-address-book" style="color:var(--accent)"></i> 通訊錄整合管理</h3>
+        <p style="font-size:12px;color:var(--text-secondary);margin-bottom:14px;">將名片庫與手機通訊錄互動：批次推送至 Google / 匯出 VCF / 從手機通訊錄匯入。</p>
+
+        <!-- ① VCF 匯出入 -->
+        <div style="margin-bottom:14px;">
+          <div style="font-size:12px;font-weight:600;color:var(--text-primary);margin-bottom:6px;display:flex;align-items:center;gap:6px;">
+            <i class="ti ti-file-export" style="color:var(--color-green);"></i> VCF 聯絡人匯出
+          </div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;">
+            <button class="btn btn-green" onclick="exportAllVcf()">
+              <i class="ti ti-download"></i> 全部匯出 VCF（可匯入 iOS / Android）
+            </button>
+          </div>
+          <p style="font-size:11px;color:var(--text-tertiary);margin-top:5px;">匯出後，在手機開啟 .vcf 檔即可一鍵加入通訊錄。</p>
+        </div>
+
+        <hr style="border:none;border-top:1px solid var(--border-color);margin:12px 0;">
+
+        <!-- ② Google 通訊錄批次推送 -->
+        <div style="margin-bottom:14px;">
+          <div style="font-size:12px;font-weight:600;color:var(--text-primary);margin-bottom:6px;display:flex;align-items:center;gap:6px;">
+            <i class="ti ti-brand-google" style="color:#4285F4;"></i> Google 通訊錄同步
+          </div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
+            <button class="btn btn-blue" onclick="syncAllCardsToGoogle()">
+              <i class="ti ti-cloud-upload"></i> 批次推送全部至 Google 通訊錄
+            </button>
+            <span id="google-sync-stats" style="font-size:11px;color:var(--text-tertiary);"></span>
+          </div>
+          <p style="font-size:11px;color:var(--text-tertiary);margin-top:5px;">需先在下方授權 Google 帳號。Android 自動同步，iOS 設定 Google 帳號後亦可使用。</p>
+        </div>
+
+        <hr style="border:none;border-top:1px solid var(--border-color);margin:12px 0;">
+
+        <!-- ③ Contact Picker API -->
+        <div>
+          <div style="font-size:12px;font-weight:600;color:var(--text-primary);margin-bottom:6px;display:flex;align-items:center;gap:6px;">
+            <i class="ti ti-phone-incoming" style="color:var(--color-amber);"></i> 從手機通訊錄匯入
+          </div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
+            <button class="btn btn-amber" onclick="importFromContactPicker()" id="btn-contact-picker">
+              <i class="ti ti-address-book"></i> 選取手機聯絡人匯入
+            </button>
+            <span id="contact-picker-status" style="font-size:11px;color:var(--text-tertiary);"></span>
+          </div>
+          <p style="font-size:11px;color:var(--text-tertiary);margin-top:5px;">支援 Android Chrome / iOS Safari 14.5+（手機瀏覽器）。桌機瀏覽器不支援此功能。</p>
+        </div>
+      </div>
+
       <!-- Google Drive 連線控制 -->
       <div class="settings-section-card">
         <h3><i class="ti ti-brand-google-drive" style="color:var(--accent)"></i> Google Drive 授權管理</h3>
@@ -2358,6 +2409,113 @@ async function apiDeleteGoogleContact(resourceName) {
   await fetchContactsApi(`https://people.googleapis.com/v1/${encodeURI(resourceName)}:deleteContact`, {
     method: 'DELETE'
   });
+}
+
+async function syncAllCardsToGoogle() {
+  if (!gdriveToken) {
+    try {
+      showToast('正在初始化 Google 帳號授權...');
+      await ensureGoogleAuth();
+    } catch(err) {
+      alert('Google 授權失敗，請先在下方授權 Google 帳號！');
+      return;
+    }
+  }
+
+  const statsEl = document.getElementById('google-sync-stats');
+  const total = cardsList.length;
+  if (total === 0) { showToast('名片庫目前沒有資料！'); return; }
+
+  const unsynced = cardsList.filter(c => !c.googleContactId);
+  const synced   = cardsList.filter(c =>  c.googleContactId);
+  statsEl.textContent = `準備中… 已同步 ${synced.length}，待推送 ${unsynced.length} 張`;
+
+  if (unsynced.length === 0) {
+    showToast('所有名片都已同步至 Google 通訊錄！');
+    statsEl.textContent = `✓ 全部 ${total} 張皆已同步`;
+    return;
+  }
+
+  if (!confirm(`將把 ${unsynced.length} 張尚未同步的名片推送至 Google 通訊錄，確定繼續？`)) return;
+
+  let done = 0, fail = 0;
+  for (let i = 0; i < unsynced.length; i++) {
+    const c = unsynced[i];
+    statsEl.textContent = `推送中… ${i + 1} / ${unsynced.length}　成功 ${done}　失敗 ${fail}`;
+    try {
+      const res = await apiCreateGoogleContact(c);
+      c.googleContactId = res.googleContactId;
+      await dbSaveCard(c);
+      done++;
+    } catch(e) {
+      console.error('[syncAll] 推送失敗：', c.name, e.message);
+      fail++;
+    }
+    // 避免過快觸發 Google API 頻率限制
+    if (i < unsynced.length - 1) await new Promise(r => setTimeout(r, 400));
+  }
+
+  statsEl.textContent = `✓ 完成：成功 ${done} 張${fail ? `，失敗 ${fail} 張` : ''}`;
+  showToast(`批次 Google 同步完成！成功 ${done} 張${fail ? `，失敗 ${fail} 張` : ''}`);
+  renderCardsGrid();
+}
+
+async function importFromContactPicker() {
+  const statusEl = document.getElementById('contact-picker-status');
+  if (!('contacts' in navigator && 'ContactsManager' in window)) {
+    statusEl.textContent = '⚠ 此瀏覽器不支援，請改用手機 Chrome 或 iOS Safari 14.5+';
+    statusEl.style.color = 'var(--color-amber)';
+    return;
+  }
+
+  statusEl.textContent = '正在開啟手機通訊錄…';
+  statusEl.style.color = 'var(--text-tertiary)';
+
+  try {
+    const props = ['name', 'email', 'tel', 'address', 'organization'];
+    const contacts = await navigator.contacts.select(props, { multiple: true });
+
+    if (!contacts || contacts.length === 0) {
+      statusEl.textContent = '未選取任何聯絡人。';
+      return;
+    }
+
+    let added = 0;
+    for (const ct of contacts) {
+      const name   = ct.name?.[0] || '';
+      const email  = ct.email?.[0] || '';
+      const mobile = ct.tel?.[0] || '';
+      const org    = ct.organization?.[0] || '';
+      const addr   = ct.address?.[0]?.addressLine?.join(' ') || '';
+
+      const newCard = {
+        id: 'card_' + crypto.randomUUID(),
+        name, email, mobile, org, addr,
+        title: '', dept: '', phone: '', phoneExt: '', fax: '', website: '', zip: '',
+        note: '',
+        processed: false,
+        createdAt: new Date().toLocaleDateString('zh-TW'),
+        tags: ['手機通訊錄匯入'],
+        group: '其他',
+        theme: 'indigo'
+      };
+      await dbSaveCard(newCard);
+      cardsList.unshift(newCard);
+      checkScanDuplicate([newCard]);
+      added++;
+    }
+
+    statusEl.textContent = `✓ 已匯入 ${added} 位聯絡人`;
+    statusEl.style.color = 'var(--color-green)';
+    showToast(`✓ 成功從手機通訊錄匯入 ${added} 位聯絡人！`);
+    renderSidebarFilters();
+    renderCardsGrid();
+    renderDashboard();
+  } catch(err) {
+    console.error('[ContactPicker]', err);
+    statusEl.textContent = '✖ 存取失敗：' + err.message;
+    statusEl.style.color = 'var(--color-red)';
+  }
 }
 
 async function syncContactToGoogle(id) {
