@@ -1454,12 +1454,8 @@ body::after {
             </div>
           </div>
           
-          <div class="sidebar-section">
-            <label class="sidebar-label"><i class="ti ti-folder"></i> 群組分類</label>
-            <div class="group-filter-list" id="group-filter-list">
-              <!-- JS 動態渲染 -->
-            </div>
-          </div>
+          <!-- 群組分類已移至「數據分析」分頁 -->
+          <div id="group-filter-list" style="display:none;"></div>
           
           <div class="sidebar-section">
             <label class="sidebar-label"><i class="ti ti-tags"></i> 標籤篩選</label>
@@ -1537,7 +1533,10 @@ body::after {
       
       <div class="dashboard-details-grid">
         <div class="db-section">
-          <h3><i class="ti ti-chart-pie"></i> 群組分佈比例</h3>
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+            <h3 style="margin:0;"><i class="ti ti-chart-pie"></i> 群組分佈</h3>
+            <span style="font-size:13px;color:var(--text-tertiary);">點選群組可篩選名片</span>
+          </div>
           <div id="db-group-progress-list">
             <!-- 動態生成 -->
           </div>
@@ -3673,22 +3672,37 @@ function renderDashboard() {
     groupCounts[g] = (groupCounts[g] || 0) + 1;
   });
   
+  const groupColorMap = {'學校委員':'#6366f1','政府機關':'#0ea5e9','企業客戶':'#10b981','資訊夥伴':'#f59e0b','法人夥伴':'#8b5cf6','供應商夥伴':'#ec4899','其他':'#94a3b8'};
   const progressList = document.getElementById('db-group-progress-list');
   progressList.innerHTML = customGroups.map(g => {
     const count = groupCounts[g] || 0;
     const pct = cardsList.length ? Math.round((count / cardsList.length) * 100) : 0;
+    const color = groupColorMap[g] || 'var(--accent)';
+    const isActive = activeGroupFilter === g;
     return `
-      <div class="db-progress-row">
+      <div class="db-progress-row" onclick="setGroupFilter('${g}');switchTab('cards');"
+        style="cursor:pointer;border-radius:8px;padding:6px 8px;margin:-6px -8px;transition:background 0.15s;${isActive ? 'background:var(--accent-light);' : ''}"
+        onmouseover="this.style.background='var(--bg-tertiary)'"
+        onmouseout="this.style.background='${isActive ? 'var(--accent-light)' : ''}'">
         <div class="db-progress-label">
-          <span>${g}</span>
-          <span style="font-weight:600;">${count} 張 (${pct}%)</span>
+          <span style="display:flex;align-items:center;gap:7px;">
+            <span style="width:10px;height:10px;border-radius:50%;background:${color};flex-shrink:0;display:inline-block;"></span>
+            ${g}
+          </span>
+          <span style="font-weight:700;color:${count > 0 ? 'var(--text-primary)' : 'var(--text-tertiary)'};">${count} 張</span>
         </div>
         <div class="db-progress-bar-container">
-          <div class="db-progress-fill" style="width:${pct}%"></div>
+          <div class="db-progress-fill" style="width:${pct}%;background:${color};"></div>
         </div>
       </div>
     `;
-  }).join('');
+  }).join('') + `
+    <div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--border-color);">
+      <div onclick="setGroupFilter('');switchTab('cards');"
+        style="cursor:pointer;font-size:14px;color:var(--accent);display:flex;align-items:center;gap:5px;padding:4px 0;">
+        <i class="ti ti-layout-grid"></i> 顯示全部名片
+      </div>
+    </div>`;
   
   // 2. 數據標籤雲 (右欄)
   const tagCounts = {};
