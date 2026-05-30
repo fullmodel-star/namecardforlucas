@@ -107,6 +107,7 @@
 * { box-sizing: border-box; margin: 0; padding: 0; }
 body {
   font-family: var(--font-sans);
+  font-size: 15px;
   background: var(--bg-primary);
   color: var(--text-primary);
   min-height: 100vh;
@@ -205,7 +206,7 @@ body::after {
   margin-top: 4px;
 }
 .badge {
-  font-size: 13px;
+  font-size: 15px;
   font-weight: 500;
   padding: 2px 8px;
   border-radius: 20px;
@@ -225,7 +226,7 @@ body::after {
 /* 按鈕樣式 */
 .btn {
   padding: 8px 16px;
-  font-size: 13px;
+  font-size: 15px;
   font-weight: 500;
   border: 1px solid var(--border-color);
   border-radius: var(--radius-md);
@@ -295,7 +296,7 @@ body::after {
   min-width: 0;
   white-space: nowrap;
   padding: 8px 10px;
-  font-size: 13px;
+  font-size: 15px;
   font-weight: 500;
   text-align: center;
   border-radius: var(--radius-sm);
@@ -386,7 +387,7 @@ body::after {
   padding: 1rem;
 }
 .sidebar-label {
-  font-size: 13px;
+  font-size: 15px;
   font-weight: 600;
   color: var(--text-tertiary);
   text-transform: uppercase;
@@ -399,7 +400,7 @@ body::after {
 .searchrow-new input {
   width: 100%;
   padding: 8px 12px;
-  font-size: 13px;
+  font-size: 15px;
   border: 1px solid var(--border-color);
   border-radius: var(--radius-sm);
   background: var(--bg-secondary);
@@ -422,7 +423,7 @@ body::after {
   align-items: center;
   justify-content: space-between;
   padding: 6px 10px;
-  font-size: 12px;
+  font-size: 14px;
   border-radius: var(--radius-sm);
   cursor: pointer;
   color: var(--text-secondary);
@@ -458,7 +459,7 @@ body::after {
 }
 .tag-filter-chip {
   padding: 3px 8px;
-  font-size: 13px;
+  font-size: 15px;
   border-radius: 20px;
   border: 1px solid var(--border-color);
   background: var(--bg-secondary);
@@ -495,7 +496,7 @@ body::after {
 }
 .filter-chip {
   padding: 5px 12px;
-  font-size: 12px;
+  font-size: 14px;
   font-weight: 500;
   border-radius: 20px;
   border: 1px solid var(--border-color);
@@ -516,12 +517,12 @@ body::after {
   display: flex;
   align-items: center;
   gap: 6px;
-  font-size: 12px;
+  font-size: 14px;
   color: var(--text-secondary);
 }
 .sort-selector select {
   padding: 4px 8px;
-  font-size: 12px;
+  font-size: 14px;
   border: 1px solid var(--border-color);
   border-radius: var(--radius-sm);
   background: var(--bg-secondary);
@@ -609,7 +610,7 @@ body::after {
   text-overflow: ellipsis;
 }
 .card-title-text {
-  font-size: 12px;
+  font-size: 14px;
   color: var(--text-secondary);
   white-space: nowrap;
   overflow: hidden;
@@ -617,7 +618,7 @@ body::after {
   margin-top: 1px;
 }
 .card-org-text {
-  font-size: 12px;
+  font-size: 14px;
   color: var(--accent);
   font-weight: 500;
   margin-top: 2px;
@@ -653,18 +654,18 @@ body::after {
 .tool-card:active { transform: scale(0.98); }
 .tool-card-icon { font-size: 24px; line-height: 1; color: var(--tc, var(--accent)); }
 .tool-card-title { font-size: 14px; font-weight: 700; color: var(--text-primary); line-height: 1.3; }
-.tool-card-desc { font-size: 12px; color: var(--text-secondary); line-height: 1.4; }
+.tool-card-desc { font-size: 14px; color: var(--text-secondary); line-height: 1.4; }
 /* 公司組織圖 */
 .org-company-card { background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: var(--radius-md); margin-bottom: 12px; overflow: hidden; }
 .org-company-header { display:flex; align-items:center; gap:10px; padding:12px 14px; background:var(--bg-tertiary); border-bottom:1px solid var(--border-color); cursor:pointer; }
 .org-company-name { font-size:14px; font-weight:700; color:var(--text-primary); flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-.org-company-count { font-size:12px; font-weight:700; color:#fff; background:var(--accent); border-radius:99px; padding:1px 9px; flex-shrink:0; }
+.org-company-count { font-size:14px; font-weight:700; color:#fff; background:var(--accent); border-radius:99px; padding:1px 9px; flex-shrink:0; }
 .org-person-row { display:flex; align-items:center; gap:12px; padding:10px 14px; border-bottom:1px solid var(--border-color); cursor:pointer; transition:background 0.15s; }
 .org-person-row:last-child { border-bottom:none; }
 .org-person-row:hover { background:var(--bg-tertiary); }
-.org-person-avatar { width:34px; height:34px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:700; color:#fff; flex-shrink:0; }
+.org-person-avatar { width:34px; height:34px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:14px; font-weight:700; color:#fff; flex-shrink:0; }
 .org-person-name { font-size:14px; font-weight:600; color:var(--text-primary); }
-.org-person-title { font-size:12px; color:var(--text-secondary); margin-top:1px; }
+.org-person-title { font-size:14px; color:var(--text-secondary); margin-top:1px; }
 .card-tags-area {
   display: flex;
   flex-wrap: wrap;
@@ -865,7 +866,7 @@ body::after {
   gap: 4px;
 }
 .df-val {
-  font-size: 12px;
+  font-size: 14px;
   font-weight: 500;
   color: var(--text-primary);
   word-break: break-all;
@@ -893,7 +894,7 @@ body::after {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  font-size: 13px;
+  font-size: 15px;
   cursor: pointer;
   transition: var(--transition);
 }
@@ -964,7 +965,7 @@ body::after {
   font-size: 20px;
 }
 .db-card-info h4 {
-  font-size: 13px;
+  font-size: 15px;
   color: var(--text-secondary);
   text-transform: uppercase;
   letter-spacing: 0.05em;
@@ -1006,7 +1007,7 @@ body::after {
 .db-progress-label {
   display: flex;
   justify-content: space-between;
-  font-size: 12px;
+  font-size: 14px;
   margin-bottom: 4px;
   color: var(--text-secondary);
 }
@@ -1032,7 +1033,7 @@ body::after {
   border: 1px solid var(--border-color);
   border-radius: var(--radius-sm);
   margin-bottom: 6px;
-  font-size: 12px;
+  font-size: 14px;
 }
 
 /* ============================================================================
@@ -1065,7 +1066,7 @@ body::after {
   margin-bottom: 4px;
 }
 .batch-dropzone p {
-  font-size: 13px;
+  font-size: 15px;
 }
 
 .queue-list {
@@ -1089,7 +1090,7 @@ body::after {
   flex: 1;
 }
 .qi-name {
-  font-size: 12px;
+  font-size: 14px;
   font-weight: 600;
   white-space: nowrap;
   overflow: hidden;
@@ -1127,7 +1128,7 @@ body::after {
   margin-bottom: 1rem;
 }
 .dup-group-title {
-  font-size: 13px;
+  font-size: 15px;
   font-weight: 700;
   color: var(--color-amber);
   margin-bottom: 8px;
@@ -1152,7 +1153,7 @@ body::after {
   border: 1px solid var(--color-amber-border);
   border-radius: var(--radius-md);
   padding: 10px 14px;
-  font-size: 12px;
+  font-size: 14px;
   color: var(--color-amber);
   margin-bottom: 1rem;
   display: flex;
@@ -1164,7 +1165,7 @@ body::after {
   border: 1px solid var(--color-red-border);
   border-radius: var(--radius-md);
   padding: 12px 16px;
-  font-size: 12px;
+  font-size: 14px;
   color: var(--color-red);
   margin-bottom: 1rem;
   display: flex;
@@ -1203,7 +1204,7 @@ body::after {
   flex: 1;
   min-width: 150px;
   padding: 8px 12px;
-  font-size: 13px;
+  font-size: 15px;
   border: 1px solid var(--border-color);
   border-radius: var(--radius-sm);
   background: var(--bg-secondary);
@@ -1220,7 +1221,7 @@ body::after {
 }
 .manage-badge-chip {
   padding: 4px 10px;
-  font-size: 13px;
+  font-size: 15px;
   border-radius: 20px;
   background: var(--bg-secondary);
   border: 1px solid var(--border-color);
@@ -1282,7 +1283,7 @@ body::after {
   grid-column: 1 / -1;
 }
 .form-row label {
-  font-size: 13px;
+  font-size: 15px;
   font-weight: 600;
   color: var(--text-secondary);
   display: block;
@@ -1291,7 +1292,7 @@ body::after {
 .form-row input, .form-row select, .form-row textarea {
   width: 100%;
   padding: 8px 12px;
-  font-size: 13px;
+  font-size: 15px;
   border: 1px solid var(--border-color);
   border-radius: var(--radius-sm);
   background: var(--bg-tertiary);
@@ -1354,7 +1355,7 @@ body::after {
   padding: 10px 14px;
   border-radius: var(--radius-md);
   margin-bottom: 12px;
-  font-size: 12px;
+  font-size: 14px;
   color: var(--accent);
 }
 .ai-thinking-box.show { display: flex; }
@@ -1379,7 +1380,7 @@ body::after {
   transform: translateX(-50%);
   background: var(--text-primary);
   color: var(--bg-primary);
-  font-size: 13px;
+  font-size: 15px;
   font-weight: 500;
   padding: 8px 20px;
   border-radius: 20px;
@@ -1609,7 +1610,7 @@ body::after {
       <!-- AI 掃名片區 -->
       <div style="display:flex;align-items:center;gap:10px;margin-bottom:1rem;">
         <div style="flex:1;height:1px;background:var(--border-color);"></div>
-        <span style="font-size:12px;font-weight:700;color:var(--text-secondary);white-space:nowrap;"><i class="ti ti-robot"></i> AI 批次掃名片</span>
+        <span style="font-size:14px;font-weight:700;color:var(--text-secondary);white-space:nowrap;"><i class="ti ti-robot"></i> AI 批次掃名片</span>
         <div style="flex:1;height:1px;background:var(--border-color);"></div>
       </div>
 
@@ -1630,7 +1631,7 @@ body::after {
       </div>
 
       <div class="progress-bar" id="batch-progress-bar"><div class="progress-fill" id="batch-progress-fill"></div></div>
-      <div id="batch-progress-stats" style="display:none;font-size:12px;color:var(--text-secondary);margin:6px 0 0;text-align:center;min-height:18px;"></div>
+      <div id="batch-progress-stats" style="display:none;font-size:14px;color:var(--text-secondary);margin:6px 0 0;text-align:center;min-height:18px;"></div>
       <div class="queue-list" id="batch-queue-list"></div>
 
       <div style="display:flex;gap:8px;margin-top:1.25rem;flex-wrap:wrap;">
@@ -1648,7 +1649,7 @@ body::after {
         </h2>
         <div style="display:flex;gap:8px;align-items:center;">
           <input id="org-search" type="text" placeholder="搜尋公司名稱…" oninput="renderGraphTab()"
-            style="font-size:13px;padding:6px 10px;border-radius:var(--radius-sm);border:1px solid var(--border-color);background:var(--bg-secondary);color:var(--text-primary);width:160px;">
+            style="font-size:15px;padding:6px 10px;border-radius:var(--radius-sm);border:1px solid var(--border-color);background:var(--bg-secondary);color:var(--text-primary);width:160px;">
           <button class="btn" onclick="renderGraphTab()"><i class="ti ti-refresh"></i></button>
         </div>
       </div>
@@ -1661,7 +1662,7 @@ body::after {
       <div class="local-server-notice" id="local-server-notice" style="display:none">
         <i class="ti ti-info-circle" style="font-size: 18px; margin-top: 1px;"></i>
         <div>
-          <strong style="font-size:13px;">偵測到您目前直接雙擊開啟 HTML 檔案 (file:// 協定)</strong>
+          <strong style="font-size:15px;">偵測到您目前直接雙擊開啟 HTML 檔案 (file:// 協定)</strong>
           <p style="margin-top: 2px;">由於 Google OAuth 機制限制，在本地檔案模式下 Google 雲端登入與初始化將無法使用。若需要此功能，請使用本地伺服器啟動網頁，例如：在終端機執行 <code>python -m http.server 8000</code>，並瀏覽 <code>http://localhost:8000</code>。</p>
         </div>
       </div>
@@ -1669,7 +1670,7 @@ body::after {
       <!-- API 設定 -->
       <div class="settings-section-card">
         <h3><i class="ti ti-robot" style="color:var(--accent)"></i> AI 掃名片設定</h3>
-        <p style="font-size:12px; color:var(--text-secondary); margin-bottom:8px;">填入 API 金鑰後，即可用 AI 自動辨識名片照片內容。</p>
+        <p style="font-size:14px; color:var(--text-secondary); margin-bottom:8px;">填入 API 金鑰後，即可用 AI 自動辨識名片照片內容。</p>
         <div class="settings-input-group">
           <input type="password" id="settings-api-key" placeholder="貼上您的 Gemini API Key" />
           <select id="settings-gemini-model" style="max-width:200px;">
@@ -1682,7 +1683,7 @@ body::after {
           <button class="btn btn-red" onclick="clearGeminiKey()" title="清除金鑰"><i class="ti ti-trash"></i></button>
         </div>
         <div class="settings-input-group" style="margin-top: 10px; align-items: center; gap: 8px;">
-          <label for="settings-gemini-delay" style="font-size: 12px; color: var(--text-secondary);">批次辨識間隔：</label>
+          <label for="settings-gemini-delay" style="font-size: 14px; color: var(--text-secondary);">批次辨識間隔：</label>
           <select id="settings-gemini-delay" style="max-width:180px; padding: 6px 10px;">
             <option value="1">1 秒 (付費版/無限制)</option>
             <option value="5" selected>5 秒 (免費版 15 RPM)</option>
@@ -1691,20 +1692,20 @@ body::after {
             <option value="20">20 秒 (極度安全)</option>
             <option value="30">30 秒 (免費 Pro 版 2 RPM)</option>
           </select>
-          <span style="font-size: 13px; color: var(--text-tertiary);">免費版建議設定為 5 秒以上，以避免觸發 15 RPM 限制。</span>
+          <span style="font-size: 15px; color: var(--text-tertiary);">免費版建議設定為 5 秒以上，以避免觸發 15 RPM 限制。</span>
         </div>
-        <div id="settings-api-key-status" style="font-size:12px; margin-top:6px; font-weight:500;"></div>
+        <div id="settings-api-key-status" style="font-size:14px; margin-top:6px; font-weight:500;"></div>
 
         <!-- API Key 取得教學 -->
         <div style="margin-top:14px;">
-          <button onclick="toggleApiKeyGuide()" style="border:none;background:none;cursor:pointer;font-size:12px;color:var(--accent);display:flex;align-items:center;gap:5px;padding:0;font-family:inherit;">
+          <button onclick="toggleApiKeyGuide()" style="border:none;background:none;cursor:pointer;font-size:14px;color:var(--accent);display:flex;align-items:center;gap:5px;padding:0;font-family:inherit;">
             <i class="ti ti-help-circle"></i>
             <span id="api-guide-toggle-text">❓ 如何免費取得 Gemini API Key？</span>
             <i class="ti ti-chevron-down" id="api-guide-chevron" style="transition:transform 0.2s;"></i>
           </button>
           <div id="api-key-guide" style="display:none;margin-top:12px;border:1px solid var(--border-color);border-radius:var(--radius-md);overflow:hidden;">
             <!-- 標題列 -->
-            <div style="background:var(--accent);color:#fff;padding:10px 14px;font-size:13px;font-weight:700;display:flex;align-items:center;gap:8px;">
+            <div style="background:var(--accent);color:#fff;padding:10px 14px;font-size:15px;font-weight:700;display:flex;align-items:center;gap:8px;">
               <i class="ti ti-sparkles"></i> Gemini API Key 申請教學（完全免費）
             </div>
             <!-- 步驟內容 -->
@@ -1712,11 +1713,11 @@ body::after {
 
               <!-- Step 1 -->
               <div style="display:flex;gap:12px;align-items:flex-start;">
-                <div style="flex-shrink:0;width:28px;height:28px;border-radius:50%;background:var(--accent);color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;">1</div>
+                <div style="flex-shrink:0;width:28px;height:28px;border-radius:50%;background:var(--accent);color:#fff;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:700;">1</div>
                 <div>
-                  <div style="font-size:13px;font-weight:600;margin-bottom:3px;">前往 Google AI Studio</div>
-                  <div style="font-size:12px;color:var(--text-secondary);margin-bottom:5px;">點下方連結，用你的 Google 帳號登入。</div>
-                  <a href="https://aistudio.google.com/apikey" target="_blank" style="display:inline-flex;align-items:center;gap:5px;font-size:12px;color:#fff;background:var(--accent);border-radius:6px;padding:5px 12px;text-decoration:none;font-weight:600;">
+                  <div style="font-size:15px;font-weight:600;margin-bottom:3px;">前往 Google AI Studio</div>
+                  <div style="font-size:14px;color:var(--text-secondary);margin-bottom:5px;">點下方連結，用你的 Google 帳號登入。</div>
+                  <a href="https://aistudio.google.com/apikey" target="_blank" style="display:inline-flex;align-items:center;gap:5px;font-size:14px;color:#fff;background:var(--accent);border-radius:6px;padding:5px 12px;text-decoration:none;font-weight:600;">
                     <i class="ti ti-external-link"></i> 開啟 Google AI Studio
                   </a>
                 </div>
@@ -1726,10 +1727,10 @@ body::after {
 
               <!-- Step 2 -->
               <div style="display:flex;gap:12px;align-items:flex-start;">
-                <div style="flex-shrink:0;width:28px;height:28px;border-radius:50%;background:var(--accent);color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;">2</div>
+                <div style="flex-shrink:0;width:28px;height:28px;border-radius:50%;background:var(--accent);color:#fff;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:700;">2</div>
                 <div>
-                  <div style="font-size:13px;font-weight:600;margin-bottom:3px;">點「建立 API 金鑰」</div>
-                  <div style="font-size:12px;color:var(--text-secondary);">進入頁面後，點藍色按鈕 <strong>「建立 API 金鑰 (Create API Key)」</strong>，選擇現有的 Google Cloud 專案或建立新專案，系統會自動產生一組金鑰。</div>
+                  <div style="font-size:15px;font-weight:600;margin-bottom:3px;">點「建立 API 金鑰」</div>
+                  <div style="font-size:14px;color:var(--text-secondary);">進入頁面後，點藍色按鈕 <strong>「建立 API 金鑰 (Create API Key)」</strong>，選擇現有的 Google Cloud 專案或建立新專案，系統會自動產生一組金鑰。</div>
                 </div>
               </div>
 
@@ -1737,10 +1738,10 @@ body::after {
 
               <!-- Step 3 -->
               <div style="display:flex;gap:12px;align-items:flex-start;">
-                <div style="flex-shrink:0;width:28px;height:28px;border-radius:50%;background:var(--accent);color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;">3</div>
+                <div style="flex-shrink:0;width:28px;height:28px;border-radius:50%;background:var(--accent);color:#fff;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:700;">3</div>
                 <div>
-                  <div style="font-size:13px;font-weight:600;margin-bottom:3px;">複製 API Key</div>
-                  <div style="font-size:12px;color:var(--text-secondary);">金鑰格式為 <code style="background:var(--bg-tertiary);padding:1px 5px;border-radius:3px;font-size:13px;">AIzaSy...</code> 開頭，點旁邊的複製按鈕複製起來。</div>
+                  <div style="font-size:15px;font-weight:600;margin-bottom:3px;">複製 API Key</div>
+                  <div style="font-size:14px;color:var(--text-secondary);">金鑰格式為 <code style="background:var(--bg-tertiary);padding:1px 5px;border-radius:3px;font-size:15px;">AIzaSy...</code> 開頭，點旁邊的複製按鈕複製起來。</div>
                 </div>
               </div>
 
@@ -1748,15 +1749,15 @@ body::after {
 
               <!-- Step 4 -->
               <div style="display:flex;gap:12px;align-items:flex-start;">
-                <div style="flex-shrink:0;width:28px;height:28px;border-radius:50%;background:var(--color-green);color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;">4</div>
+                <div style="flex-shrink:0;width:28px;height:28px;border-radius:50%;background:var(--color-green);color:#fff;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:700;">4</div>
                 <div>
-                  <div style="font-size:13px;font-weight:600;margin-bottom:3px;">貼到上方輸入框，按「儲存」</div>
-                  <div style="font-size:12px;color:var(--text-secondary);">回到本 App，把金鑰貼入上方輸入框，按 <strong>「儲存」</strong>，再按 <strong>「測試連線」</strong> 確認正常運作。完成！</div>
+                  <div style="font-size:15px;font-weight:600;margin-bottom:3px;">貼到上方輸入框，按「儲存」</div>
+                  <div style="font-size:14px;color:var(--text-secondary);">回到本 App，把金鑰貼入上方輸入框，按 <strong>「儲存」</strong>，再按 <strong>「測試連線」</strong> 確認正常運作。完成！</div>
                 </div>
               </div>
 
               <!-- 費用說明 -->
-              <div style="background:var(--color-green-bg,rgba(16,185,129,0.08));border:1px solid var(--color-green,#10b981);border-radius:8px;padding:10px 12px;font-size:12px;">
+              <div style="background:var(--color-green-bg,rgba(16,185,129,0.08));border:1px solid var(--color-green,#10b981);border-radius:8px;padding:10px 12px;font-size:14px;">
                 <div style="font-weight:700;color:var(--color-green,#10b981);margin-bottom:4px;"><i class="ti ti-coin"></i> 費用說明</div>
                 <div style="color:var(--text-secondary);line-height:1.7;">
                   免費額度每天 <strong>1,500 次</strong>請求，一般個人使用完全不會超過。<br>
@@ -1771,14 +1772,14 @@ body::after {
       <!-- 分類與標籤管理 -->
       <div class="settings-section-card">
         <h3><i class="ti ti-folder" style="color:var(--accent)"></i> 分類與標籤管理</h3>
-        <p style="font-size:12px;color:var(--text-secondary);margin-bottom:12px;">管理名片的群組分類和標籤。</p>
-        <div style="font-size:12px;font-weight:600;color:var(--text-secondary);margin-bottom:6px;">群組</div>
+        <p style="font-size:14px;color:var(--text-secondary);margin-bottom:12px;">管理名片的群組分類和標籤。</p>
+        <div style="font-size:14px;font-weight:600;color:var(--text-secondary);margin-bottom:6px;">群組</div>
         <div class="setting-badge-manager" id="badge-manager-groups"></div>
         <div class="settings-input-group" style="max-width:400px;margin-bottom:16px;">
           <input type="text" id="new-group-input" placeholder="輸入新群組名稱..." onkeydown="if(event.key==='Enter') addCustomGroup();" />
           <button class="btn btn-primary" onclick="addCustomGroup()"><i class="ti ti-plus"></i> 新增</button>
         </div>
-        <div style="font-size:12px;font-weight:600;color:var(--text-secondary);margin-bottom:6px;">標籤</div>
+        <div style="font-size:14px;font-weight:600;color:var(--text-secondary);margin-bottom:6px;">標籤</div>
         <div class="setting-badge-manager" id="badge-manager-tags"></div>
         <div class="settings-input-group" style="max-width:400px;">
           <input type="text" id="new-tag-input" placeholder="輸入新標籤名稱..." onkeydown="if(event.key==='Enter') addCustomTag();" />
@@ -1789,7 +1790,7 @@ body::after {
       <!-- 備份與還原 -->
       <div class="settings-section-card">
         <h3><i class="ti ti-database" style="color:var(--accent)"></i> 備份與還原</h3>
-        <p style="font-size:12px;color:var(--text-secondary);margin-bottom:12px;">定期備份可防止資料遺失。備份檔案包含所有名片及圖片。</p>
+        <p style="font-size:14px;color:var(--text-secondary);margin-bottom:12px;">定期備份可防止資料遺失。備份檔案包含所有名片及圖片。</p>
         <div style="display:flex;gap:8px;flex-wrap:wrap;">
           <button class="btn btn-green" onclick="exportFullJsonBackup()"><i class="ti ti-download"></i> 備份名片庫</button>
           <button class="btn btn-blue" onclick="document.getElementById('import-backup-file').click()"><i class="ti ti-upload"></i> 還原備份</button>
@@ -1808,7 +1809,7 @@ body::after {
 
           <!-- Google 帳號 -->
           <div>
-            <div style="font-size:12px;font-weight:600;color:var(--text-secondary);margin-bottom:8px;display:flex;align-items:center;gap:6px;">
+            <div style="font-size:14px;font-weight:600;color:var(--text-secondary);margin-bottom:8px;display:flex;align-items:center;gap:6px;">
               <i class="ti ti-brand-google"></i> Google 帳號連結
             </div>
             <div id="gdrive-login-area">
@@ -1818,19 +1819,19 @@ body::after {
               <div style="display:flex;align-items:center;gap:12px;background:var(--bg-tertiary);border:1px solid var(--border-color);padding:8px 16px;border-radius:var(--radius-md);max-width:400px;">
                 <div style="font-size:22px;color:var(--color-green)"><i class="ti ti-circle-check-filled"></i></div>
                 <div>
-                  <div style="font-size:13px;font-weight:600;" id="gdrive-name">帳號已連結</div>
-                  <div style="font-size:13px;color:var(--text-secondary);" id="gdrive-email"></div>
+                  <div style="font-size:15px;font-weight:600;" id="gdrive-name">帳號已連結</div>
+                  <div style="font-size:15px;color:var(--text-secondary);" id="gdrive-email"></div>
                 </div>
-                <button class="btn btn-red" style="margin-left:auto;padding:4px 10px;font-size:13px;" onclick="gdriveLogout()"><i class="ti ti-logout"></i> 中斷</button>
+                <button class="btn btn-red" style="margin-left:auto;padding:4px 10px;font-size:15px;" onclick="gdriveLogout()"><i class="ti ti-logout"></i> 中斷</button>
               </div>
             </div>
           </div>
 
           <!-- 危險區 -->
           <div style="border:1px solid var(--color-red-border);border-radius:var(--radius-md);padding:12px 14px;background:var(--color-red-bg);">
-            <div style="font-size:12px;font-weight:700;color:var(--color-red);margin-bottom:8px;"><i class="ti ti-alert-triangle"></i> 危險操作</div>
+            <div style="font-size:14px;font-weight:700;color:var(--color-red);margin-bottom:8px;"><i class="ti ti-alert-triangle"></i> 危險操作</div>
             <button class="btn btn-red" onclick="clearAllSystemData()"><i class="ti ti-trash"></i> 清空全部名片資料</button>
-            <div style="font-size:13px;color:var(--color-red);margin-top:6px;opacity:0.8;">此操作無法復原，請先備份再執行。</div>
+            <div style="font-size:15px;color:var(--color-red);margin-top:6px;opacity:0.8;">此操作無法復原，請先備份再執行。</div>
           </div>
 
         </div>
@@ -1861,7 +1862,7 @@ body::after {
     <div style="background: white; padding:16px; display:inline-block; border-radius:var(--radius-md); border:1px solid var(--border-color); margin-top:1rem; margin-bottom:1rem;">
       <img id="share-qrcode-img" src="" alt="vCard QR Code" style="width:200px; height:200px; display:block;" />
     </div>
-    <p style="font-size:12px; color:var(--text-secondary); line-height:1.5; margin-bottom:1.5rem; padding:0 8px;">
+    <p style="font-size:14px; color:var(--text-secondary); line-height:1.5; margin-bottom:1.5rem; padding:0 8px;">
       讓對方使用手機相機或 LINE 掃描此二維碼，即可直接將此聯絡人儲存至其電話通訊錄中。
     </p>
     <button class="btn btn-primary" style="width:100%" onclick="closeQrCodeModal()">關閉視窗</button>
@@ -3700,7 +3701,7 @@ function renderDashboard() {
   const tagCloud = document.getElementById('db-tag-cloud');
   const tagKeys = Object.keys(tagCounts);
   if (tagKeys.length === 0) {
-    tagCloud.innerHTML = '<div style="font-size:12px; color:var(--text-tertiary);">暫無篩選標籤</div>';
+    tagCloud.innerHTML = '<div style="font-size:14px; color:var(--text-tertiary);">暫無篩選標籤</div>';
   } else {
     tagCloud.innerHTML = tagKeys.sort((a,b)=>tagCounts[b]-tagCounts[a]).map(t => `
       <span class="tag-filter-chip active" style="background:var(--bg-secondary); border-color:var(--border-color); color:var(--text-primary); cursor:default;">
@@ -3819,7 +3820,7 @@ function renderMyCardModal(myCard, isEditMode) {
           <div style="background: white; padding:12px; display:inline-block; border-radius:var(--radius-md); border:1px solid var(--border-color); box-shadow:var(--shadow-sm);">
             <img src="${qrUrl}" style="width:160px; height:160px; display:block;" alt="My QR Code" />
           </div>
-          <p style="font-size:13px; color:var(--text-secondary); margin-top:8px; line-height:1.4; padding:0 12px;">
+          <p style="font-size:15px; color:var(--text-secondary); margin-top:8px; line-height:1.4; padding:0 12px;">
             讓對方用手機相機掃描上方二維碼，即可直接在對方手機中將您儲存為通訊錄聯絡人！
           </p>
         </div>
@@ -3995,12 +3996,12 @@ function renderDupsTab() {
       ${g.map(c => `
         <div class="dup-card-item">
           <div style="min-width:0; flex:1;">
-            <div style="font-size:13px; font-weight:600;">${c.name || '—'}</div>
-            <div style="font-size:13px; color:var(--text-secondary); margin-top:2px;">
+            <div style="font-size:15px; font-weight:600;">${c.name || '—'}</div>
+            <div style="font-size:15px; color:var(--text-secondary); margin-top:2px;">
               ${c.org || '無公司'} · ${c.title || '無職稱'} | 手機: ${c.mobile || '無'} | Email: ${c.email || '無'}
             </div>
           </div>
-          <button class="btn btn-red" style="padding:4px 8px; font-size:13px;" onclick="deleteDupCard('${c.id}')">刪除此張</button>
+          <button class="btn btn-red" style="padding:4px 8px; font-size:15px;" onclick="deleteDupCard('${c.id}')">刪除此張</button>
         </div>
       `).join('')}
     </div>
@@ -4576,7 +4577,7 @@ function _syncStepBar(active) {
       const cur  = i === active - 1;
       const bg   = done ? 'var(--color-green)' : cur ? 'var(--accent)' : 'var(--bg-tertiary)';
       const color= (done || cur) ? '#fff' : 'var(--text-tertiary)';
-      return `<div style="flex:1;padding:8px;text-align:center;font-size:12px;font-weight:700;background:${bg};color:${color};">${l}${done ? ' ✓' : ''}</div>`;
+      return `<div style="flex:1;padding:8px;text-align:center;font-size:14px;font-weight:700;background:${bg};color:${color};">${l}${done ? ' ✓' : ''}</div>`;
     }).join('')}
   </div>`;
 }
@@ -4592,17 +4593,17 @@ function renderSmartSyncStep1() {
        </div>`
     : dups.map((g, idx) => `
         <div style="border:1px solid var(--color-amber-border);border-radius:var(--radius-md);padding:10px 12px;margin-bottom:8px;background:var(--color-amber-bg);">
-          <div style="font-size:12px;font-weight:700;color:var(--color-amber);margin-bottom:6px;">
+          <div style="font-size:14px;font-weight:700;color:var(--color-amber);margin-bottom:6px;">
             <i class="ti ti-copy"></i> 第 ${idx+1} 組：${g[0].name || '未命名'}（共 ${g.length} 張）
           </div>
           ${g.map(c => `
-            <div style="display:flex;align-items:center;gap:8px;padding:4px 0;font-size:12px;">
+            <div style="display:flex;align-items:center;gap:8px;padding:4px 0;font-size:14px;">
               <div style="flex:1;min-width:0;">
                 <strong>${c.name || '—'}</strong>
                 <span style="color:var(--text-secondary);margin-left:6px;">${c.org || ''}${c.mobile ? ' · ' + c.mobile : ''}</span>
               </div>
               <button onclick="smartSyncDeleteDup('${c.id}')"
-                style="border:none;background:var(--color-red-bg);color:var(--color-red);border-radius:4px;padding:3px 10px;cursor:pointer;font-size:13px;flex-shrink:0;">
+                style="border:none;background:var(--color-red-bg);color:var(--color-red);border-radius:4px;padding:3px 10px;cursor:pointer;font-size:15px;flex-shrink:0;">
                 <i class="ti ti-trash"></i> 刪除
               </button>
             </div>`).join('')}
@@ -4614,7 +4615,7 @@ function renderSmartSyncStep1() {
       <button onclick="closeSmartSyncModal()" style="border:none;background:none;cursor:pointer;font-size:22px;color:var(--text-tertiary);line-height:1;padding:0 4px;">×</button>
     </div>
     ${_syncStepBar(1)}
-    <div style="font-size:13px;font-weight:600;margin-bottom:10px;color:var(--text-primary);">
+    <div style="font-size:15px;font-weight:600;margin-bottom:10px;color:var(--text-primary);">
       ${dups.length > 0 ? `偵測到 <strong>${dups.length}</strong> 組疑似重複，刪除後再繼續：` : '重複檢查通過，可直接繼續：'}
     </div>
     <div style="max-height:340px;overflow-y:auto;margin-bottom:1.25rem;">${dupHTML}</div>
@@ -4649,22 +4650,22 @@ function renderSmartSyncStep2() {
       <button onclick="closeSmartSyncModal()" style="border:none;background:none;cursor:pointer;font-size:22px;color:var(--text-tertiary);line-height:1;padding:0 4px;">×</button>
     </div>
     ${_syncStepBar(2)}
-    <div style="font-size:13px;font-weight:600;margin-bottom:14px;">共 <strong>${total}</strong> 張名片，請選擇匯出目標（可多選）：</div>
+    <div style="font-size:15px;font-weight:600;margin-bottom:14px;">共 <strong>${total}</strong> 張名片，請選擇匯出目標（可多選）：</div>
 
     <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:1.5rem;">
       <label id="lbl-vcf" style="display:flex;align-items:flex-start;gap:12px;padding:14px;border-radius:var(--radius-md);border:2px solid var(--border-color);cursor:pointer;background:var(--bg-secondary);transition:var(--transition);">
         <input type="checkbox" id="sync-opt-vcf" style="width:18px;height:18px;margin-top:1px;cursor:pointer;" onchange="updateSyncLabel()">
         <div style="flex:1;">
-          <div style="font-size:13px;font-weight:700;display:flex;align-items:center;gap:6px;">
+          <div style="font-size:15px;font-weight:700;display:flex;align-items:center;gap:6px;">
             <i class="ti ti-file-export" style="color:var(--color-green);"></i> 匯出 VCF 檔案
           </div>
-          <div style="font-size:13px;color:var(--text-secondary);margin-top:3px;">下載 .vcf 檔 → 手機開啟即可匯入 iOS / Android 通訊錄。</div>
+          <div style="font-size:15px;color:var(--text-secondary);margin-top:3px;">下載 .vcf 檔 → 手機開啟即可匯入 iOS / Android 通訊錄。</div>
           <div style="margin-top:8px;display:flex;gap:12px;flex-wrap:wrap;">
-            <label style="display:flex;align-items:center;gap:5px;font-size:12px;cursor:pointer;">
+            <label style="display:flex;align-items:center;gap:5px;font-size:14px;cursor:pointer;">
               <input type="radio" name="vcf-mode" value="new" checked style="cursor:pointer;">
               <span>只匯出新增 <strong id="vcf-new-count"></strong> <span style="color:var(--color-green);font-weight:600;">✓ 不重複</span></span>
             </label>
-            <label style="display:flex;align-items:center;gap:5px;font-size:12px;cursor:pointer;">
+            <label style="display:flex;align-items:center;gap:5px;font-size:14px;cursor:pointer;">
               <input type="radio" name="vcf-mode" value="all" style="cursor:pointer;">
               <span>全部匯出（${total} 張）</span>
             </label>
@@ -4675,10 +4676,10 @@ function renderSmartSyncStep2() {
       <label id="lbl-google" style="display:flex;align-items:flex-start;gap:12px;padding:14px;border-radius:var(--radius-md);border:2px solid var(--border-color);cursor:pointer;background:var(--bg-secondary);transition:var(--transition);">
         <input type="checkbox" id="sync-opt-google" style="width:18px;height:18px;margin-top:1px;cursor:pointer;" onchange="updateSyncLabel()">
         <div>
-          <div style="font-size:13px;font-weight:700;display:flex;align-items:center;gap:6px;">
+          <div style="font-size:15px;font-weight:700;display:flex;align-items:center;gap:6px;">
             <i class="ti ti-brand-google" style="color:#4285F4;"></i> 同步至 Google 通訊錄
           </div>
-          <div style="font-size:13px;color:var(--text-secondary);margin-top:3px;">
+          <div style="font-size:15px;color:var(--text-secondary);margin-top:3px;">
             推送至 Google → Android 自動同步，iOS 設 Google 帳號亦可使用。<br>
             <span style="color:var(--color-green);">已同步 ${synced} 張</span>・
             <span style="color:var(--color-amber);">待推送 ${unsynced} 張</span>
@@ -4722,7 +4723,7 @@ async function executeSmartSync() {
       <h2 style="margin:0;font-size:15px;"><i class="ti ti-wand" style="color:var(--accent)"></i> 智慧一鍵同步精靈</h2>
     </div>
     ${_syncStepBar(3)}
-    <div id="ss-log" style="font-size:12px;color:var(--text-secondary);line-height:2.1;min-height:130px;max-height:260px;overflow-y:auto;"></div>
+    <div id="ss-log" style="font-size:14px;color:var(--text-secondary);line-height:2.1;min-height:130px;max-height:260px;overflow-y:auto;"></div>
     <div class="progress-bar show" style="margin-top:10px;"><div class="progress-fill" id="ss-pf" style="width:0%;transition:width 0.3s;"></div></div>
     <div id="ss-result" style="margin-top:16px;"></div>`;
 
@@ -4779,7 +4780,7 @@ async function executeSmartSync() {
   pfEl.style.width = '100%';
   // Update step bar to all green
   modal.querySelector('[style*="display:flex;gap:0"]').innerHTML = ['① 清理重複 ✓','② 選目標 ✓','③ 完成 ✓']
-    .map(l => `<div style="flex:1;padding:8px;text-align:center;font-size:12px;font-weight:700;background:var(--color-green);color:#fff;">${l}</div>`).join('');
+    .map(l => `<div style="flex:1;padding:8px;text-align:center;font-size:14px;font-weight:700;background:var(--color-green);color:#fff;">${l}</div>`).join('');
 
   resultEl.innerHTML = `
     <div style="text-align:center;padding:16px 0 8px;">
@@ -4832,7 +4833,7 @@ function renderGraphTab() {
   const totalPeople = entries.reduce((s, [, v]) => s + v.length, 0);
 
   container.innerHTML = `
-    <div style="font-size:13px;color:var(--text-secondary);margin-bottom:14px;">
+    <div style="font-size:15px;color:var(--text-secondary);margin-bottom:14px;">
       共 <strong style="color:var(--text-primary)">${totalCompanies}</strong> 家公司・
       <strong style="color:var(--text-primary)">${totalPeople}</strong> 位聯絡人
     </div>
@@ -4848,7 +4849,7 @@ function renderGraphTab() {
               <div class="org-person-name">${c.name || '—'}</div>
               <div class="org-person-title">${[c.title, c.dept].filter(Boolean).join(' · ') || '—'}</div>
             </div>
-            ${phone ? `<div style="font-size:12px;color:var(--text-tertiary);flex-shrink:0;">${phone}</div>` : ''}
+            ${phone ? `<div style="font-size:14px;color:var(--text-tertiary);flex-shrink:0;">${phone}</div>` : ''}
             ${c.processed ? `<i class="ti ti-circle-check" style="color:var(--color-green);font-size:16px;flex-shrink:0;"></i>` : ''}
           </div>`;
       }).join('');
