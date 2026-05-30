@@ -283,23 +283,18 @@ body::after {
 
 .tabs {
   display: flex;
-  gap: 6px;
+  flex-wrap: wrap;
+  gap: 4px;
   background: var(--bg-tertiary);
   border-radius: var(--radius-md);
   padding: 4px;
   margin-bottom: 1.5rem;
-  overflow-x: auto;
-  -webkit-overflow-scrolling: touch;
-  scrollbar-width: none; /* Firefox */
-}
-.tabs::-webkit-scrollbar {
-  display: none; /* Chrome, Safari, Opera */
 }
 .tab {
-  flex: 1;
-  min-width: max-content;
+  flex: 1 1 calc(33.333% - 6px);
+  min-width: 0;
   white-space: nowrap;
-  padding: 9px 16px;
+  padding: 8px 10px;
   font-size: 13px;
   font-weight: 500;
   text-align: center;
@@ -311,7 +306,7 @@ body::after {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 6px;
+  gap: 5px;
   font-family: inherit;
   transition: var(--transition);
 }
@@ -2351,7 +2346,25 @@ async function fetchContactsApi(url, options = {}, _retried = false) {
       throw new Error('Google 登入已過期，請至「應用設定」重新授權 Google 帳號。');
     }
     const errText = await res.text();
-    throw new Error(`Google 通訊錄操作失敗 (HTTP ${res.status}): ${errText}`);
+    // 解析常見的 Google API 錯誤，顯示友善訊息
+    try {
+      const errJson = JSON.parse(errText);
+      const msg = errJson?.error?.message || '';
+      const status = errJson?.error?.status || '';
+      if (res.status === 403 && (msg.includes('People API has not been used') || msg.includes('disabled'))) {
+        throw new Error('Google People API 尚未啟用！\n請至 Google Cloud Console 啟用後再試：\nhttps://console.cloud.google.com/apis/library/people.googleapis.com');
+      }
+      if (res.status === 403 && status === 'PERMISSION_DENIED') {
+        throw new Error(`Google 權限不足 (403)：${msg || '請確認 OAuth 範圍已包含通訊錄權限。'}`);
+      }
+      if (res.status === 429) {
+        throw new Error('Google API 請求頻率過高 (429)，請稍待片刻後再試。');
+      }
+      if (msg) throw new Error(`Google 通訊錄操作失敗 (${res.status})：${msg}`);
+    } catch(parseErr) {
+      if (parseErr.message.includes('Google')) throw parseErr; // 已是友善訊息，直接拋出
+    }
+    throw new Error(`Google 通訊錄操作失敗 (HTTP ${res.status})`);
   }
   return res;
 }
