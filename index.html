@@ -585,7 +585,7 @@ body::after {
 .card-avatar {
   width: 40px;
   height: 40px;
-  border-radius: 10px;
+  border-radius: 50%;
   background: var(--accent-light);
   color: #fff;
   display: flex;
@@ -3128,15 +3128,15 @@ function renderCardsGrid() {
       '<span class="ribbon ribbon-green"><i class="ti ti-check"></i> 已處理</span>' : 
       (isDup ? '<span class="ribbon ribbon-amber"><i class="ti ti-copy"></i> 重複</span>' : '');
       
-    const initials = c.name ? c.name.slice(0, 2) : '?';
     const groupColorMap = {'學校委員':'#6366f1','政府機關':'#0ea5e9','企業客戶':'#10b981','資訊夥伴':'#f59e0b','法人夥伴':'#8b5cf6','供應商夥伴':'#ec4899','其他':'#94a3b8'};
+    const groupLabel = (c.group || '其他').slice(0, 2);
     const avatarColor = groupColorMap[c.group || '其他'] || '#818cf8';
 
     return `
       <div class="biz-card ${selectedCardId === c.id ? 'selected' : ''} ${c.processed ? 'processed' : ''}" onclick="selectCard('${c.id}')">
         ${badgeText}
         <div class="card-hd-layout">
-          <div class="card-avatar" style="background:${avatarColor};">${initials}</div>
+          <div class="card-avatar" style="background:${avatarColor};">${groupLabel}</div>
           <div class="card-info">
             <h4 class="card-name-text">${c.name || '—'}</h4>
             <div class="card-title-text">${c.title || ''}${c.dept ? ' · ' + c.dept : ''}</div>
