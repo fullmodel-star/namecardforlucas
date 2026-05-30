@@ -1733,6 +1733,24 @@ body::after {
         </div>
       </div>
 
+      <!-- Excel 匯出 -->
+      <div class="settings-section-card">
+        <h3><i class="ti ti-table-export" style="color:#217346"></i> 匯出至 Excel / CSV</h3>
+        <p style="font-size:12px;color:var(--text-secondary);margin-bottom:12px;">將名片庫匯出為試算表格式，可用 Excel、Google 試算表、Numbers 開啟編輯。</p>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
+          <button class="btn" style="background:#217346;color:#fff;border-color:#217346;" onclick="exportToCsv('all')">
+            <i class="ti ti-file-spreadsheet"></i> 匯出全部（.csv）
+          </button>
+          <button class="btn" style="background:#217346;color:#fff;border-color:#217346;opacity:0.85;" onclick="exportToCsv('processed')">
+            <i class="ti ti-circle-check"></i> 只匯出已處理
+          </button>
+          <span style="font-size:11px;color:var(--text-tertiary);">Excel 開啟時若出現亂碼，請選「UTF-8」編碼匯入。</span>
+        </div>
+        <div style="margin-top:10px;font-size:11px;color:var(--text-tertiary);">
+          欄位：姓名・公司・職稱・部門・手機・電話・傳真・Email・網站・地址・群組・標籤・備註・建立時間
+        </div>
+      </div>
+
       <!-- 通訊錄整合管理 -->
       <div class="settings-section-card">
         <h3><i class="ti ti-address-book" style="color:var(--accent)"></i> 通訊錄整合管理</h3>
@@ -3401,6 +3419,36 @@ function exportNewVcf() {
   localStorage.setItem('last_vcf_export_ts', Date.now().toString());
   showToast(`✓ 匯出 ${newCards.length} 張新增名片！`);
   return newCards.length;
+}
+
+function exportToCsv(mode = 'all') {
+  const list = mode === 'processed' ? cardsList.filter(c => c.processed) : [...cardsList];
+  if (list.length === 0) { showToast('沒有符合條件的名片可匯出！'); return; }
+
+  const headers = ['姓名','公司','職稱','部門','手機','電話','分機','傳真','Email','網站','郵遞區號','地址','群組','標籤','備註','建立時間','已處理','已同步Google'];
+  const escCsv = v => {
+    const s = (v === undefined || v === null) ? '' : String(v);
+    return s.includes(',') || s.includes('"') || s.includes('\n') ? `"${s.replace(/"/g, '""')}"` : s;
+  };
+
+  const rows = list.map(c => [
+    c.name || '', c.org || '', c.title || '', c.dept || '',
+    c.mobile || '', c.phone || '', c.phoneExt || '', c.fax || '',
+    c.email || '', c.website || '', c.zip || '', c.addr || '',
+    c.group || '', (c.tags || []).join('・'), c.note || '',
+    c.createdAt || '', c.processed ? '是' : '否', c.googleContactId ? '是' : '否'
+  ].map(escCsv).join(','));
+
+  const csv = '﻿' + [headers.join(','), ...rows].join('\r\n');
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  const dateStr = new Date().toLocaleDateString('zh-TW').split('/').join('-');
+  a.href = url;
+  a.download = `名片清單_${mode === 'processed' ? '已處理_' : ''}${dateStr}.csv`;
+  a.click();
+  URL.revokeObjectURL(url);
+  showToast(`✓ 已匯出 ${list.length} 張名片至 Excel CSV！`);
 }
 
 async function exportFullJsonBackup() {
