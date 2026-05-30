@@ -583,50 +583,75 @@ body::after {
   margin-bottom: 8px;
 }
 .card-avatar {
-  width: 38px;
-  height: 38px;
-  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
   background: var(--accent-light);
-  color: var(--accent);
+  color: #fff;
   display: flex;
   align-items: center;
   justify-content: center;
   font-weight: 700;
-  font-size: 13px;
+  font-size: 15px;
   flex-shrink: 0;
-}
-.card-avatar.proc {
-  background: var(--color-green-bg);
-  color: var(--color-green);
+  letter-spacing: -0.5px;
 }
 .card-info {
   min-width: 0;
   flex: 1;
 }
 .card-name-text {
-  font-size: 13px;
-  font-weight: 600;
+  font-size: 15px;
+  font-weight: 700;
   color: var(--text-primary);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 .card-title-text {
-  font-size: 11px;
+  font-size: 12px;
   color: var(--text-secondary);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  margin-top: 1px;
 }
 .card-org-text {
-  font-size: 11px;
+  font-size: 12px;
   color: var(--accent);
   font-weight: 500;
-  margin-top: 1px;
+  margin-top: 2px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
+/* 工具箱卡片網格 */
+.toolbox-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 1.5rem;
+}
+.tool-card {
+  border-radius: var(--radius-lg);
+  padding: 18px 15px 14px;
+  cursor: pointer;
+  color: #fff;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  transition: transform 0.15s, box-shadow 0.15s;
+  min-height: 108px;
+  border: none;
+  text-align: left;
+  font-family: inherit;
+  box-shadow: 0 3px 10px rgba(0,0,0,0.12);
+}
+.tool-card:hover { transform: translateY(-3px); box-shadow: 0 8px 24px rgba(0,0,0,0.18); }
+.tool-card:active { transform: scale(0.97); }
+.tool-card-icon { font-size: 26px; line-height: 1; }
+.tool-card-title { font-size: 14px; font-weight: 700; line-height: 1.3; }
+.tool-card-desc { font-size: 11px; opacity: 0.88; line-height: 1.4; }
 .card-tags-area {
   display: flex;
   flex-wrap: wrap;
@@ -1397,7 +1422,7 @@ body::after {
       <button class="tab active" id="tab-cards" onclick="switchTab('cards')"><i class="ti ti-layout-grid"></i> 名片庫</button>
       <button class="tab" id="tab-dashboard" onclick="switchTab('dashboard')"><i class="ti ti-chart-bar"></i> 數據分析</button>
       <button class="tab" id="tab-dups" onclick="switchTab('dups')"><i class="ti ti-copy"></i> 重複偵測</button>
-      <button class="tab" id="tab-batch" onclick="switchTab('batch')"><i class="ti ti-scan"></i> 批次同步</button>
+      <button class="tab" id="tab-batch" onclick="switchTab('batch')"><i class="ti ti-apps"></i> 工具箱</button>
       <button class="tab" id="tab-graph" onclick="switchTab('graph')"><i class="ti ti-hierarchy-2"></i> 關聯圖</button>
       <button class="tab" id="tab-settings" onclick="switchTab('settings')"><i class="ti ti-settings"></i> 應用設定</button>
     </div>
@@ -1524,26 +1549,60 @@ body::after {
       <div id="dup-content"></div>
     </div>
 
-    <!-- 4. 批次同步分頁 -->
+    <!-- 4. 工具箱分頁 -->
     <div id="view-batch" style="display:none">
+
+      <!-- 工具卡片網格 -->
+      <div class="toolbox-grid">
+
+        <button class="tool-card" style="background:linear-gradient(135deg,#667eea,#764ba2);" onclick="openSmartSyncModal()">
+          <div class="tool-card-icon"><i class="ti ti-wand"></i></div>
+          <div class="tool-card-title">智慧同步精靈</div>
+          <div class="tool-card-desc">一鍵清重複 + 同步 Google ＋ 匯出 VCF</div>
+        </button>
+
+        <button class="tool-card" style="background:linear-gradient(135deg,#4285F4,#34A853);" onclick="syncAllCardsToGoogle()">
+          <div class="tool-card-icon"><i class="ti ti-brand-google"></i></div>
+          <div class="tool-card-title">Google 通訊錄</div>
+          <div class="tool-card-desc">推送至 Google，Android / iOS 自動同步</div>
+        </button>
+
+        <button class="tool-card" style="background:linear-gradient(135deg,#11998e,#38ef7d);" onclick="exportAllVcf()">
+          <div class="tool-card-icon"><i class="ti ti-address-book"></i></div>
+          <div class="tool-card-title">儲存到手機</div>
+          <div class="tool-card-desc">匯出 VCF，iOS / Android 一鍵匯入通訊錄</div>
+        </button>
+
+        <button class="tool-card" style="background:linear-gradient(135deg,#134e5e,#71b280);" onclick="exportToCsv('all')">
+          <div class="tool-card-icon"><i class="ti ti-table-export"></i></div>
+          <div class="tool-card-title">匯出 Excel</div>
+          <div class="tool-card-desc">下載 CSV，可用 Excel / Google 試算表開啟</div>
+        </button>
+
+        <button class="tool-card" style="background:linear-gradient(135deg,#f093fb,#f5576c);" onclick="importFromContactPicker()">
+          <div class="tool-card-icon"><i class="ti ti-phone-incoming"></i></div>
+          <div class="tool-card-title">從手機匯入</div>
+          <div class="tool-card-desc">選取手機現有聯絡人匯入名片庫</div>
+        </button>
+
+        <button class="tool-card" style="background:linear-gradient(135deg,#4facfe,#00b4db);" onclick="exportFullJsonBackup()">
+          <div class="tool-card-icon"><i class="ti ti-database-export"></i></div>
+          <div class="tool-card-title">備份資料</div>
+          <div class="tool-card-desc">完整備份名片庫（含圖片）至本機</div>
+        </button>
+
+      </div>
+
+      <!-- AI 掃名片區 -->
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:1rem;">
+        <div style="flex:1;height:1px;background:var(--border-color);"></div>
+        <span style="font-size:12px;font-weight:700;color:var(--text-secondary);white-space:nowrap;"><i class="ti ti-robot"></i> AI 批次掃名片</span>
+        <div style="flex:1;height:1px;background:var(--border-color);"></div>
+      </div>
+
       <div id="api-notice-batch" class="api-notice" style="display:none">
         <i class="ti ti-alert-triangle" style="flex-shrink:0;margin-top:1px"></i>
-        <span>AI 辨識需要 Gemini API 金鑰。請先到「設定」頁面填入。</span>
-      </div>
-      
-      <div style="background:var(--accent-light); border: 1px solid var(--border-color-glow); padding: 1.25rem; border-radius: var(--radius-lg); margin-bottom: 1.25rem; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px;">
-        <div style="flex:1; min-width:280px;">
-          <h3 style="font-size:14px; font-weight:700; color:var(--text-primary); display:flex; align-items:center; gap:6px;">
-            <i class="ti ti-brand-google-drive" style="color:var(--accent)"></i> Google 雲端硬碟同步
-          </h3>
-          <p style="font-size:12px; color:var(--text-secondary); margin-top:2px;">
-            將名片拍照或存檔，上傳至 Google 雲端硬碟的「名片管理系統_雲端同步/名片管理系統_未辨識」資料夾，即可在此一鍵同步導入！
-          </p>
-        </div>
-        <div style="display:flex; gap:8px;">
-          <button class="btn btn-blue" onclick="initSyncFolders()"><i class="ti ti-folder-plus"></i> 1. 初始化雲端資料夾</button>
-          <button class="btn btn-green" onclick="importDriveImages()"><i class="ti ti-refresh"></i> 2. 智慧同步導入</button>
-        </div>
+        <span>需要 Gemini API 金鑰才能使用 AI 掃描。請先到「設定」頁面填入。</span>
       </div>
 
       <div class="batch-dropzone" id="drop-zone"
@@ -1552,18 +1611,19 @@ body::after {
         ondragleave="this.classList.remove('drag')"
         ondrop="handleBatchDrop(event)">
         <i class="ti ti-cloud-upload"></i>
-        <h3>選取或拖曳本地名片圖片至此</h3>
-        <p>支援多張名片照片，亦可一張照片內擺放多張名片同時自動拆分。</p>
+        <h3>選取或拖曳名片照片至此</h3>
+        <p>支援多張名片照片，一張照片內多張名片也可自動拆分。</p>
         <input type="file" id="batch-file-input" accept="image/*" multiple style="display:none" onchange="handleBatchSelect(event)" />
       </div>
-      
+
       <div class="progress-bar" id="batch-progress-bar"><div class="progress-fill" id="batch-progress-fill"></div></div>
       <div id="batch-progress-stats" style="display:none;font-size:12px;color:var(--text-secondary);margin:6px 0 0;text-align:center;min-height:18px;"></div>
       <div class="queue-list" id="batch-queue-list"></div>
-      
-      <div style="display:flex; gap:8px; margin-top:1.25rem">
-        <button class="btn btn-primary" id="btn-start-batch" onclick="startBatchProcessing()"><i class="ti ti-robot"></i> 開始 Gemini AI 批次辨識</button>
+
+      <div style="display:flex;gap:8px;margin-top:1.25rem;flex-wrap:wrap;">
+        <button class="btn btn-primary" id="btn-start-batch" onclick="startBatchProcessing()"><i class="ti ti-robot"></i> 開始 AI 批次辨識</button>
         <button class="btn btn-red" onclick="clearBatchQueue()"><i class="ti ti-trash"></i> 清空佇列</button>
+        <button class="btn btn-blue" onclick="initSyncFolders()" style="margin-left:auto;"><i class="ti ti-brand-google-drive"></i> Google Drive 同步</button>
       </div>
     </div>
 
@@ -1601,8 +1661,8 @@ body::after {
 
       <!-- API 設定 -->
       <div class="settings-section-card">
-        <h3><i class="ti ti-key" style="color:var(--accent)"></i> Google Gemini API 設定</h3>
-        <p style="font-size:12px; color:var(--text-secondary); margin-bottom:8px;">名片影像文字拆分與結構化核心引擎。</p>
+        <h3><i class="ti ti-robot" style="color:var(--accent)"></i> AI 掃名片設定</h3>
+        <p style="font-size:12px; color:var(--text-secondary); margin-bottom:8px;">填入 API 金鑰後，即可用 AI 自動辨識名片照片內容。</p>
         <div class="settings-input-group">
           <input type="password" id="settings-api-key" placeholder="貼上您的 Gemini API Key" />
           <select id="settings-gemini-model" style="max-width:200px;">
@@ -1701,145 +1761,78 @@ body::after {
         </div>
       </div>
 
-      <!-- 群組管理 -->
+      <!-- 分類與標籤管理 -->
       <div class="settings-section-card">
-        <h3><i class="ti ti-folder" style="color:var(--accent)"></i> 分類群組管理</h3>
-        <p style="font-size:12px; color:var(--text-secondary); margin-bottom:8px;">自訂名片群組類別。</p>
+        <h3><i class="ti ti-folder" style="color:var(--accent)"></i> 分類與標籤管理</h3>
+        <p style="font-size:12px;color:var(--text-secondary);margin-bottom:12px;">管理名片的群組分類和標籤。</p>
+        <div style="font-size:12px;font-weight:600;color:var(--text-secondary);margin-bottom:6px;">群組</div>
         <div class="setting-badge-manager" id="badge-manager-groups"></div>
-        <div class="settings-input-group" style="max-width: 400px;">
-          <input type="text" id="new-group-input" placeholder="輸入新的群組名稱..." onkeydown="if(event.key==='Enter') addCustomGroup();" />
+        <div class="settings-input-group" style="max-width:400px;margin-bottom:16px;">
+          <input type="text" id="new-group-input" placeholder="輸入新群組名稱..." onkeydown="if(event.key==='Enter') addCustomGroup();" />
           <button class="btn btn-primary" onclick="addCustomGroup()"><i class="ti ti-plus"></i> 新增</button>
         </div>
-      </div>
-
-      <!-- 標籤管理 -->
-      <div class="settings-section-card">
-        <h3><i class="ti ti-tags" style="color:var(--accent)"></i> 標籤雲管理</h3>
-        <p style="font-size:12px; color:var(--text-secondary); margin-bottom:8px;">管理全域標籤。</p>
+        <div style="font-size:12px;font-weight:600;color:var(--text-secondary);margin-bottom:6px;">標籤</div>
         <div class="setting-badge-manager" id="badge-manager-tags"></div>
-        <div class="settings-input-group" style="max-width: 400px;">
-          <input type="text" id="new-tag-input" placeholder="輸入新的標籤名稱..." onkeydown="if(event.key==='Enter') addCustomTag();" />
+        <div class="settings-input-group" style="max-width:400px;">
+          <input type="text" id="new-tag-input" placeholder="輸入新標籤名稱..." onkeydown="if(event.key==='Enter') addCustomTag();" />
           <button class="btn btn-primary" onclick="addCustomTag()"><i class="ti ti-plus"></i> 新增</button>
         </div>
       </div>
 
-      <!-- 資料備份與還原 -->
+      <!-- 備份與還原 -->
       <div class="settings-section-card">
-        <h3><i class="ti ti-database" style="color:var(--accent)"></i> 本地資料庫備份管理 (含名片圖片)</h3>
-        <div style="display:flex; gap:8px; flex-wrap:wrap;">
-          <button class="btn btn-green" onclick="exportFullJsonBackup()"><i class="ti ti-download"></i> 導出完整備份 (.json)</button>
-          <button class="btn btn-blue" onclick="document.getElementById('import-backup-file').click()"><i class="ti ti-upload"></i> 還原系統備份</button>
+        <h3><i class="ti ti-database" style="color:var(--accent)"></i> 備份與還原</h3>
+        <p style="font-size:12px;color:var(--text-secondary);margin-bottom:12px;">定期備份可防止資料遺失。備份檔案包含所有名片及圖片。</p>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+          <button class="btn btn-green" onclick="exportFullJsonBackup()"><i class="ti ti-download"></i> 備份名片庫</button>
+          <button class="btn btn-blue" onclick="document.getElementById('import-backup-file').click()"><i class="ti ti-upload"></i> 還原備份</button>
           <input type="file" id="import-backup-file" accept=".json" style="display:none" onchange="importFullJsonBackup(event)" />
         </div>
       </div>
 
-      <!-- Excel 匯出 -->
+      <!-- 進階設定（可收合） -->
       <div class="settings-section-card">
-        <h3><i class="ti ti-table-export" style="color:#217346"></i> 匯出至 Excel / CSV</h3>
-        <p style="font-size:12px;color:var(--text-secondary);margin-bottom:12px;">將名片庫匯出為試算表格式，可用 Excel、Google 試算表、Numbers 開啟編輯。</p>
-        <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
-          <button class="btn" style="background:#217346;color:#fff;border-color:#217346;" onclick="exportToCsv('all')">
-            <i class="ti ti-file-spreadsheet"></i> 匯出全部（.csv）
-          </button>
-          <button class="btn" style="background:#217346;color:#fff;border-color:#217346;opacity:0.85;" onclick="exportToCsv('processed')">
-            <i class="ti ti-circle-check"></i> 只匯出已處理
-          </button>
-          <span style="font-size:11px;color:var(--text-tertiary);">Excel 開啟時若出現亂碼，請選「UTF-8」編碼匯入。</span>
-        </div>
-        <div style="margin-top:10px;font-size:11px;color:var(--text-tertiary);">
-          欄位：姓名・公司・職稱・部門・手機・電話・傳真・Email・網站・地址・群組・標籤・備註・建立時間
-        </div>
-      </div>
+        <button onclick="toggleAdvSettings()" style="border:none;background:none;cursor:pointer;font-size:14px;font-weight:700;color:var(--text-primary);display:flex;align-items:center;gap:8px;padding:0;font-family:inherit;width:100%;">
+          <i class="ti ti-settings-2" style="color:var(--text-secondary);"></i>
+          進階設定
+          <i class="ti ti-chevron-down" id="adv-chevron" style="margin-left:auto;transition:transform 0.2s;color:var(--text-tertiary);"></i>
+        </button>
+        <div id="adv-settings-body" style="display:none;margin-top:16px;display:flex;flex-direction:column;gap:16px;">
 
-      <!-- 通訊錄整合管理 -->
-      <div class="settings-section-card">
-        <h3><i class="ti ti-address-book" style="color:var(--accent)"></i> 通訊錄整合管理</h3>
-        <p style="font-size:12px;color:var(--text-secondary);margin-bottom:14px;">將名片庫與手機通訊錄互動：批次推送至 Google / 匯出 VCF / 從手機通訊錄匯入。</p>
-
-        <!-- 精靈入口 -->
-        <div style="background:var(--accent-light);border:1px solid var(--border-color-glow);border-radius:var(--radius-md);padding:14px 16px;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;">
+          <!-- Google 帳號 -->
           <div>
-            <div style="font-size:13px;font-weight:700;color:var(--text-primary);display:flex;align-items:center;gap:6px;">
-              <i class="ti ti-wand" style="color:var(--accent);"></i> 智慧一鍵同步精靈
+            <div style="font-size:12px;font-weight:600;color:var(--text-secondary);margin-bottom:8px;display:flex;align-items:center;gap:6px;">
+              <i class="ti ti-brand-google"></i> Google 帳號連結
             </div>
-            <div style="font-size:11px;color:var(--text-secondary);margin-top:3px;">自動掃描重複 → 選目標 → 一次完成 VCF 匯出 ＋ Google 推送</div>
-          </div>
-          <button class="btn btn-primary" onclick="openSmartSyncModal()">
-            <i class="ti ti-rocket"></i> 啟動精靈
-          </button>
-        </div>
-
-        <hr style="border:none;border-top:1px solid var(--border-color);margin:0 0 14px;">
-
-        <!-- ① VCF 匯出入 -->
-        <div style="margin-bottom:14px;">
-          <div style="font-size:12px;font-weight:600;color:var(--text-primary);margin-bottom:6px;display:flex;align-items:center;gap:6px;">
-            <i class="ti ti-file-export" style="color:var(--color-green);"></i> VCF 聯絡人匯出
-          </div>
-          <div style="display:flex;gap:8px;flex-wrap:wrap;">
-            <button class="btn btn-green" onclick="exportAllVcf()">
-              <i class="ti ti-download"></i> 全部匯出 VCF（可匯入 iOS / Android）
-            </button>
-          </div>
-          <p style="font-size:11px;color:var(--text-tertiary);margin-top:5px;">匯出後，在手機開啟 .vcf 檔即可一鍵加入通訊錄。</p>
-        </div>
-
-        <hr style="border:none;border-top:1px solid var(--border-color);margin:12px 0;">
-
-        <!-- ② Google 通訊錄批次推送 -->
-        <div style="margin-bottom:14px;">
-          <div style="font-size:12px;font-weight:600;color:var(--text-primary);margin-bottom:6px;display:flex;align-items:center;gap:6px;">
-            <i class="ti ti-brand-google" style="color:#4285F4;"></i> Google 通訊錄同步
-          </div>
-          <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
-            <button class="btn btn-blue" onclick="syncAllCardsToGoogle()">
-              <i class="ti ti-cloud-upload"></i> 批次推送全部至 Google 通訊錄
-            </button>
-            <span id="google-sync-stats" style="font-size:11px;color:var(--text-tertiary);"></span>
-          </div>
-          <p style="font-size:11px;color:var(--text-tertiary);margin-top:5px;">需先在下方授權 Google 帳號。Android 自動同步，iOS 設定 Google 帳號後亦可使用。</p>
-        </div>
-
-        <hr style="border:none;border-top:1px solid var(--border-color);margin:12px 0;">
-
-        <!-- ③ Contact Picker API -->
-        <div>
-          <div style="font-size:12px;font-weight:600;color:var(--text-primary);margin-bottom:6px;display:flex;align-items:center;gap:6px;">
-            <i class="ti ti-phone-incoming" style="color:var(--color-amber);"></i> 從手機通訊錄匯入
-          </div>
-          <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
-            <button class="btn btn-amber" onclick="importFromContactPicker()" id="btn-contact-picker">
-              <i class="ti ti-address-book"></i> 選取手機聯絡人匯入
-            </button>
-            <span id="contact-picker-status" style="font-size:11px;color:var(--text-tertiary);"></span>
-          </div>
-          <p style="font-size:11px;color:var(--text-tertiary);margin-top:5px;">支援 Android Chrome / iOS Safari 14.5+（手機瀏覽器）。桌機瀏覽器不支援此功能。</p>
-        </div>
-      </div>
-
-      <!-- Google Drive 連線控制 -->
-      <div class="settings-section-card">
-        <h3><i class="ti ti-brand-google-drive" style="color:var(--accent)"></i> Google Drive 授權管理</h3>
-        <div id="gdrive-login-area">
-          <button class="btn btn-blue" onclick="triggerGoogleSignIn()"><i class="ti ti-brand-google"></i> 授權連結 Google 雲端帳號</button>
-        </div>
-        <div id="gdrive-logged-area" style="display:none">
-          <div style="display:flex; align-items:center; gap:12px; background:var(--bg-secondary); border:1px solid var(--border-color); padding:8px 16px; border-radius:var(--radius-md); max-width:400px;">
-            <div style="font-size:24px; color:var(--color-green)"><i class="ti ti-circle-check-filled"></i></div>
-            <div>
-              <div style="font-size:13px; font-weight:600;" id="gdrive-name">雲端帳號連結成功</div>
-              <div style="font-size:11px; color:var(--text-secondary);" id="gdrive-email">gdrive@gmail.com</div>
+            <div id="gdrive-login-area">
+              <button class="btn btn-blue" onclick="triggerGoogleSignIn()"><i class="ti ti-brand-google"></i> 連結 Google 帳號</button>
             </div>
-            <button class="btn btn-red" style="margin-left:auto; padding:4px 10px; font-size:11px;" onclick="gdriveLogout()"><i class="ti ti-logout"></i> 中斷連線</button>
+            <div id="gdrive-logged-area" style="display:none">
+              <div style="display:flex;align-items:center;gap:12px;background:var(--bg-tertiary);border:1px solid var(--border-color);padding:8px 16px;border-radius:var(--radius-md);max-width:400px;">
+                <div style="font-size:22px;color:var(--color-green)"><i class="ti ti-circle-check-filled"></i></div>
+                <div>
+                  <div style="font-size:13px;font-weight:600;" id="gdrive-name">帳號已連結</div>
+                  <div style="font-size:11px;color:var(--text-secondary);" id="gdrive-email"></div>
+                </div>
+                <button class="btn btn-red" style="margin-left:auto;padding:4px 10px;font-size:11px;" onclick="gdriveLogout()"><i class="ti ti-logout"></i> 中斷</button>
+              </div>
+            </div>
           </div>
+
+          <!-- 危險區 -->
+          <div style="border:1px solid var(--color-red-border);border-radius:var(--radius-md);padding:12px 14px;background:var(--color-red-bg);">
+            <div style="font-size:12px;font-weight:700;color:var(--color-red);margin-bottom:8px;"><i class="ti ti-alert-triangle"></i> 危險操作</div>
+            <button class="btn btn-red" onclick="clearAllSystemData()"><i class="ti ti-trash"></i> 清空全部名片資料</button>
+            <div style="font-size:11px;color:var(--color-red);margin-top:6px;opacity:0.8;">此操作無法復原，請先備份再執行。</div>
+          </div>
+
         </div>
       </div>
 
-      <!-- 危險操作 -->
-      <div class="settings-section-card" style="border-color:var(--color-red-border); background:var(--color-red-bg);">
-        <h3 style="color:var(--color-red)"><i class="ti ti-alert-triangle"></i> 危險控制台</h3>
-        <button class="btn btn-red" onclick="clearAllSystemData()"><i class="ti ti-trash"></i> 清空資料庫全部資料</button>
-      </div>
+      <!-- hidden elements needed by JS -->
+      <span id="google-sync-stats" style="display:none;"></span>
+      <span id="btn-contact-picker" style="display:none;"></span>
+      <span id="contact-picker-status" style="display:none;"></span>
 
     </div>
   </main>
@@ -3136,12 +3129,14 @@ function renderCardsGrid() {
       (isDup ? '<span class="ribbon ribbon-amber"><i class="ti ti-copy"></i> 重複</span>' : '');
       
     const initials = c.name ? c.name.slice(0, 2) : '?';
-    
+    const groupColorMap = {'學校委員':'#6366f1','政府機關':'#0ea5e9','企業客戶':'#10b981','資訊夥伴':'#f59e0b','法人夥伴':'#8b5cf6','供應商夥伴':'#ec4899','其他':'#94a3b8'};
+    const avatarColor = groupColorMap[c.group || '其他'] || '#818cf8';
+
     return `
       <div class="biz-card ${selectedCardId === c.id ? 'selected' : ''} ${c.processed ? 'processed' : ''}" onclick="selectCard('${c.id}')">
         ${badgeText}
         <div class="card-hd-layout">
-          <div class="card-avatar ${c.processed ? 'proc' : ''}">${initials}</div>
+          <div class="card-avatar" style="background:${avatarColor};">${initials}</div>
           <div class="card-info">
             <h4 class="card-name-text">${c.name || '—'}</h4>
             <div class="card-title-text">${c.title || ''}${c.dept ? ' · ' + c.dept : ''}</div>
@@ -4413,6 +4408,14 @@ function clearGeminiKey() {
   document.getElementById('settings-api-key-status').innerHTML = '<span style="color:var(--color-red);">已清除金鑰</span>';
   document.getElementById('api-notice-batch').style.display = 'flex';
   showToast('已清除 API Key');
+}
+
+function toggleAdvSettings() {
+  const body    = document.getElementById('adv-settings-body');
+  const chevron = document.getElementById('adv-chevron');
+  const open = body.style.display === 'none' || body.style.display === '';
+  body.style.display = open ? 'flex' : 'none';
+  chevron.style.transform = open ? 'rotate(180deg)' : 'rotate(0deg)';
 }
 
 function toggleApiKeyGuide() {
