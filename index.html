@@ -1627,6 +1627,78 @@ body::after {
           <span style="font-size: 11px; color: var(--text-tertiary);">免費版建議設定為 5 秒以上，以避免觸發 15 RPM 限制。</span>
         </div>
         <div id="settings-api-key-status" style="font-size:12px; margin-top:6px; font-weight:500;"></div>
+
+        <!-- API Key 取得教學 -->
+        <div style="margin-top:14px;">
+          <button onclick="toggleApiKeyGuide()" style="border:none;background:none;cursor:pointer;font-size:12px;color:var(--accent);display:flex;align-items:center;gap:5px;padding:0;font-family:inherit;">
+            <i class="ti ti-help-circle"></i>
+            <span id="api-guide-toggle-text">❓ 如何免費取得 Gemini API Key？</span>
+            <i class="ti ti-chevron-down" id="api-guide-chevron" style="transition:transform 0.2s;"></i>
+          </button>
+          <div id="api-key-guide" style="display:none;margin-top:12px;border:1px solid var(--border-color);border-radius:var(--radius-md);overflow:hidden;">
+            <!-- 標題列 -->
+            <div style="background:var(--accent);color:#fff;padding:10px 14px;font-size:13px;font-weight:700;display:flex;align-items:center;gap:8px;">
+              <i class="ti ti-sparkles"></i> Gemini API Key 申請教學（完全免費）
+            </div>
+            <!-- 步驟內容 -->
+            <div style="padding:14px;background:var(--bg-secondary);display:flex;flex-direction:column;gap:12px;">
+
+              <!-- Step 1 -->
+              <div style="display:flex;gap:12px;align-items:flex-start;">
+                <div style="flex-shrink:0;width:28px;height:28px;border-radius:50%;background:var(--accent);color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;">1</div>
+                <div>
+                  <div style="font-size:13px;font-weight:600;margin-bottom:3px;">前往 Google AI Studio</div>
+                  <div style="font-size:12px;color:var(--text-secondary);margin-bottom:5px;">點下方連結，用你的 Google 帳號登入。</div>
+                  <a href="https://aistudio.google.com/apikey" target="_blank" style="display:inline-flex;align-items:center;gap:5px;font-size:12px;color:#fff;background:var(--accent);border-radius:6px;padding:5px 12px;text-decoration:none;font-weight:600;">
+                    <i class="ti ti-external-link"></i> 開啟 Google AI Studio
+                  </a>
+                </div>
+              </div>
+
+              <div style="border-top:1px dashed var(--border-color);"></div>
+
+              <!-- Step 2 -->
+              <div style="display:flex;gap:12px;align-items:flex-start;">
+                <div style="flex-shrink:0;width:28px;height:28px;border-radius:50%;background:var(--accent);color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;">2</div>
+                <div>
+                  <div style="font-size:13px;font-weight:600;margin-bottom:3px;">點「建立 API 金鑰」</div>
+                  <div style="font-size:12px;color:var(--text-secondary);">進入頁面後，點藍色按鈕 <strong>「建立 API 金鑰 (Create API Key)」</strong>，選擇現有的 Google Cloud 專案或建立新專案，系統會自動產生一組金鑰。</div>
+                </div>
+              </div>
+
+              <div style="border-top:1px dashed var(--border-color);"></div>
+
+              <!-- Step 3 -->
+              <div style="display:flex;gap:12px;align-items:flex-start;">
+                <div style="flex-shrink:0;width:28px;height:28px;border-radius:50%;background:var(--accent);color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;">3</div>
+                <div>
+                  <div style="font-size:13px;font-weight:600;margin-bottom:3px;">複製 API Key</div>
+                  <div style="font-size:12px;color:var(--text-secondary);">金鑰格式為 <code style="background:var(--bg-tertiary);padding:1px 5px;border-radius:3px;font-size:11px;">AIzaSy...</code> 開頭，點旁邊的複製按鈕複製起來。</div>
+                </div>
+              </div>
+
+              <div style="border-top:1px dashed var(--border-color);"></div>
+
+              <!-- Step 4 -->
+              <div style="display:flex;gap:12px;align-items:flex-start;">
+                <div style="flex-shrink:0;width:28px;height:28px;border-radius:50%;background:var(--color-green);color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;">4</div>
+                <div>
+                  <div style="font-size:13px;font-weight:600;margin-bottom:3px;">貼到上方輸入框，按「儲存」</div>
+                  <div style="font-size:12px;color:var(--text-secondary);">回到本 App，把金鑰貼入上方輸入框，按 <strong>「儲存」</strong>，再按 <strong>「測試連線」</strong> 確認正常運作。完成！</div>
+                </div>
+              </div>
+
+              <!-- 費用說明 -->
+              <div style="background:var(--color-green-bg,rgba(16,185,129,0.08));border:1px solid var(--color-green,#10b981);border-radius:8px;padding:10px 12px;font-size:12px;">
+                <div style="font-weight:700;color:var(--color-green,#10b981);margin-bottom:4px;"><i class="ti ti-coin"></i> 費用說明</div>
+                <div style="color:var(--text-secondary);line-height:1.7;">
+                  免費額度每天 <strong>1,500 次</strong>請求，一般個人使用完全不會超過。<br>
+                  超過後才會計費（約 $0.000125 USD / 次），基本上不用擔心費用。
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
 
       <!-- 群組管理 -->
@@ -4293,6 +4365,14 @@ function clearGeminiKey() {
   document.getElementById('settings-api-key-status').innerHTML = '<span style="color:var(--color-red);">已清除金鑰</span>';
   document.getElementById('api-notice-batch').style.display = 'flex';
   showToast('已清除 API Key');
+}
+
+function toggleApiKeyGuide() {
+  const guide    = document.getElementById('api-key-guide');
+  const chevron  = document.getElementById('api-guide-chevron');
+  const open = guide.style.display === 'none';
+  guide.style.display = open ? 'block' : 'none';
+  chevron.style.transform = open ? 'rotate(180deg)' : 'rotate(0deg)';
 }
 
 function renderSettingsBadgeManager() {
