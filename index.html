@@ -205,7 +205,7 @@ body::after {
   margin-top: 4px;
 }
 .badge {
-  font-size: 11px;
+  font-size: 13px;
   font-weight: 500;
   padding: 2px 8px;
   border-radius: 20px;
@@ -386,7 +386,7 @@ body::after {
   padding: 1rem;
 }
 .sidebar-label {
-  font-size: 11px;
+  font-size: 13px;
   font-weight: 600;
   color: var(--text-tertiary);
   text-transform: uppercase;
@@ -458,7 +458,7 @@ body::after {
 }
 .tag-filter-chip {
   padding: 3px 8px;
-  font-size: 11px;
+  font-size: 13px;
   border-radius: 20px;
   border: 1px solid var(--border-color);
   background: var(--bg-secondary);
@@ -629,29 +629,42 @@ body::after {
 .toolbox-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 12px;
+  gap: 10px;
   margin-bottom: 1.5rem;
 }
 .tool-card {
-  border-radius: var(--radius-lg);
-  padding: 18px 15px 14px;
+  border-radius: var(--radius-md);
+  padding: 16px 14px 14px;
   cursor: pointer;
-  color: #fff;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-left: 4px solid var(--tc, var(--accent));
+  color: var(--text-primary);
   display: flex;
   flex-direction: column;
-  gap: 6px;
-  transition: transform 0.15s, box-shadow 0.15s;
-  min-height: 108px;
-  border: none;
+  gap: 5px;
+  transition: transform 0.15s, box-shadow 0.15s, border-color 0.15s;
+  min-height: 100px;
   text-align: left;
   font-family: inherit;
-  box-shadow: 0 3px 10px rgba(0,0,0,0.12);
+  box-shadow: var(--shadow-sm);
 }
-.tool-card:hover { transform: translateY(-3px); box-shadow: 0 8px 24px rgba(0,0,0,0.18); }
-.tool-card:active { transform: scale(0.97); }
-.tool-card-icon { font-size: 26px; line-height: 1; }
-.tool-card-title { font-size: 14px; font-weight: 700; line-height: 1.3; }
-.tool-card-desc { font-size: 11px; opacity: 0.88; line-height: 1.4; }
+.tool-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); border-color: var(--tc, var(--accent)); }
+.tool-card:active { transform: scale(0.98); }
+.tool-card-icon { font-size: 24px; line-height: 1; color: var(--tc, var(--accent)); }
+.tool-card-title { font-size: 14px; font-weight: 700; color: var(--text-primary); line-height: 1.3; }
+.tool-card-desc { font-size: 12px; color: var(--text-secondary); line-height: 1.4; }
+/* 公司組織圖 */
+.org-company-card { background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: var(--radius-md); margin-bottom: 12px; overflow: hidden; }
+.org-company-header { display:flex; align-items:center; gap:10px; padding:12px 14px; background:var(--bg-tertiary); border-bottom:1px solid var(--border-color); cursor:pointer; }
+.org-company-name { font-size:14px; font-weight:700; color:var(--text-primary); flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.org-company-count { font-size:12px; font-weight:700; color:#fff; background:var(--accent); border-radius:99px; padding:1px 9px; flex-shrink:0; }
+.org-person-row { display:flex; align-items:center; gap:12px; padding:10px 14px; border-bottom:1px solid var(--border-color); cursor:pointer; transition:background 0.15s; }
+.org-person-row:last-child { border-bottom:none; }
+.org-person-row:hover { background:var(--bg-tertiary); }
+.org-person-avatar { width:34px; height:34px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:700; color:#fff; flex-shrink:0; }
+.org-person-name { font-size:14px; font-weight:600; color:var(--text-primary); }
+.org-person-title { font-size:12px; color:var(--text-secondary); margin-top:1px; }
 .card-tags-area {
   display: flex;
   flex-wrap: wrap;
@@ -880,7 +893,7 @@ body::after {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  font-size: 11px;
+  font-size: 13px;
   cursor: pointer;
   transition: var(--transition);
 }
@@ -951,7 +964,7 @@ body::after {
   font-size: 20px;
 }
 .db-card-info h4 {
-  font-size: 11px;
+  font-size: 13px;
   color: var(--text-secondary);
   text-transform: uppercase;
   letter-spacing: 0.05em;
@@ -1052,7 +1065,7 @@ body::after {
   margin-bottom: 4px;
 }
 .batch-dropzone p {
-  font-size: 11px;
+  font-size: 13px;
 }
 
 .queue-list {
@@ -1207,7 +1220,7 @@ body::after {
 }
 .manage-badge-chip {
   padding: 4px 10px;
-  font-size: 11px;
+  font-size: 13px;
   border-radius: 20px;
   background: var(--bg-secondary);
   border: 1px solid var(--border-color);
@@ -1269,7 +1282,7 @@ body::after {
   grid-column: 1 / -1;
 }
 .form-row label {
-  font-size: 11px;
+  font-size: 13px;
   font-weight: 600;
   color: var(--text-secondary);
   display: block;
@@ -1423,7 +1436,7 @@ body::after {
       <button class="tab" id="tab-dashboard" onclick="switchTab('dashboard')"><i class="ti ti-chart-bar"></i> 數據分析</button>
       <button class="tab" id="tab-dups" onclick="switchTab('dups')"><i class="ti ti-copy"></i> 重複偵測</button>
       <button class="tab" id="tab-batch" onclick="switchTab('batch')"><i class="ti ti-apps"></i> 工具箱</button>
-      <button class="tab" id="tab-graph" onclick="switchTab('graph')"><i class="ti ti-hierarchy-2"></i> 關聯圖</button>
+      <button class="tab" id="tab-graph" onclick="switchTab('graph')"><i class="ti ti-building"></i> 公司組織</button>
       <button class="tab" id="tab-settings" onclick="switchTab('settings')"><i class="ti ti-settings"></i> 應用設定</button>
     </div>
 
@@ -1555,37 +1568,37 @@ body::after {
       <!-- 工具卡片網格 -->
       <div class="toolbox-grid">
 
-        <button class="tool-card" style="background:linear-gradient(135deg,#667eea,#764ba2);" onclick="openSmartSyncModal()">
+        <button class="tool-card" style="--tc:#7c3aed;" onclick="openSmartSyncModal()">
           <div class="tool-card-icon"><i class="ti ti-wand"></i></div>
           <div class="tool-card-title">智慧同步精靈</div>
-          <div class="tool-card-desc">一鍵清重複 + 同步 Google ＋ 匯出 VCF</div>
+          <div class="tool-card-desc">清重複 + 同步 Google + 匯出 VCF</div>
         </button>
 
-        <button class="tool-card" style="background:linear-gradient(135deg,#4285F4,#34A853);" onclick="syncAllCardsToGoogle()">
+        <button class="tool-card" style="--tc:#4285F4;" onclick="syncAllCardsToGoogle()">
           <div class="tool-card-icon"><i class="ti ti-brand-google"></i></div>
           <div class="tool-card-title">Google 通訊錄</div>
-          <div class="tool-card-desc">推送至 Google，Android / iOS 自動同步</div>
+          <div class="tool-card-desc">推送至 Google，手機自動同步</div>
         </button>
 
-        <button class="tool-card" style="background:linear-gradient(135deg,#11998e,#38ef7d);" onclick="exportAllVcf()">
+        <button class="tool-card" style="--tc:#10b981;" onclick="exportAllVcf()">
           <div class="tool-card-icon"><i class="ti ti-address-book"></i></div>
           <div class="tool-card-title">儲存到手機</div>
-          <div class="tool-card-desc">匯出 VCF，iOS / Android 一鍵匯入通訊錄</div>
+          <div class="tool-card-desc">匯出 VCF，iOS / Android 一鍵匯入</div>
         </button>
 
-        <button class="tool-card" style="background:linear-gradient(135deg,#134e5e,#71b280);" onclick="exportToCsv('all')">
+        <button class="tool-card" style="--tc:#217346;" onclick="exportToCsv('all')">
           <div class="tool-card-icon"><i class="ti ti-table-export"></i></div>
           <div class="tool-card-title">匯出 Excel</div>
-          <div class="tool-card-desc">下載 CSV，可用 Excel / Google 試算表開啟</div>
+          <div class="tool-card-desc">下載 CSV，用 Excel / 試算表開啟</div>
         </button>
 
-        <button class="tool-card" style="background:linear-gradient(135deg,#f093fb,#f5576c);" onclick="importFromContactPicker()">
+        <button class="tool-card" style="--tc:#f59e0b;" onclick="importFromContactPicker()">
           <div class="tool-card-icon"><i class="ti ti-phone-incoming"></i></div>
           <div class="tool-card-title">從手機匯入</div>
-          <div class="tool-card-desc">選取手機現有聯絡人匯入名片庫</div>
+          <div class="tool-card-desc">從手機通訊錄選取聯絡人匯入</div>
         </button>
 
-        <button class="tool-card" style="background:linear-gradient(135deg,#4facfe,#00b4db);" onclick="exportFullJsonBackup()">
+        <button class="tool-card" style="--tc:#0ea5e9;" onclick="exportFullJsonBackup()">
           <div class="tool-card-icon"><i class="ti ti-database-export"></i></div>
           <div class="tool-card-title">備份資料</div>
           <div class="tool-card-desc">完整備份名片庫（含圖片）至本機</div>
@@ -1627,25 +1640,19 @@ body::after {
       </div>
     </div>
 
-    <!-- 5. 關聯圖分頁 -->
+    <!-- 5. 公司組織分頁 -->
     <div id="view-graph" style="display:none">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;flex-wrap:wrap;gap:8px;">
-        <h2 style="font-size:15px;font-weight:700;display:flex;align-items:center;gap:6px;color:var(--accent)">
-          <i class="ti ti-hierarchy-2"></i> 名片關聯圖
+        <h2 style="font-size:16px;font-weight:700;display:flex;align-items:center;gap:7px;color:var(--accent)">
+          <i class="ti ti-building"></i> 公司組織圖
         </h2>
-        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
-          <label style="font-size:12px;color:var(--text-secondary);">連線依據：</label>
-          <select id="graph-link-by" onchange="renderGraphTab()" style="font-size:12px;padding:4px 8px;border-radius:var(--radius-sm);border:1px solid var(--border-color);background:var(--bg-secondary);color:var(--text-primary);">
-            <option value="org">同公司</option>
-            <option value="tag">同標籤</option>
-            <option value="group">同群組</option>
-          </select>
-          <button class="btn" onclick="renderGraphTab()"><i class="ti ti-refresh"></i> 重整</button>
+        <div style="display:flex;gap:8px;align-items:center;">
+          <input id="org-search" type="text" placeholder="搜尋公司名稱…" oninput="renderGraphTab()"
+            style="font-size:13px;padding:6px 10px;border-radius:var(--radius-sm);border:1px solid var(--border-color);background:var(--bg-secondary);color:var(--text-primary);width:160px;">
+          <button class="btn" onclick="renderGraphTab()"><i class="ti ti-refresh"></i></button>
         </div>
       </div>
-      <canvas id="graph-canvas" style="width:100%;border-radius:var(--radius-lg);background:var(--bg-tertiary);cursor:grab;display:block;touch-action:none;"></canvas>
-      <div id="graph-tooltip" style="display:none;position:fixed;background:var(--bg-secondary);border:1px solid var(--border-color);border-radius:var(--radius-md);padding:8px 12px;font-size:12px;pointer-events:none;z-index:9999;box-shadow:var(--shadow-md);max-width:200px;line-height:1.5;"></div>
-      <div style="margin-top:8px;font-size:11px;color:var(--text-tertiary);text-align:center;">點擊節點可跳至名片 · 拖曳移動節點 · 滾輪縮放</div>
+      <div id="graph-canvas" style="overflow-y:auto;"></div>
     </div>
 
     <!-- 6. 應用設定分頁 -->
@@ -1684,7 +1691,7 @@ body::after {
             <option value="20">20 秒 (極度安全)</option>
             <option value="30">30 秒 (免費 Pro 版 2 RPM)</option>
           </select>
-          <span style="font-size: 11px; color: var(--text-tertiary);">免費版建議設定為 5 秒以上，以避免觸發 15 RPM 限制。</span>
+          <span style="font-size: 13px; color: var(--text-tertiary);">免費版建議設定為 5 秒以上，以避免觸發 15 RPM 限制。</span>
         </div>
         <div id="settings-api-key-status" style="font-size:12px; margin-top:6px; font-weight:500;"></div>
 
@@ -1733,7 +1740,7 @@ body::after {
                 <div style="flex-shrink:0;width:28px;height:28px;border-radius:50%;background:var(--accent);color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;">3</div>
                 <div>
                   <div style="font-size:13px;font-weight:600;margin-bottom:3px;">複製 API Key</div>
-                  <div style="font-size:12px;color:var(--text-secondary);">金鑰格式為 <code style="background:var(--bg-tertiary);padding:1px 5px;border-radius:3px;font-size:11px;">AIzaSy...</code> 開頭，點旁邊的複製按鈕複製起來。</div>
+                  <div style="font-size:12px;color:var(--text-secondary);">金鑰格式為 <code style="background:var(--bg-tertiary);padding:1px 5px;border-radius:3px;font-size:13px;">AIzaSy...</code> 開頭，點旁邊的複製按鈕複製起來。</div>
                 </div>
               </div>
 
@@ -1812,9 +1819,9 @@ body::after {
                 <div style="font-size:22px;color:var(--color-green)"><i class="ti ti-circle-check-filled"></i></div>
                 <div>
                   <div style="font-size:13px;font-weight:600;" id="gdrive-name">帳號已連結</div>
-                  <div style="font-size:11px;color:var(--text-secondary);" id="gdrive-email"></div>
+                  <div style="font-size:13px;color:var(--text-secondary);" id="gdrive-email"></div>
                 </div>
-                <button class="btn btn-red" style="margin-left:auto;padding:4px 10px;font-size:11px;" onclick="gdriveLogout()"><i class="ti ti-logout"></i> 中斷</button>
+                <button class="btn btn-red" style="margin-left:auto;padding:4px 10px;font-size:13px;" onclick="gdriveLogout()"><i class="ti ti-logout"></i> 中斷</button>
               </div>
             </div>
           </div>
@@ -1823,7 +1830,7 @@ body::after {
           <div style="border:1px solid var(--color-red-border);border-radius:var(--radius-md);padding:12px 14px;background:var(--color-red-bg);">
             <div style="font-size:12px;font-weight:700;color:var(--color-red);margin-bottom:8px;"><i class="ti ti-alert-triangle"></i> 危險操作</div>
             <button class="btn btn-red" onclick="clearAllSystemData()"><i class="ti ti-trash"></i> 清空全部名片資料</button>
-            <div style="font-size:11px;color:var(--color-red);margin-top:6px;opacity:0.8;">此操作無法復原，請先備份再執行。</div>
+            <div style="font-size:13px;color:var(--color-red);margin-top:6px;opacity:0.8;">此操作無法復原，請先備份再執行。</div>
           </div>
 
         </div>
@@ -3812,7 +3819,7 @@ function renderMyCardModal(myCard, isEditMode) {
           <div style="background: white; padding:12px; display:inline-block; border-radius:var(--radius-md); border:1px solid var(--border-color); box-shadow:var(--shadow-sm);">
             <img src="${qrUrl}" style="width:160px; height:160px; display:block;" alt="My QR Code" />
           </div>
-          <p style="font-size:11px; color:var(--text-secondary); margin-top:8px; line-height:1.4; padding:0 12px;">
+          <p style="font-size:13px; color:var(--text-secondary); margin-top:8px; line-height:1.4; padding:0 12px;">
             讓對方用手機相機掃描上方二維碼，即可直接在對方手機中將您儲存為通訊錄聯絡人！
           </p>
         </div>
@@ -3989,11 +3996,11 @@ function renderDupsTab() {
         <div class="dup-card-item">
           <div style="min-width:0; flex:1;">
             <div style="font-size:13px; font-weight:600;">${c.name || '—'}</div>
-            <div style="font-size:11px; color:var(--text-secondary); margin-top:2px;">
+            <div style="font-size:13px; color:var(--text-secondary); margin-top:2px;">
               ${c.org || '無公司'} · ${c.title || '無職稱'} | 手機: ${c.mobile || '無'} | Email: ${c.email || '無'}
             </div>
           </div>
-          <button class="btn btn-red" style="padding:4px 8px; font-size:11px;" onclick="deleteDupCard('${c.id}')">刪除此張</button>
+          <button class="btn btn-red" style="padding:4px 8px; font-size:13px;" onclick="deleteDupCard('${c.id}')">刪除此張</button>
         </div>
       `).join('')}
     </div>
@@ -4595,7 +4602,7 @@ function renderSmartSyncStep1() {
                 <span style="color:var(--text-secondary);margin-left:6px;">${c.org || ''}${c.mobile ? ' · ' + c.mobile : ''}</span>
               </div>
               <button onclick="smartSyncDeleteDup('${c.id}')"
-                style="border:none;background:var(--color-red-bg);color:var(--color-red);border-radius:4px;padding:3px 10px;cursor:pointer;font-size:11px;flex-shrink:0;">
+                style="border:none;background:var(--color-red-bg);color:var(--color-red);border-radius:4px;padding:3px 10px;cursor:pointer;font-size:13px;flex-shrink:0;">
                 <i class="ti ti-trash"></i> 刪除
               </button>
             </div>`).join('')}
@@ -4651,7 +4658,7 @@ function renderSmartSyncStep2() {
           <div style="font-size:13px;font-weight:700;display:flex;align-items:center;gap:6px;">
             <i class="ti ti-file-export" style="color:var(--color-green);"></i> 匯出 VCF 檔案
           </div>
-          <div style="font-size:11px;color:var(--text-secondary);margin-top:3px;">下載 .vcf 檔 → 手機開啟即可匯入 iOS / Android 通訊錄。</div>
+          <div style="font-size:13px;color:var(--text-secondary);margin-top:3px;">下載 .vcf 檔 → 手機開啟即可匯入 iOS / Android 通訊錄。</div>
           <div style="margin-top:8px;display:flex;gap:12px;flex-wrap:wrap;">
             <label style="display:flex;align-items:center;gap:5px;font-size:12px;cursor:pointer;">
               <input type="radio" name="vcf-mode" value="new" checked style="cursor:pointer;">
@@ -4671,7 +4678,7 @@ function renderSmartSyncStep2() {
           <div style="font-size:13px;font-weight:700;display:flex;align-items:center;gap:6px;">
             <i class="ti ti-brand-google" style="color:#4285F4;"></i> 同步至 Google 通訊錄
           </div>
-          <div style="font-size:11px;color:var(--text-secondary);margin-top:3px;">
+          <div style="font-size:13px;color:var(--text-secondary);margin-top:3px;">
             推送至 Google → Android 自動同步，iOS 設 Google 帳號亦可使用。<br>
             <span style="color:var(--color-green);">已同步 ${synced} 張</span>・
             <span style="color:var(--color-amber);">待推送 ${unsynced} 張</span>
@@ -4785,188 +4792,78 @@ async function executeSmartSync() {
 }
 
 // ============================================================================
-// [8] 名片關聯圖模組
+// [8] 公司組織圖模組
 // ============================================================================
 function renderGraphTab() {
-  const canvas = document.getElementById('graph-canvas');
-  if (!canvas) return;
+  const container = document.getElementById('graph-canvas');
+  if (!container) return;
   if (graphSimulation) { cancelAnimationFrame(graphSimulation); graphSimulation = null; }
 
-  const container = canvas.parentElement;
-  const W = container.clientWidth || 800;
-  const H = Math.max(460, Math.min(660, window.innerHeight - 240));
-  canvas.width = W;
-  canvas.height = H;
-  canvas.style.height = H + 'px';
-
-  const ctx = canvas.getContext('2d');
+  const groupColorMap = {
+    '學校委員':'#6366f1','政府機關':'#0ea5e9','企業客戶':'#10b981',
+    '資訊夥伴':'#f59e0b','法人夥伴':'#8b5cf6','供應商夥伴':'#ec4899','其他':'#94a3b8'
+  };
 
   if (cardsList.length === 0) {
-    ctx.fillStyle = '#94a3b8';
-    ctx.font = '14px sans-serif';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.fillText('名片庫目前沒有資料', W / 2, H / 2);
+    container.innerHTML = `<div class="empty-state"><i class="ti ti-building-off"></i><p>名片庫目前沒有資料</p></div>`;
     return;
   }
 
-  const linkBy = document.getElementById('graph-link-by')?.value || 'org';
+  // 依公司分組
+  const orgMap = {};
+  cardsList.forEach(c => {
+    const key = (c.org || '').trim() || '（未填公司）';
+    if (!orgMap[key]) orgMap[key] = [];
+    orgMap[key].push(c);
+  });
 
-  const nodes = cardsList.map(c => ({
-    id: c.id, card: c,
-    x: W / 2 + (Math.random() - 0.5) * W * 0.55,
-    y: H / 2 + (Math.random() - 0.5) * H * 0.55,
-    vx: 0, vy: 0, r: 18
-  }));
+  // 搜尋過濾
+  const q = (document.getElementById('org-search')?.value || '').trim().toLowerCase();
+  const entries = Object.entries(orgMap)
+    .filter(([name]) => !q || name.toLowerCase().includes(q))
+    .sort((a, b) => b[1].length - a[1].length);  // 人數多的排前面
 
-  const edges = [];
-  for (let i = 0; i < nodes.length; i++) {
-    for (let j = i + 1; j < nodes.length; j++) {
-      const a = nodes[i].card, b = nodes[j].card;
-      let linked = false;
-      if (linkBy === 'org') linked = !!(a.org && b.org && normField(a.org) === normField(b.org));
-      else if (linkBy === 'tag') linked = !!(a.tags && b.tags && a.tags.some(t => b.tags.includes(t)));
-      else if (linkBy === 'group') linked = (a.group || '其他') === (b.group || '其他');
-      if (linked) edges.push({ s: nodes[i], t: nodes[j] });
-    }
+  if (entries.length === 0) {
+    container.innerHTML = `<div class="empty-state"><i class="ti ti-search-off"></i><p>找不到符合的公司</p></div>`;
+    return;
   }
 
-  const groupColors = {
-    '學校委員': '#6366f1', '政府機關': '#0ea5e9', '企業客戶': '#10b981',
-    '資訊夥伴': '#f59e0b', '法人夥伴': '#8b5cf6', '供應商夥伴': '#ec4899', '其他': '#94a3b8'
-  };
+  const totalCompanies = entries.length;
+  const totalPeople = entries.reduce((s, [, v]) => s + v.length, 0);
 
-  const transform = { x: 0, y: 0, scale: 1 };
-  let dragging = null, hoveredNode = null, mouseDownNode = null, mouseDownPos = null;
+  container.innerHTML = `
+    <div style="font-size:13px;color:var(--text-secondary);margin-bottom:14px;">
+      共 <strong style="color:var(--text-primary)">${totalCompanies}</strong> 家公司・
+      <strong style="color:var(--text-primary)">${totalPeople}</strong> 位聯絡人
+    </div>
+    ${entries.map(([orgName, people]) => {
+      const peopleHTML = people.map(c => {
+        const color = groupColorMap[c.group || '其他'] || '#94a3b8';
+        const label = (c.group || '其他').slice(0,2);
+        const phone = c.mobile || c.phone || '';
+        return `
+          <div class="org-person-row" onclick="selectCard('${c.id}');switchTab('cards');">
+            <div class="org-person-avatar" style="background:${color};">${label}</div>
+            <div style="flex:1;min-width:0;">
+              <div class="org-person-name">${c.name || '—'}</div>
+              <div class="org-person-title">${[c.title, c.dept].filter(Boolean).join(' · ') || '—'}</div>
+            </div>
+            ${phone ? `<div style="font-size:12px;color:var(--text-tertiary);flex-shrink:0;">${phone}</div>` : ''}
+            ${c.processed ? `<i class="ti ti-circle-check" style="color:var(--color-green);font-size:16px;flex-shrink:0;"></i>` : ''}
+          </div>`;
+      }).join('');
 
-  function toWorld(cx, cy) {
-    return { x: (cx - transform.x) / transform.scale, y: (cy - transform.y) / transform.scale };
-  }
-  function findNode(wx, wy) {
-    for (let i = nodes.length - 1; i >= 0; i--) {
-      if (Math.hypot(nodes[i].x - wx, nodes[i].y - wy) < nodes[i].r + 3) return nodes[i];
-    }
-    return null;
-  }
-  function canvasXY(e) {
-    const rect = canvas.getBoundingClientRect();
-    const src = e.touches ? e.touches[0] : e;
-    return { cx: (src.clientX - rect.left) * (canvas.width / rect.width), cy: (src.clientY - rect.top) * (canvas.height / rect.height) };
-  }
-
-  canvas.onmousedown = e => {
-    const { cx, cy } = canvasXY(e);
-    const w = toWorld(cx, cy);
-    const n = findNode(w.x, w.y);
-    if (n) { dragging = n; mouseDownNode = n; mouseDownPos = { x: w.x, y: w.y }; n.fx = n.x; n.fy = n.y; canvas.style.cursor = 'grabbing'; }
-  };
-  canvas.onmousemove = e => {
-    const { cx, cy } = canvasXY(e);
-    const w = toWorld(cx, cy);
-    const tip = document.getElementById('graph-tooltip');
-    if (dragging) {
-      dragging.x = w.x; dragging.y = w.y; dragging.fx = w.x; dragging.fy = w.y; dragging.vx = 0; dragging.vy = 0;
-    } else {
-      hoveredNode = findNode(w.x, w.y);
-      canvas.style.cursor = hoveredNode ? 'pointer' : 'grab';
-      if (hoveredNode) {
-        tip.style.display = 'block';
-        tip.style.left = (e.clientX + 14) + 'px';
-        tip.style.top = (e.clientY - 8) + 'px';
-        const c = hoveredNode.card;
-        tip.innerHTML = `<strong>${c.name || '—'}</strong>${c.title ? '<br>' + c.title : ''}${c.org ? '<br><span style="color:var(--text-secondary)">' + c.org + '</span>' : ''}`;
-      } else { tip.style.display = 'none'; }
-    }
-  };
-  canvas.onmouseup = e => {
-    if (dragging && mouseDownNode && mouseDownPos) {
-      const { cx, cy } = canvasXY(e);
-      const w = toWorld(cx, cy);
-      if (Math.hypot(w.x - mouseDownPos.x, w.y - mouseDownPos.y) < 6) {
-        selectCard(mouseDownNode.card.id);
-        switchTab('cards');
-      }
-      delete dragging.fx; delete dragging.fy;
-    }
-    dragging = null; mouseDownNode = null; mouseDownPos = null;
-    canvas.style.cursor = hoveredNode ? 'pointer' : 'grab';
-  };
-  canvas.onmouseleave = () => {
-    dragging = null; canvas.style.cursor = 'grab';
-    document.getElementById('graph-tooltip').style.display = 'none';
-  };
-  canvas.onwheel = e => {
-    e.preventDefault();
-    transform.scale = Math.min(3, Math.max(0.15, transform.scale * (e.deltaY < 0 ? 1.12 : 0.9)));
-  };
-
-  let tick_count = 0;
-  function tick() {
-    tick_count++;
-    const alpha = Math.max(0.01, 1 - tick_count / 300);
-
-    // Repulsion
-    for (let i = 0; i < nodes.length; i++) {
-      for (let j = i + 1; j < nodes.length; j++) {
-        const a = nodes[i], b = nodes[j];
-        const dx = b.x - a.x, dy = b.y - a.y;
-        const dist = Math.max(1, Math.hypot(dx, dy));
-        const f = (1800 / (dist * dist)) * alpha;
-        const fx = (dx / dist) * f, fy = (dy / dist) * f;
-        a.vx -= fx; a.vy -= fy; b.vx += fx; b.vy += fy;
-      }
-    }
-    // Edge attraction
-    edges.forEach(e => {
-      const dx = e.t.x - e.s.x, dy = e.t.y - e.s.y;
-      const dist = Math.max(1, Math.hypot(dx, dy));
-      const f = (dist - 90) * 0.04 * alpha;
-      const fx = (dx / dist) * f, fy = (dy / dist) * f;
-      e.s.vx += fx; e.s.vy += fy; e.t.vx -= fx; e.t.vy -= fy;
-    });
-    // Centering
-    nodes.forEach(n => { n.vx += (W / 2 - n.x) * 0.003; n.vy += (H / 2 - n.y) * 0.003; });
-    // Integrate
-    nodes.forEach(n => {
-      if (n.fx !== undefined) return;
-      n.vx *= 0.85; n.vy *= 0.85;
-      n.x = Math.max(n.r, Math.min(W - n.r, n.x + n.vx));
-      n.y = Math.max(n.r, Math.min(H - n.r, n.y + n.vy));
-    });
-
-    // Render
-    ctx.clearRect(0, 0, W, H);
-    ctx.save();
-    ctx.translate(transform.x, transform.y);
-    ctx.scale(transform.scale, transform.scale);
-
-    // Edges
-    ctx.lineWidth = 1.2;
-    ctx.strokeStyle = 'rgba(148,163,184,0.3)';
-    edges.forEach(e => {
-      ctx.beginPath(); ctx.moveTo(e.s.x, e.s.y); ctx.lineTo(e.t.x, e.t.y); ctx.stroke();
-    });
-
-    // Nodes
-    nodes.forEach(n => {
-      const color = groupColors[n.card.group || '其他'] || '#94a3b8';
-      const isSel = n.card.id === selectedCardId;
-      const isHov = n === hoveredNode;
-      ctx.beginPath();
-      ctx.arc(n.x, n.y, n.r + (isSel ? 4 : 0), 0, Math.PI * 2);
-      ctx.fillStyle = color + (isSel || isHov ? 'ff' : 'dd');
-      ctx.fill();
-      if (isSel) { ctx.strokeStyle = '#fff'; ctx.lineWidth = 2.5; ctx.stroke(); }
-      ctx.fillStyle = '#fff';
-      ctx.font = `bold ${isSel ? 10 : 9}px sans-serif`;
-      ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-      ctx.fillText((n.card.name || '?').slice(0, 2), n.x, n.y);
-    });
-
-    ctx.restore();
-    graphSimulation = requestAnimationFrame(tick);
-  }
-  tick();
+      const isNoOrg = orgName === '（未填公司）';
+      return `
+        <div class="org-company-card">
+          <div class="org-company-header">
+            <i class="ti ${isNoOrg ? 'ti-user-question' : 'ti-building'}" style="color:var(--accent);font-size:16px;flex-shrink:0;"></i>
+            <div class="org-company-name">${orgName}</div>
+            <span class="org-company-count">${people.length} 人</span>
+          </div>
+          ${peopleHTML}
+        </div>`;
+    }).join('')}`;
 }
 
 function showToast(msg) {
