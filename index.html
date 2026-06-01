@@ -1691,15 +1691,26 @@ body {
           <!-- JS renderMyProfile() 動態渲染 -->
         </div>
 
-        <!-- QR Code 區塊 -->
-        <div class="db-section" style="align-items:center;text-align:center;">
-          <h3 style="margin-bottom:14px;justify-content:center;"><i class="ti ti-qrcode" style="color:var(--accent);"></i> 掃碼加入通訊錄</h3>
-          <div id="myprofile-qrcode" style="display:flex;justify-content:center;margin-bottom:14px;">
-            <!-- JS 動態產生 QR Code -->
+        <!-- QR Code 雙欄 -->
+        <div class="db-section">
+          <h3 style="margin-bottom:16px;justify-content:center;text-align:center;"><i class="ti ti-qrcode" style="color:var(--accent);"></i> 掃碼交流</h3>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;text-align:center;">
+            <!-- vCard QR -->
+            <div>
+              <div style="font-size:12px;color:var(--text-tertiary);margin-bottom:8px;font-weight:600;">加入通訊錄</div>
+              <div id="myprofile-qrcode" style="display:flex;justify-content:center;"></div>
+              <div style="font-size:11px;color:var(--text-tertiary);margin-top:6px;">掃碼存手機</div>
+            </div>
+            <!-- LINE QR -->
+            <div>
+              <div style="font-size:12px;color:var(--text-tertiary);margin-bottom:8px;font-weight:600;display:flex;align-items:center;justify-content:center;gap:4px;">
+                <span style="color:#06C755;font-size:14px;">LINE</span> 加好友
+              </div>
+              <div id="myprofile-line-qrcode" style="display:flex;justify-content:center;"></div>
+              <div style="font-size:11px;color:var(--text-tertiary);margin-top:6px;" id="myprofile-line-id-label"></div>
+            </div>
           </div>
-          <p style="font-size:13px;color:var(--text-tertiary);margin:0;">對方掃描後自動加入手機通訊錄</p>
-          <div style="display:flex;gap:10px;justify-content:center;margin-top:14px;">
-            <button class="btn btn-primary" onclick="downloadMyProfileQR()"><i class="ti ti-download"></i> 儲存 QR Code</button>
+          <div style="display:flex;gap:10px;justify-content:center;margin-top:16px;">
             <button class="btn" onclick="openMyCardModal()"><i class="ti ti-edit"></i> 編輯名片</button>
           </div>
         </div>
@@ -4034,7 +4045,7 @@ function renderHomeScreen() {
  */
 function getMyCardData() {
   const data = localStorage.getItem('bizcard_user_mycard');
-  return data ? JSON.parse(data) : { name: '', title: '', org: '', dept: '', phone: '', mobile: '', email: '', website: '', zip: '', addr: '', theme: 'indigo', image: '' };
+  return data ? JSON.parse(data) : { name: '', title: '', org: '', dept: '', phone: '', mobile: '', email: '', website: '', zip: '', addr: '', theme: 'indigo', image: '', lineId: '' };
 }
 
 function renderMyProfile() {
@@ -4105,7 +4116,23 @@ function renderMyProfile() {
       // 儲存 QR URL 供下載使用
       qrDiv.dataset.qrUrl = qrUrl;
     } else {
-      qrDiv.innerHTML = `<div style="width:200px;height:200px;border:2px dashed var(--border-color);border-radius:12px;display:flex;align-items:center;justify-content:center;color:var(--text-tertiary);font-size:13px;">填寫名片後顯示</div>`;
+      qrDiv.innerHTML = `<div style="width:150px;height:150px;border:2px dashed var(--border-color);border-radius:12px;display:flex;align-items:center;justify-content:center;color:var(--text-tertiary);font-size:12px;text-align:center;">填寫名片<br>後顯示</div>`;
+    }
+  }
+
+  // LINE QR Code
+  const lineQrDiv = document.getElementById('myprofile-line-qrcode');
+  const lineLabel = document.getElementById('myprofile-line-id-label');
+  if (lineQrDiv) {
+    const lineId = c.lineId || '';
+    if (lineId) {
+      const lineUrl = `https://line.me/ti/p/~${encodeURIComponent(lineId)}`;
+      const lineQrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&ecc=L&data=${encodeURIComponent(lineUrl)}`;
+      lineQrDiv.innerHTML = `<img src="${lineQrUrl}" width="150" height="150" style="border-radius:10px;display:block;" alt="LINE QR Code"/>`;
+      if (lineLabel) lineLabel.textContent = `LINE ID：${lineId}`;
+    } else {
+      lineQrDiv.innerHTML = `<div style="width:150px;height:150px;border:2px dashed var(--border-color);border-radius:12px;display:flex;align-items:center;justify-content:center;color:var(--text-tertiary);font-size:12px;text-align:center;">填入 LINE ID<br>後顯示</div>`;
+      if (lineLabel) lineLabel.textContent = '';
     }
   }
 
@@ -4207,6 +4234,7 @@ function renderMyCardModal(myCard, isEditMode) {
         <div class="form-row"><label>手機號碼</label><input type="text" id="my-mobile" value="${myCard.mobile}" /></div>
         <div class="form-row"><label>電子郵件 (Email)</label><input type="email" id="my-email" value="${myCard.email}" /></div>
         <div class="form-row"><label>個人/公司網站</label><input type="text" id="my-website" value="${myCard.website}" /></div>
+        <div class="form-row"><label>LINE ID</label><input type="text" id="my-lineid" value="${myCard.lineId || ''}" placeholder="例：fullmodel" /></div>
         <div class="form-row"><label>郵遞區號</label><input type="text" id="my-zip" value="${myCard.zip}" /></div>
         <div class="form-row"><label>地址</label><input type="text" id="my-addr" value="${myCard.addr}" /></div>
       </div>
@@ -4304,14 +4332,17 @@ function saveMyCardForm() {
     mobile: document.getElementById('my-mobile').value.trim(),
     email: document.getElementById('my-email').value.trim(),
     website: document.getElementById('my-website').value.trim(),
+    lineId: (document.getElementById('my-lineid')?.value || '').trim(),
     zip: document.getElementById('my-zip').value.trim(),
     addr: document.getElementById('my-addr').value.trim(),
     id: 'user_personal_card'
   };
-  
+
   saveMyCardData(myCardObj);
   showToast('✓ 個人名片設定已儲存！');
   renderMyCardModal(myCardObj, false);
+  // 同步更新「我的」頁面 QR Code
+  if (document.getElementById('view-myprofile')?.style.display !== 'none') renderMyProfile();
 }
 
 function downloadMyVcard() {
