@@ -1407,12 +1407,37 @@ body {
 .btab span { font-size: 11px; font-weight: 500; color: var(--text-tertiary); }
 .btab.active span { color: var(--text-primary); font-weight: 700; }
 
-/* Home screen */
-.home-kpi-icon-chip {
-  width: 40px; height: 40px; border-radius: 12px;
-  background: var(--accent-soft); border: 1px solid var(--border-color);
-  display: flex; align-items: center; justify-content: center;
+/* ============================================================================
+   Phase 2 — 名片庫新版面 & 工具箱補強
+   ============================================================================ */
+.cards-col-layout { display:flex; flex-direction:column; gap:16px; padding:18px 20px 28px; }
+.cards-search-bar { display:flex; align-items:center; gap:10px; padding:0 14px; height:46px; background:var(--field-bg,#101013); border:1px solid var(--border-color); border-radius:13px; }
+.cards-search-bar input { flex:1; border:none; outline:none; background:transparent; font:inherit; font-size:14.5px; color:var(--text-primary); }
+.cards-search-bar i { color:var(--text-tertiary); font-size:18px; flex-shrink:0; }
+.status-segmented { display:flex; background:var(--bg-tertiary); border-radius:11px; padding:3px; border:1px solid var(--border-color); }
+.seg-btn { flex:1; padding:9px 0; border-radius:8px; border:none; cursor:pointer; font-family:inherit; font-size:13.5px; font-weight:500; background:transparent; color:var(--text-secondary); transition:all .15s; }
+.seg-btn.active { background:var(--bg-secondary); color:var(--text-primary); font-weight:700; box-shadow:0 1px 2px rgba(0,0,0,0.12); }
+.sec-label { font-size:15px; font-weight:600; color:var(--text-primary); letter-spacing:0.3px; margin-bottom:10px; }
+.card-list-wrap { background:var(--bg-secondary); border:1px solid var(--border-color); border-radius:16px; overflow:hidden; }
+.card-list-empty { padding:40px 0; text-align:center; color:var(--text-tertiary); font-size:14px; }
+.biz-card-row { display:flex; align-items:center; gap:13px; padding:12px 16px; border-bottom:1px solid var(--border-color); cursor:pointer; transition:background .15s; }
+.biz-card-row:last-child { border-bottom:none; }
+.biz-card-row:hover { background:var(--bg-tertiary); }
+.biz-card-row.selected { background:rgba(99,102,241,0.07); }
+.bcr-avatar { width:42px; height:42px; border-radius:12px; display:flex; align-items:center; justify-content:center; font-size:17px; font-weight:600; flex-shrink:0; }
+.bcr-name { font-size:15.5px; font-weight:600; color:var(--text-primary); }
+.bcr-sub { font-size:12.5px; color:var(--text-secondary); margin-top:2px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.bcr-badge { font-size:11.5px; font-weight:600; color:var(--text-secondary); padding:3px 9px; border-radius:7px; background:var(--bg-tertiary); border:1px solid var(--border-color); flex-shrink:0; }
+.bcr-badge.done { color:var(--color-green); border-color:var(--color-green-border); background:var(--color-green-bg); }
+.bcr-badge.dup  { color:var(--color-amber); border-color:var(--color-amber-border); background:var(--color-amber-bg); }
+@media (min-width:900px) {
+  .cards-detail-split { display:flex; gap:16px; align-items:start; }
+  .cards-detail-split .cards-col-layout { flex:1; min-width:0; padding-left:0; padding-right:0; }
+  .cards-detail-split #detail-wrapper { width:360px; flex-shrink:0; }
 }
+.tools-section-divider { display:flex; align-items:center; gap:10px; margin:20px 0 16px; }
+.tools-section-divider::before,.tools-section-divider::after { content:''; flex:1; height:1px; background:var(--border-color); }
+.tools-section-divider span { font-size:12px; font-weight:700; color:var(--text-tertiary); white-space:nowrap; }
 </style>
 </head>
 <body>
@@ -1434,6 +1459,9 @@ body {
     <div style="display:flex;align-items:center;gap:8px;">
       <button class="btn btn-icon" id="theme-toggle-btn" onclick="toggleTheme()" title="切換主題">
         <i class="ti ti-sun"></i>
+      </button>
+      <button class="btn" onclick="openMyCardModal()" title="我的名片" style="border-radius:11px;padding:9px 12px;background:var(--bg-secondary);border:1px solid var(--border-color);">
+        <i class="ti ti-user-circle" style="font-size:18px;"></i>
       </button>
       <button class="btn btn-primary" onclick="openFormModal()" style="border-radius:11px;font-size:14px;font-weight:600;padding:9px 15px;background:var(--accent);border:none;">
         <i class="ti ti-plus" style="font-size:16px;"></i> 新增
@@ -1471,58 +1499,43 @@ body {
 
     <!-- 1. 名片庫分頁 -->
     <div id="view-cards" style="display:none">
-      <div class="cards-layout">
-        
-        <!-- 左側篩選欄 -->
-        <aside class="cards-sidebar">
-          <div class="sidebar-section">
-            <label class="sidebar-label"><i class="ti ti-search"></i> 關鍵字搜尋</label>
-            <div class="searchrow-new">
-              <input type="text" id="search-input" placeholder="搜尋姓名、公司、電話、Email、地址、群組、標籤..." oninput="filterCards()" />
-            </div>
-          </div>
-          
-          <!-- 群組分類已移至「數據分析」分頁 -->
-          <div id="group-filter-list" style="display:none;"></div>
-          
-          <div class="sidebar-section">
-            <label class="sidebar-label"><i class="ti ti-tags"></i> 標籤篩選</label>
-            <div class="tag-filter-cloud" id="tag-cloud">
-              <!-- JS 動態渲染 -->
-            </div>
-          </div>
-        </aside>
+      <div class="cards-col-layout">
 
-        <!-- 中間名片網格區 -->
-        <section class="cards-main">
-          <div class="cards-toolbar">
-            <div class="filter-chips">
-              <button class="filter-chip active" id="fc-all" onclick="setProcessedFilter('all')">全部</button>
-              <button class="filter-chip" id="fc-unprocessed" onclick="setProcessedFilter('unprocessed')"><i class="ti ti-clock"></i> 未處理</button>
-              <button class="filter-chip" id="fc-processed" onclick="setProcessedFilter('processed')"><i class="ti ti-check"></i> 已處理</button>
-            </div>
-            
-            <div class="sort-selector">
-              <label for="sort-select"><i class="ti ti-sort-ascending"></i> 排序：</label>
-              <select id="sort-select" onchange="handleSortChange()">
-                <option value="time-desc">建立時間 (最新優先)</option>
-                <option value="time-asc">建立時間 (最早優先)</option>
-                <option value="name-asc">姓名排序 (A → Z)</option>
-                <option value="name-desc">姓名排序 (Z → A)</option>
-                <option value="org-asc">公司排序 (A → Z)</option>
-              </select>
-            </div>
-          </div>
-          
-          <div id="card-grid" class="card-grid-container"></div>
-        </section>
+        <!-- 搜尋欄 -->
+        <div class="cards-search-bar">
+          <i class="ti ti-search" style="color:var(--text-secondary);"></i>
+          <input type="text" id="search-input" placeholder="搜尋姓名、公司、電話..." oninput="filterCards()" style="flex:1;background:transparent;border:none;color:var(--text-primary);font-size:15px;outline:none;"/>
+        </div>
 
-        <!-- 右側詳情面板 -->
-        <aside class="cards-detail-wrapper" id="detail-wrapper">
-          <div class="detail-panel" id="detail-panel">
-            <!-- JS 動態渲染 -->
+        <!-- 標籤篩選 -->
+        <div id="tag-cloud" style="display:flex;flex-wrap:wrap;gap:8px;padding:0 18px;"></div>
+
+        <!-- 狀態和排序 -->
+        <div style="display:flex;gap:12px;padding:0 18px;align-items:center;justify-content:space-between;">
+          <div class="status-segmented">
+            <button class="seg-btn active" id="fc-all" onclick="setProcessedFilter('all')">全部</button>
+            <button class="seg-btn" id="fc-unprocessed" onclick="setProcessedFilter('unprocessed')">未處理</button>
+            <button class="seg-btn" id="fc-processed" onclick="setProcessedFilter('processed')">已處理</button>
           </div>
-        </aside>
+          <select id="sort-select" onchange="handleSortChange()" style="height:36px;border-radius:8px;border:1px solid var(--border-color);background:var(--bg-secondary);color:var(--text-primary);font-size:13px;padding:0 8px;cursor:pointer;">
+            <option value="time-desc">最新優先</option>
+            <option value="time-asc">最早優先</option>
+            <option value="name-asc">姓名 A→Z</option>
+            <option value="name-desc">姓名 Z→A</option>
+            <option value="org-asc">公司 A→Z</option>
+          </select>
+        </div>
+
+        <!-- 名片卡片列表 -->
+        <div class="card-list-wrap" id="card-grid">
+          <!-- JS 動態渲染 renderCardsGrid() -->
+        </div>
+
+      </div>
+
+      <!-- 詳情面板（側邊欄，響應式隱藏） -->
+      <div id="detail-wrapper" style="display:none;">
+        <div id="detail-panel"></div>
       </div>
     </div>
 
@@ -1577,6 +1590,17 @@ body {
           </div>
         </div>
       </div>
+
+      <!-- 公司組織圖 (Phase 2) -->
+      <div style="margin-top:24px;border-top:1px solid var(--border-color);padding-top:24px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+          <h3 style="margin:0;"><i class="ti ti-organization"></i> 公司組織圖</h3>
+          <span style="font-size:13px;color:var(--text-tertiary);">依公司分組顯示</span>
+        </div>
+        <div id="graph-canvas" style="background:var(--bg-secondary);border:1px solid var(--border-color);border-radius:12px;padding:16px;min-height:240px;">
+          <!-- JS 動態渲染 renderGraphTab() -->
+        </div>
+      </div>
     </div>
 
     <!-- 3. 重複偵測分頁 -->
@@ -1585,7 +1609,10 @@ body {
         <h2 style="font-size:15px;font-weight:700;display:flex;align-items:center;gap:6px;color:var(--color-amber)">
           <i class="ti ti-copy"></i> 疑似重複名片清單
         </h2>
-        <button class="btn" onclick="renderDupsTab()"><i class="ti ti-refresh"></i> 重新偵測</button>
+        <div style="display:flex;gap:8px;">
+          <button class="btn" onclick="switchTab('batch')"><i class="ti ti-arrow-left"></i> 返回工具箱</button>
+          <button class="btn" onclick="renderDupsTab()"><i class="ti ti-refresh"></i> 重新偵測</button>
+        </div>
       </div>
       <div id="dup-content"></div>
     </div>
@@ -1630,6 +1657,18 @@ body {
           <div class="tool-card-icon"><i class="ti ti-database-export"></i></div>
           <div class="tool-card-title">備份資料</div>
           <div class="tool-card-desc">完整備份名片庫（含圖片）至本機</div>
+        </button>
+
+        <button class="tool-card" style="--tc:#f59e0b;" onclick="switchTab('dups'); renderDupsTab();">
+          <div class="tool-card-icon"><i class="ti ti-copy"></i></div>
+          <div class="tool-card-title">重複偵測</div>
+          <div class="tool-card-desc">查找疑似重複的名片並清整</div>
+        </button>
+
+        <button class="tool-card" style="--tc:#6366f1;" onclick="switchTab('settings'); renderSettingsBadgeManager();">
+          <div class="tool-card-icon"><i class="ti ti-settings"></i></div>
+          <div class="tool-card-title">應用設定</div>
+          <div class="tool-card-desc">主題、同步設定、標籤管理</div>
         </button>
 
       </div>
@@ -1685,7 +1724,14 @@ body {
 
     <!-- 6. 應用設定分頁 -->
     <div id="view-settings" style="display:none">
-      
+
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem;margin-top:0.5rem;">
+        <h2 style="font-size:17px;font-weight:700;display:flex;align-items:center;gap:6px;color:var(--text-primary);margin:0;">
+          <i class="ti ti-settings"></i> 應用設定
+        </h2>
+        <button class="btn" onclick="switchTab('batch')"><i class="ti ti-arrow-left"></i> 返回工具箱</button>
+      </div>
+
       <div class="local-server-notice" id="local-server-notice" style="display:none">
         <i class="ti ti-info-circle" style="font-size: 18px; margin-top: 1px;"></i>
         <div>
@@ -3046,18 +3092,18 @@ async function systemLoadAllData() {
 function renderSidebarFilters() {
   const groupFilterList = document.getElementById('group-filter-list');
   const customGroups = getCustomGroups();
-  
+
   const groupCounts = {};
   cardsList.forEach(c => {
     const g = c.group || '其他';
     groupCounts[g] = (groupCounts[g] || 0) + 1;
   });
-  
+
   let groupHtml = `<div class="group-filter-item ${activeGroupFilter === '' ? 'active' : ''}" onclick="setGroupFilter('')">
     <span>全部群組</span>
     <span class="group-count">${cardsList.length}</span>
   </div>`;
-  
+
   customGroups.forEach(g => {
     const count = groupCounts[g] || 0;
     groupHtml += `<div class="group-filter-item ${activeGroupFilter === g ? 'active' : ''}" onclick="setGroupFilter('${g}')">
@@ -3092,6 +3138,14 @@ function renderSidebarFilters() {
   const processedCount = cardsList.filter(c => c.processed).length;
   const procBadge = document.getElementById('proc-badge');
   if (procBadge) { procBadge.textContent = '✓ 已處理 ' + processedCount; procBadge.style.display = processedCount ? 'inline-block' : 'none'; }
+
+  // 更新 header subtitle
+  const total = cardsList.length;
+  const rate = total ? Math.round((processedCount / total) * 100) : 0;
+  const subtitle = document.getElementById('header-subtitle');
+  if (subtitle) {
+    subtitle.textContent = `${total} 張名片 · 已處理 ${rate}%`;
+  }
 
   const dups = detectAllDuplicateGroups();
   const dupBadge = document.getElementById('dup-badge');
@@ -3167,47 +3221,46 @@ function getFilteredAndSortedCards() {
 function renderCardsGrid() {
   const grid = document.getElementById('card-grid');
   const filtered = getFilteredAndSortedCards();
-  
+
   if (filtered.length === 0) {
-    grid.innerHTML = `<div class="empty-state" style="grid-column: 1 / -1;">
-      <i class="ti ti-inbox"></i>
-      <p>沒有符合條件的名片資料</p>
+    grid.innerHTML = `<div style="text-align:center;padding:40px 20px;color:var(--text-tertiary);">
+      <i class="ti ti-inbox" style="font-size:48px;opacity:0.4;"></i>
+      <p style="margin-top:12px;font-size:14px;">沒有符合條件的名片資料</p>
     </div>`;
     return;
   }
-  
+
   const dupList = detectAllDuplicateIds();
-  
+
   grid.innerHTML = filtered.map(c => {
     const isDup = dupList.has(c.id);
-    const badgeText = c.processed ? 
-      '<span class="ribbon ribbon-green"><i class="ti ti-check"></i> 已處理</span>' : 
-      (isDup ? '<span class="ribbon ribbon-amber"><i class="ti ti-copy"></i> 重複</span>' : '');
-      
-    const groupColorMap = {'學校委員':'#6366f1','政府機關':'#0ea5e9','企業客戶':'#10b981','資訊夥伴':'#f59e0b','法人夥伴':'#8b5cf6','供應商夥伴':'#ec4899','其他':'#94a3b8'};
-    const groupLabel = (c.group || '其他').slice(0, 2);
-    const avatarColor = groupColorMap[c.group || '其他'] || '#818cf8';
+    const hue = nameToHue(c.name);
+    const subtitle = [c.title, c.dept].filter(x => x).join(' · ') || c.org || '無職稱';
+
+    let badge = '';
+    if (c.processed) {
+      badge = '<div class="bcr-badge bcr-done"><i class="ti ti-check"></i> 已處理</div>';
+    } else if (isDup) {
+      badge = '<div class="bcr-badge bcr-dup"><i class="ti ti-copy"></i> 重複</div>';
+    }
 
     return `
-      <div class="biz-card ${selectedCardId === c.id ? 'selected' : ''} ${c.processed ? 'processed' : ''}" onclick="selectCard('${c.id}')">
-        ${badgeText}
-        <div class="card-hd-layout">
-          <div class="card-avatar" style="background:hsl(${nameToHue(c.name)} 28% 22%);color:hsl(${nameToHue(c.name)} 55% 76%);">${(c.name||'?').slice(0,1)}</div>
-          <div class="card-info">
-            <h4 class="card-name-text">${c.name || '—'}</h4>
-            <div class="card-title-text">${c.title || ''}${c.dept ? ' · ' + c.dept : ''}</div>
-            <div class="card-org-text">${c.org || ''}</div>
-          </div>
+      <div class="biz-card-row ${selectedCardId === c.id ? 'selected' : ''}" onclick="selectCard('${c.id}')">
+        <div class="bcr-avatar" style="background:hsl(${hue}, 50%, 48%);color:white;">${(c.name||'?').slice(0,1)}</div>
+        <div style="flex:1;min-width:0;">
+          <div class="bcr-name">${c.name || '—'}</div>
+          <div class="bcr-sub">${subtitle}</div>
         </div>
-        ${c.tags && c.tags.length ? `
-          <div class="card-tags-area">
-            ${c.tags.slice(0, 3).map(t => `<span class="tag-mini">#${t}</span>`).join('')}
-            ${c.tags.length > 3 ? `<span class="tag-mini">+${c.tags.length - 3}</span>` : ''}
-          </div>
-        ` : ''}
+        ${badge}
       </div>
     `;
   }).join('');
+
+  // 更新名片數量標籤
+  const countLabel = document.querySelector('.cards-count-label');
+  if (countLabel) {
+    countLabel.textContent = `${filtered.length} 張`;
+  }
 }
 
 async function selectCard(id) {
@@ -3392,10 +3445,10 @@ function switchTab(tabId) {
   });
   if (tabId === 'cards') renderCardsGrid();
   if (tabId === 'dups') renderDupsTab();
-  if (tabId === 'dashboard') renderDashboard();
+  if (tabId === 'dashboard') { renderDashboard(); renderGraphTab(); }
   if (tabId === 'home') renderHomeScreen();
   if (tabId === 'graph') renderGraphTab();
-  if (tabId !== 'graph' && graphSimulation) { cancelAnimationFrame(graphSimulation); graphSimulation = null; }
+  if (tabId !== 'graph' && tabId !== 'dashboard' && graphSimulation) { cancelAnimationFrame(graphSimulation); graphSimulation = null; }
 }
 
 // ============================================================================
