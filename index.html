@@ -3493,6 +3493,10 @@ function closeLightbox() {
 }
 
 function switchTab(tabId) {
+  // Header 只在首頁顯示
+  const header = document.querySelector('.app-header');
+  if (header) header.style.display = tabId === 'home' ? '' : 'none';
+
   // Map tab IDs to view IDs
   const allViews = ['home','cards','dashboard','dups','batch','graph','settings'];
   allViews.forEach(v => {
