@@ -1625,12 +1625,17 @@ body {
       </div>
 
       <!-- 公司組織圖 (Phase 2) -->
-      <div style="margin-top:24px;border-top:1px solid var(--border-color);padding-top:24px;">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+      <div class="db-section" style="margin-top:24px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
           <h3 style="margin:0;"><i class="ti ti-organization"></i> 公司組織圖</h3>
           <span style="font-size:13px;color:var(--text-tertiary);">依公司分組顯示</span>
         </div>
-        <div id="graph-canvas" style="background:var(--bg-secondary);border:1px solid var(--border-color);border-radius:12px;padding:16px;min-height:240px;">
+        <!-- 搜尋欄 -->
+        <div class="cards-search-bar" style="margin-bottom:14px;">
+          <i class="ti ti-search" style="color:var(--text-secondary);"></i>
+          <input type="text" id="org-search" placeholder="搜尋公司名稱..." oninput="renderGraphTab()" style="flex:1;background:transparent;border:none;color:var(--text-primary);font-size:14px;outline:none;"/>
+        </div>
+        <div id="graph-canvas" style="min-height:120px;">
           <!-- JS 動態渲染 renderGraphTab() -->
         </div>
       </div>
