@@ -1506,7 +1506,7 @@ body {
        ========================================================================== -->
   <main class="main-card">
     <!-- 0. 首頁分頁 -->
-    <div id="view-home" style="display:block">
+    <div id="view-home" style="display:none">
       <!-- KPI 橫列（全寬） -->
       <div style="padding:16px 14px 0;display:grid;grid-template-columns:1fr 1fr;gap:10px;" id="home-kpi-grid"></div>
       <!-- 區塊列表 -->
@@ -1684,7 +1684,7 @@ body {
     </div>
 
     <!-- 我的名片頁 -->
-    <div id="view-myprofile" style="display:none">
+    <div id="view-myprofile" style="display:block">
       <div style="padding:20px 14px 90px;display:flex;flex-direction:column;gap:14px;">
 
         <!-- 個人虛擬名片 -->
@@ -2018,9 +2018,9 @@ body {
   </main>
 
   <nav class="bottom-tab-bar">
-    <button class="btab active" id="btab-home" onclick="switchTab('home')">
-      <div class="btab-pip"><i class="ti ti-layout-dashboard"></i></div>
-      <span>總覽</span>
+    <button class="btab active" id="btab-myprofile" onclick="switchTab('myprofile')">
+      <div class="btab-pip"><i class="ti ti-user-circle"></i></div>
+      <span>我的</span>
     </button>
     <button class="btab" id="btab-cards" onclick="switchTab('cards')">
       <div class="btab-pip"><i class="ti ti-id"></i></div>
@@ -2034,9 +2034,9 @@ body {
       <div class="btab-pip"><i class="ti ti-apps"></i></div>
       <span>工具</span>
     </button>
-    <button class="btab" id="btab-myprofile" onclick="switchTab('myprofile')">
-      <div class="btab-pip"><i class="ti ti-user-circle"></i></div>
-      <span>我的</span>
+    <button class="btab" id="btab-home" onclick="switchTab('home')">
+      <div class="btab-pip"><i class="ti ti-layout-dashboard"></i></div>
+      <span>總覽</span>
     </button>
   </nav>
 </div>
@@ -3187,9 +3187,8 @@ async function systemLoadAllData() {
   renderSettingsBadgeManager();
   renderCardsGrid();
   renderDashboard();
-  switchTab('home'); // 預設顯示首頁
-  // 確保首頁在 DOM 完全更新後再次渲染
-  setTimeout(() => renderHomeScreen(), 50);
+  switchTab('myprofile'); // 預設開啟「我的」頁面
+  setTimeout(() => renderMyProfile(), 50);
 }
 
 function renderSidebarFilters() {
