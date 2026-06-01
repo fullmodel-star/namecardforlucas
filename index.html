@@ -1695,7 +1695,7 @@ body {
             </div>
           </div>
           <div style="display:flex;gap:10px;justify-content:center;margin-top:16px;">
-            <button class="btn" onclick="openMyCardModal()"><i class="ti ti-edit"></i> 編輯名片</button>
+            <button class="btn" onclick="openMyCardModal();setTimeout(enterMyCardEditMode,100);"><i class="ti ti-edit"></i> 編輯名片</button>
           </div>
         </div>
 
@@ -4020,7 +4020,7 @@ function renderMyProfile() {
           <i class="ti ti-user-circle" style="font-size:52px;color:var(--text-tertiary);opacity:0.4;display:block;margin-bottom:12px;"></i>
           <div style="font-size:16px;font-weight:600;color:var(--text-primary);margin-bottom:6px;">尚未設定個人名片</div>
           <div style="font-size:13px;color:var(--text-tertiary);margin-bottom:18px;">填寫後即可產生 QR Code 分享給他人</div>
-          <button class="btn btn-primary" onclick="openMyCardModal()"><i class="ti ti-edit"></i> 立即填寫</button>
+          <button class="btn btn-primary" onclick="openMyCardModal();setTimeout(enterMyCardEditMode,100);"><i class="ti ti-edit"></i> 立即填寫</button>
         </div>`;
     } else {
       cardSection.innerHTML = `
