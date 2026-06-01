@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="zh-TW" data-theme="light">
+<html lang="zh-TW" data-theme="graphite">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -22,83 +22,96 @@
    [CSS] 全域變數與主題系統
    ============================================================================ */
 :root {
-  /* 淺色模式變數 */
-  --bg-primary: #f8fafc;
-  --bg-secondary: #ffffff;
-  --bg-tertiary: #f1f5f9;
-  --bg-glass: rgba(255, 255, 255, 0.75);
-  
-  --text-primary: #0f172a;
-  --text-secondary: #475569;
-  --text-tertiary: #94a3b8;
-  
-  --border-color: #e2e8f0;
-  --border-color-glow: rgba(99, 102, 241, 0.15);
-  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
-  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -4px rgba(0, 0, 0, 0.05);
-  --shadow-glow: 0 0 20px rgba(99, 102, 241, 0.1);
-  
+  /* Graphite dark (default) */
+  --bg-primary: #0f0f12;
+  --bg-secondary: #17171b;
+  --bg-tertiary: #1e1e23;
+  --bg-glass: rgba(23,23,27,0.9);
+  --field-bg: #101013;
+
+  --text-primary: #f4f4f5;
+  --text-secondary: #a1a1aa;
+  --text-tertiary: #71717a;
+
+  --border-color: rgba(255,255,255,0.07);
+  --border-strong: rgba(255,255,255,0.12);
+  --border-color-glow: rgba(99,102,241,0.2);
+
+  --shadow-sm: 0 1px 2px rgba(0,0,0,0.5);
+  --shadow-md: 0 4px 12px rgba(0,0,0,0.35);
+  --shadow-lg: 0 10px 24px rgba(0,0,0,0.4);
+  --shadow-glow: none;
+
   --accent: #6366f1;
+  --accent-solid: #6366f1;
+  --accent-soft: rgba(99,102,241,0.14);
+  --accent-on: #ffffff;
   --accent-hover: #4f46e5;
-  --accent-light: #e0e7ff;
-  --accent-gradient: linear-gradient(135deg, #6366f1 0%, #06b6d4 100%);
-  
-  --color-green: #10b981;
-  --color-green-bg: #ecfdf5;
-  --color-green-border: #a7f3d0;
-  
-  --color-amber: #f59e0b;
-  --color-amber-bg: #fffbeb;
-  --color-amber-border: #fde68a;
-  
-  --color-red: #ef4444;
-  --color-red-bg: #fef2f2;
-  --color-red-border: #fecaca;
-  
+  --accent-light: rgba(99,102,241,0.14);
+  --accent-gradient: #6366f1;
+
+  --color-green: #34d399;
+  --color-green-bg: rgba(52,211,153,0.12);
+  --color-green-border: rgba(52,211,153,0.25);
+  --color-amber: #fbbf24;
+  --color-amber-bg: rgba(251,191,36,0.12);
+  --color-amber-border: rgba(251,191,36,0.25);
+  --color-red: #f87171;
+  --color-red-bg: rgba(248,113,113,0.12);
+  --color-red-border: rgba(248,113,113,0.25);
+
   --radius-sm: 8px;
   --radius-md: 12px;
   --radius-lg: 16px;
   --radius-xl: 24px;
-  
-  --font-sans: 'Outfit', 'Noto Sans TC', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  --transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+
+  --font-sans: "Noto Sans TC", system-ui, -apple-system, sans-serif;
+  --transition: all 0.2s cubic-bezier(0.4,0,0.2,1);
 }
 
+[data-theme="light"] {
+  --bg-primary: #f4f4f6;
+  --bg-secondary: #ffffff;
+  --bg-tertiary: #f8f8fa;
+  --bg-glass: rgba(255,255,255,0.9);
+  --field-bg: #f1f1f4;
+  --text-primary: #1a1a1e;
+  --text-secondary: #5b5b66;
+  --text-tertiary: #9a9aa6;
+  --border-color: rgba(0,0,0,0.08);
+  --border-strong: rgba(0,0,0,0.13);
+  --border-color-glow: rgba(99,102,241,0.15);
+  --shadow-sm: 0 1px 2px rgba(0,0,0,0.06);
+  --shadow-md: 0 4px 12px rgba(0,0,0,0.08);
+  --shadow-lg: 0 10px 24px rgba(0,0,0,0.10);
+  --color-green-bg: #ecfdf5;
+  --color-green-border: #a7f3d0;
+  --color-amber-bg: #fffbeb;
+  --color-amber-border: #fde68a;
+  --color-red-bg: #fef2f2;
+  --color-red-border: #fecaca;
+}
+
+/* Keep dark as alias for graphite */
 [data-theme="dark"] {
-  /* 深色模式變數 */
-  --bg-primary: #09090b;
-  --bg-secondary: #18181b;
-  --bg-tertiary: #27272a;
-  --bg-glass: rgba(24, 24, 27, 0.75);
-  
+  --bg-primary: #0f0f12;
+  --bg-secondary: #17171b;
+  --bg-tertiary: #1e1e23;
   --text-primary: #f4f4f5;
   --text-secondary: #a1a1aa;
   --text-tertiary: #71717a;
-  
-  --border-color: #27272a;
-  --border-color-glow: rgba(129, 140, 248, 0.25);
-  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.5);
-  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -2px rgba(0, 0, 0, 0.3);
-  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.4), 0 4px 6px -4px rgba(0, 0, 0, 0.4);
-  --shadow-glow: 0 0 25px rgba(99, 102, 241, 0.2);
-  
-  --accent: #818cf8;
-  --accent-hover: #6366f1;
-  --accent-light: #1e1b4b;
-  --accent-gradient: linear-gradient(135deg, #6366f1 0%, #a78bfa 100%);
-  
+  --border-color: rgba(255,255,255,0.07);
+  --accent: #6366f1;
+  --accent-light: rgba(99,102,241,0.14);
   --color-green: #34d399;
-  --color-green-bg: #064e3b;
-  --color-green-border: #065f46;
-  
+  --color-green-bg: rgba(52,211,153,0.12);
+  --color-green-border: rgba(52,211,153,0.25);
   --color-amber: #fbbf24;
-  --color-amber-bg: #78350f;
-  --color-amber-border: #92400e;
-  
+  --color-amber-bg: rgba(251,191,36,0.12);
+  --color-amber-border: rgba(251,191,36,0.25);
   --color-red: #f87171;
-  --color-red-bg: #7f1d1d;
-  --color-red-border: #991b1b;
+  --color-red-bg: rgba(248,113,113,0.12);
+  --color-red-border: rgba(248,113,113,0.25);
 }
 
 /* ============================================================================
@@ -116,35 +129,7 @@ body {
   position: relative;
 }
 
-/* 輕量科技感背景光暈 (Ambient Glows) */
-body::before {
-  content: "";
-  position: fixed;
-  top: -10%;
-  left: -10%;
-  width: 50%;
-  height: 50%;
-  background: radial-gradient(circle, rgba(99, 102, 241, 0.08) 0%, rgba(99, 102, 241, 0) 70%);
-  z-index: -1;
-  pointer-events: none;
-}
-body::after {
-  content: "";
-  position: fixed;
-  bottom: -10%;
-  right: -10%;
-  width: 60%;
-  height: 60%;
-  background: radial-gradient(circle, rgba(6, 182, 212, 0.08) 0%, rgba(6, 182, 212, 0) 70%);
-  z-index: -1;
-  pointer-events: none;
-}
-[data-theme="dark"] body::before {
-  background: radial-gradient(circle, rgba(129, 140, 248, 0.12) 0%, rgba(129, 140, 248, 0) 70%);
-}
-[data-theme="dark"] body::after {
-  background: radial-gradient(circle, rgba(6, 182, 212, 0.12) 0%, rgba(6, 182, 212, 0) 70%);
-}
+/* Ambient glows removed per design spec */
 
 .container {
   max-width: 1400px;
@@ -280,6 +265,7 @@ body::after {
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-lg);
   padding: 1.5rem;
+  padding-bottom: 72px;
 }
 
 .tabs {
@@ -1375,7 +1361,7 @@ body::after {
 
 .toast {
   position: fixed;
-  bottom: 2rem;
+  bottom: 84px;
   left: 50%;
   transform: translateX(-50%);
   background: var(--text-primary);
@@ -1398,6 +1384,35 @@ body::after {
   color: var(--text-tertiary);
 }
 .empty-state i { font-size: 48px; margin-bottom: 8px; color: var(--border-color); }
+
+/* Bottom tab bar */
+.bottom-tab-bar {
+  position: fixed; bottom: 0; left: 50%; transform: translateX(-50%);
+  width: 100%; max-width: 1400px;
+  display: flex; background: var(--bg-secondary);
+  border-top: 1px solid var(--border-color);
+  padding: 8px 8px max(6px, env(safe-area-inset-bottom));
+  z-index: 200;
+}
+.btab {
+  flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px;
+  padding: 4px 0; background: none; border: none; cursor: pointer; font-family: inherit;
+}
+.btab-pip {
+  padding: 5px 20px; border-radius: 999px; background: transparent; transition: background .15s;
+}
+.btab i { font-size: 22px; color: var(--text-tertiary); display: block; }
+.btab.active .btab-pip { background: var(--accent-soft); }
+.btab.active i { color: var(--accent); }
+.btab span { font-size: 11px; font-weight: 500; color: var(--text-tertiary); }
+.btab.active span { color: var(--text-primary); font-weight: 700; }
+
+/* Home screen */
+.home-kpi-icon-chip {
+  width: 40px; height: 40px; border-radius: 12px;
+  background: var(--accent-soft); border: 1px solid var(--border-color);
+  display: flex; align-items: center; justify-content: center;
+}
 </style>
 </head>
 <body>
@@ -1407,24 +1422,22 @@ body::after {
        [HTML] 頂部標題與狀態導覽列
        ========================================================================== -->
   <header class="app-header">
-    <div class="app-title">
-      <div class="app-logo"><i class="ti ti-address-book"></i></div>
-      <div class="app-title-text">
-        <h1>智慧名片管理系統</h1>
-        <div class="badges">
-          <span class="badge" id="count-badge">0 張名片</span>
-          <span class="badge badge-green" id="proc-badge" style="display:none">0 已處理</span>
-          <span class="badge badge-amber" id="dup-badge" style="display:none">0 重複</span>
-        </div>
+    <div style="display:flex;align-items:center;gap:14px;">
+      <div style="width:38px;height:38px;border-radius:11px;background:var(--accent);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+        <i class="ti ti-id" style="font-size:21px;color:#fff;"></i>
+      </div>
+      <div style="flex:1;min-width:0;">
+        <div style="font-size:17px;font-weight:700;color:var(--text-primary);letter-spacing:0.2px;">名片管理</div>
+        <div id="header-subtitle" style="font-size:12.5px;color:var(--text-tertiary);margin-top:1px;">智慧名片管理系統</div>
       </div>
     </div>
-    
-    <div class="header-actions">
+    <div style="display:flex;align-items:center;gap:8px;">
       <button class="btn btn-icon" id="theme-toggle-btn" onclick="toggleTheme()" title="切換主題">
-        <i class="ti ti-moon"></i>
+        <i class="ti ti-sun"></i>
       </button>
-      <button class="btn btn-blue" onclick="openMyCardModal()"><i class="ti ti-user-circle"></i> 我的名片</button>
-      <button class="btn btn-primary" onclick="openFormModal()"><i class="ti ti-plus"></i> 手動新增</button>
+      <button class="btn btn-primary" onclick="openFormModal()" style="border-radius:11px;font-size:14px;font-weight:600;padding:9px 15px;background:var(--accent);border:none;">
+        <i class="ti ti-plus" style="font-size:16px;"></i> 新增
+      </button>
     </div>
   </header>
 
@@ -1432,17 +1445,32 @@ body::after {
        [HTML] 主要分頁頁籤
        ========================================================================== -->
   <main class="main-card">
-    <div class="tabs">
-      <button class="tab active" id="tab-cards" onclick="switchTab('cards')"><i class="ti ti-layout-grid"></i> 名片庫</button>
-      <button class="tab" id="tab-dashboard" onclick="switchTab('dashboard')"><i class="ti ti-chart-bar"></i> 數據分析</button>
-      <button class="tab" id="tab-dups" onclick="switchTab('dups')"><i class="ti ti-copy"></i> 重複偵測</button>
-      <button class="tab" id="tab-batch" onclick="switchTab('batch')"><i class="ti ti-apps"></i> 工具箱</button>
-      <button class="tab" id="tab-graph" onclick="switchTab('graph')"><i class="ti ti-building"></i> 公司組織</button>
-      <button class="tab" id="tab-settings" onclick="switchTab('settings')"><i class="ti ti-settings"></i> 應用設定</button>
+    <!-- 0. 首頁分頁 -->
+    <div id="view-home" style="display:block">
+      <div style="padding:20px 20px 28px;display:flex;flex-direction:column;gap:24px;">
+        <!-- KPI 2x2 grid -->
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;" id="home-kpi-grid"></div>
+        <!-- Group distribution -->
+        <div>
+          <div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:14px;">
+            <div style="font-size:15px;font-weight:600;color:var(--text-primary);letter-spacing:0.3px;">群組分佈</div>
+            <div style="font-size:13px;color:var(--text-tertiary);">點選可篩選</div>
+          </div>
+          <div style="background:var(--bg-secondary);border:1px solid var(--border-color);border-radius:16px;padding:6px 18px;" id="home-group-list"></div>
+        </div>
+        <!-- Recent cards -->
+        <div>
+          <div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:14px;">
+            <div style="font-size:15px;font-weight:600;color:var(--text-primary);letter-spacing:0.3px;">最近新增</div>
+            <div style="font-size:13px;color:var(--text-tertiary);">最近 3 筆</div>
+          </div>
+          <div style="background:var(--bg-secondary);border:1px solid var(--border-color);border-radius:16px;padding:4px 6px;" id="home-recent-cards"></div>
+        </div>
+      </div>
     </div>
 
     <!-- 1. 名片庫分頁 -->
-    <div id="view-cards">
+    <div id="view-cards" style="display:none">
       <div class="cards-layout">
         
         <!-- 左側篩選欄 -->
@@ -1843,6 +1871,25 @@ body::after {
 
     </div>
   </main>
+
+  <nav class="bottom-tab-bar">
+    <button class="btab active" id="btab-home" onclick="switchTab('home')">
+      <div class="btab-pip"><i class="ti ti-home-2"></i></div>
+      <span>首頁</span>
+    </button>
+    <button class="btab" id="btab-cards" onclick="switchTab('cards')">
+      <div class="btab-pip"><i class="ti ti-id"></i></div>
+      <span>名片</span>
+    </button>
+    <button class="btab" id="btab-dashboard" onclick="switchTab('dashboard')">
+      <div class="btab-pip"><i class="ti ti-chart-bar"></i></div>
+      <span>分析</span>
+    </button>
+    <button class="btab" id="btab-batch" onclick="switchTab('batch')">
+      <div class="btab-pip"><i class="ti ti-apps"></i></div>
+      <span>工具</span>
+    </button>
+  </nav>
 </div>
 
 <!-- ==========================================================================
@@ -2991,6 +3038,7 @@ async function systemLoadAllData() {
   renderSettingsBadgeManager();
   renderCardsGrid();
   renderDashboard();
+  renderHomeScreen();
 }
 
 function renderSidebarFilters() {
@@ -3143,7 +3191,7 @@ function renderCardsGrid() {
       <div class="biz-card ${selectedCardId === c.id ? 'selected' : ''} ${c.processed ? 'processed' : ''}" onclick="selectCard('${c.id}')">
         ${badgeText}
         <div class="card-hd-layout">
-          <div class="card-avatar" style="background:${avatarColor};">${groupLabel}</div>
+          <div class="card-avatar" style="background:hsl(${nameToHue(c.name)} 28% 22%);color:hsl(${nameToHue(c.name)} 55% 76%);">${(c.name||'?').slice(0,1)}</div>
           <div class="card-info">
             <h4 class="card-name-text">${c.name || '—'}</h4>
             <div class="card-title-text">${c.title || ''}${c.dept ? ' · ' + c.dept : ''}</div>
@@ -3325,14 +3373,25 @@ function closeLightbox() {
 }
 
 function switchTab(tabId) {
-  ['cards', 'dashboard', 'dups', 'batch', 'graph', 'settings'].forEach(t => {
-    const el = document.getElementById('view-' + t);
-    if (el) el.style.display = t === tabId ? 'block' : 'none';
+  // Map tab IDs to view IDs
+  const allViews = ['home','cards','dashboard','dups','batch','graph','settings'];
+  allViews.forEach(v => {
+    const el = document.getElementById('view-' + v);
+    if (el) el.style.display = v === tabId ? 'block' : 'none';
+  });
+  // Old top tabs (might still exist, hide them)
+  ['cards','dashboard','dups','batch','graph','settings'].forEach(t => {
     const btn = document.getElementById('tab-' + t);
+    if (btn) btn.classList.toggle('active', t === tabId);
+  });
+  // Bottom tab bar
+  ['home','cards','dashboard','batch'].forEach(t => {
+    const btn = document.getElementById('btab-' + t);
     if (btn) btn.classList.toggle('active', t === tabId);
   });
   if (tabId === 'dups') renderDupsTab();
   if (tabId === 'dashboard') renderDashboard();
+  if (tabId === 'home') renderHomeScreen();
   if (tabId === 'graph') renderGraphTab();
   if (tabId !== 'graph' && graphSimulation) { cancelAnimationFrame(graphSimulation); graphSimulation = null; }
 }
@@ -3726,6 +3785,86 @@ function renderDashboard() {
 }
 
 /**
+ * 首頁畫面渲染
+ */
+function renderHomeScreen() {
+  const customGroups = getCustomGroups();
+  const customTags = getCustomTags();
+  const total = cardsList.length;
+  const processed = cardsList.filter(c => c.processed).length;
+  const rate = total ? Math.round((processed / total) * 100) : 0;
+
+  // KPI grid
+  const kpiGrid = document.getElementById('home-kpi-grid');
+  if (kpiGrid) {
+    const kpis = [
+      { icon: 'ti-users', label: '名片總數', value: total },
+      { icon: 'ti-circle-check', label: '處理完成率', value: rate + '%' },
+      { icon: 'ti-folder', label: '分類群組', value: customGroups.length },
+      { icon: 'ti-tags', label: '使用標籤', value: customTags.length },
+    ];
+    kpiGrid.innerHTML = kpis.map(k => `
+      <div style="background:var(--bg-secondary);border:1px solid var(--border-color);border-radius:16px;padding:18px 18px 20px;">
+        <div style="width:40px;height:40px;border-radius:12px;background:var(--accent-soft);border:1px solid var(--border-color);display:flex;align-items:center;justify-content:center;">
+          <i class="ti ${k.icon}" style="font-size:20px;color:var(--accent);"></i>
+        </div>
+        <div style="font-size:14px;color:var(--text-secondary);margin-top:16px;letter-spacing:0.2px;">${k.label}</div>
+        <div style="font-size:32px;font-weight:700;color:var(--text-primary);margin-top:4px;letter-spacing:-0.5px;line-height:1;">${k.value}</div>
+      </div>`).join('');
+  }
+
+  // Group distribution
+  const groupCounts = {};
+  cardsList.forEach(c => { const g = c.group || '其他'; groupCounts[g] = (groupCounts[g] || 0) + 1; });
+  const groupColorMap = {'學校委員':'#818cf8','政府機關':'#38bdf8','企業客戶':'#34d399','資訊夥伴':'#fbbf24','法人夥伴':'#a78bfa','供應商夥伴':'#f472b6','其他':'#94a3b8'};
+  const topGroups = customGroups.map(g => ({ name: g, count: groupCounts[g] || 0, color: groupColorMap[g] || '#94a3b8' })).sort((a,b) => b.count - a.count).slice(0, 5);
+  const maxCount = Math.max(1, ...topGroups.map(g => g.count));
+  const groupList = document.getElementById('home-group-list');
+  if (groupList) {
+    groupList.innerHTML = topGroups.map((g, i) => `
+      <div onclick="setGroupFilter('${g.name}');switchTab('cards');" style="padding:14px 0;cursor:pointer;border-top:${i===0?'none':'1px solid var(--border-color)'};">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:9px;">
+          <span style="width:8px;height:8px;border-radius:50%;background:${g.color};flex-shrink:0;display:inline-block;"></span>
+          <span style="font-size:14.5px;color:var(--text-primary);flex:1;font-weight:500;">${g.name}</span>
+          <span style="font-size:14.5px;color:var(--text-secondary);font-weight:600;">${g.count}<span style="font-size:12px;color:var(--text-tertiary);margin-left:2px;">張</span></span>
+        </div>
+        <div style="height:6px;border-radius:3px;background:var(--bg-tertiary);overflow:hidden;">
+          <div style="height:100%;width:${(g.count/maxCount)*100}%;background:${g.color};border-radius:3px;transition:width .5s cubic-bezier(.4,0,.2,1);"></div>
+        </div>
+      </div>`).join('') + `
+      <div onclick="switchTab('dashboard');" style="padding:13px 0;display:flex;align-items:center;justify-content:center;gap:6px;border-top:1px solid var(--border-color);cursor:pointer;color:var(--accent);font-size:13.5px;font-weight:600;">
+        查看全部 ${customGroups.length} 個群組 <i class="ti ti-chevron-right" style="font-size:15px;"></i>
+      </div>`;
+  }
+
+  // Recent cards (3 most recent)
+  const recent = [...cardsList].sort((a,b) => (b.createdAtTs||0) - (a.createdAtTs||0)).slice(0, 3);
+  const recentEl = document.getElementById('home-recent-cards');
+  if (recentEl) {
+    if (recent.length === 0) {
+      recentEl.innerHTML = `<div style="padding:40px 0;text-align:center;color:var(--text-tertiary);font-size:14px;">尚無名片資料</div>`;
+    } else {
+      recentEl.innerHTML = recent.map((c, i) => {
+        const hue = nameToHue(c.name || '');
+        const bg = `hsl(${hue} 28% 22%)`;
+        const fg = `hsl(${hue} 55% 76%)`;
+        const initial = (c.name || '?').slice(0, 1);
+        const tag = c.tags && c.tags[0] ? c.tags[0] : (c.group || '');
+        return `
+          <div onclick="selectCard('${c.id}');switchTab('cards');" style="display:flex;align-items:center;gap:13px;padding:12px 12px;border-top:${i===0?'none':'1px solid var(--border-color)'};cursor:pointer;">
+            <div style="width:42px;height:42px;border-radius:12px;background:${bg};color:${fg};display:flex;align-items:center;justify-content:center;font-size:17px;font-weight:600;flex-shrink:0;">${initial}</div>
+            <div style="flex:1;min-width:0;">
+              <div style="font-size:15.5px;font-weight:600;color:var(--text-primary);">${c.name || '—'}</div>
+              <div style="font-size:12.5px;color:var(--text-secondary);margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${[c.title, c.org].filter(Boolean).join(' · ') || '—'}</div>
+            </div>
+            ${tag ? `<div style="font-size:11.5px;font-weight:600;color:var(--text-secondary);padding:4px 9px;border-radius:7px;background:var(--bg-tertiary);border:1px solid var(--border-color);flex-shrink:0;">${tag}</div>` : ''}
+          </div>`;
+      }).join('');
+    }
+  }
+}
+
+/**
  * 「我的個人名片」儲存與讀取
  */
 function getMyCardData() {
@@ -3942,6 +4081,12 @@ function shareMyCardToSocial(platform) {
 // ============================================================================
 function normField(s) { return (s || '').trim().toLowerCase().replace(/[-\s]/g, ''); }
 
+function nameToHue(name) {
+  let h = 0;
+  for (let i = 0; i < (name || '').length; i++) h = (h * 31 + name.charCodeAt(i)) % 360;
+  return h;
+}
+
 function checkScanDuplicate(newCards) {
   const newIds = new Set(newCards.map(c => c.id));
   const existing = cardsList.filter(c => !newIds.has(c.id));
@@ -4049,17 +4194,18 @@ async function deleteDupCard(id) {
 function updateBadgesOnly() {
   const processedCount = cardsList.filter(c => c.processed).length;
   const procBadge = document.getElementById('proc-badge');
-  procBadge.textContent = '✓ 已處理 ' + processedCount;
-  procBadge.style.display = processedCount ? 'inline-block' : 'none';
-  
+  if (procBadge) { procBadge.textContent = '✓ 已處理 ' + processedCount; procBadge.style.display = processedCount ? 'inline-block' : 'none'; }
+
   const dups = detectAllDuplicateGroups();
   const dupBadge = document.getElementById('dup-badge');
-  dupBadge.textContent = '⚠ 重複 ' + dups.length + ' 組';
-  dupBadge.style.display = dups.length ? 'inline-block' : 'none';
-  
+  if (dupBadge) { dupBadge.textContent = '⚠ 重複 ' + dups.length + ' 組'; dupBadge.style.display = dups.length ? 'inline-block' : 'none'; }
+
   const tabDups = document.getElementById('tab-dups');
-  tabDups.innerHTML = `<i class="ti ti-copy"></i> 重複偵測${dups.length ? ' (' + dups.length + ')' : ''}`;
-  document.getElementById('count-badge').textContent = cardsList.length + ' 張名片';
+  if (tabDups) tabDups.innerHTML = `<i class="ti ti-copy"></i> 重複偵測${dups.length ? ' (' + dups.length + ')' : ''}`;
+  const countBadge = document.getElementById('count-badge');
+  if (countBadge) countBadge.textContent = cardsList.length + ' 張名片';
+  // Refresh home screen if visible
+  if (document.getElementById('view-home')?.style.display !== 'none') renderHomeScreen();
 }
 
 // ============================================================================
@@ -4546,24 +4692,19 @@ async function clearAllSystemData() {
 // ============================================================================
 function toggleTheme() {
   const html = document.documentElement;
-  const current = html.getAttribute('data-theme');
-  const isDark = current === 'dark';
-  const newTheme = isDark ? 'light' : 'dark';
-  
-  html.setAttribute('data-theme', newTheme);
-  localStorage.setItem('bizcard_theme', newTheme);
-  
-  const btnIcon = document.querySelector('#theme-toggle-btn i');
-  btnIcon.className = isDark ? 'ti ti-moon' : 'ti ti-sun';
+  const curr = html.getAttribute('data-theme');
+  const next = (curr === 'graphite' || curr === 'dark') ? 'light' : 'graphite';
+  html.setAttribute('data-theme', next);
+  localStorage.setItem('theme', next);
+  const btnIcon = document.getElementById('theme-toggle-btn')?.querySelector('i');
+  if (btnIcon) btnIcon.className = next === 'light' ? 'ti ti-moon' : 'ti ti-sun';
 }
 
 function initTheme() {
-  const saved = localStorage.getItem('bizcard_theme') || 'light';
+  const saved = localStorage.getItem('theme') || 'graphite';
   document.documentElement.setAttribute('data-theme', saved);
-  const btnIcon = document.querySelector('#theme-toggle-btn i');
-  if (btnIcon) {
-    btnIcon.className = saved === 'dark' ? 'ti ti-sun' : 'ti ti-moon';
-  }
+  const btnIcon = document.getElementById('theme-toggle-btn')?.querySelector('i');
+  if (btnIcon) btnIcon.className = saved === 'light' ? 'ti ti-moon' : 'ti ti-sun';
 }
 
 // ============================================================================
