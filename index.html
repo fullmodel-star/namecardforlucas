@@ -4023,6 +4023,11 @@ function renderMyProfile() {
           <button class="btn btn-primary" onclick="openMyCardModal();setTimeout(enterMyCardEditMode,100);"><i class="ti ti-edit"></i> 立即填寫</button>
         </div>`;
     } else {
+      const photoHtml = c.image ? `
+        <div style="width:72px;height:72px;border-radius:50%;overflow:hidden;border:2px solid rgba(255,255,255,0.5);box-shadow:0 4px 14px rgba(0,0,0,0.3);flex-shrink:0;">
+          <img src="${c.image}" style="width:100%;height:100%;object-fit:cover;" />
+        </div>` : '';
+
       cardSection.innerHTML = `
         <div class="virtual-card-wrapper" style="margin:0;">
           <div class="virtual-card ${themeClass}" style="border-radius:16px;">
@@ -4032,12 +4037,15 @@ function renderMyProfile() {
                 <span class="vc-logo"><i class="ti ti-address-book"></i></span>
                 <span class="vc-org">${c.org || '未設定公司'}</span>
               </div>
-              <div class="vc-mid">
-                <div class="vc-name">${c.name}</div>
-                <div class="vc-title-row">
-                  <span>${c.title || ''}</span>
-                  ${c.dept ? `<span>·</span><span>${c.dept}</span>` : ''}
+              <div class="vc-mid" style="display:flex;align-items:center;justify-content:space-between;gap:12px;">
+                <div style="flex:1;min-width:0;">
+                  <div class="vc-name">${c.name}</div>
+                  <div class="vc-title-row">
+                    <span>${c.title || ''}</span>
+                    ${c.dept ? `<span>·</span><span>${c.dept}</span>` : ''}
+                  </div>
                 </div>
+                ${photoHtml}
               </div>
               <div class="vc-ft">
                 <div class="vc-contact-item"><i class="ti ti-phone"></i> ${c.mobile || c.phone || '—'}</div>
@@ -4194,6 +4202,19 @@ function renderMyCardModal(myCard, isEditMode) {
         <div class="form-row"><label>電子郵件 (Email)</label><input type="email" id="my-email" value="${myCard.email||''}" /></div>
         <div class="form-row"><label>個人/公司網站</label><input type="text" id="my-website" value="${myCard.website||''}" /></div>
         <div class="form-row"><label>LINE ID</label><input type="text" id="my-lineid" value="${myCard.lineId||''}" placeholder="例：fullmodel" /></div>
+        <div class="form-row-full form-row">
+          <label>個人照片</label>
+          <div style="display:flex;align-items:center;gap:12px;">
+            <div id="my-photo-preview" style="width:56px;height:56px;border-radius:50%;overflow:hidden;background:var(--bg-tertiary);border:2px solid var(--border-color);flex-shrink:0;display:flex;align-items:center;justify-content:center;">
+              ${myCard.image ? `<img src="${myCard.image}" style="width:100%;height:100%;object-fit:cover;" />` : `<i class="ti ti-user" style="font-size:22px;color:var(--text-tertiary);"></i>`}
+            </div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;">
+              <input type="file" id="my-photo-input" accept="image/*" style="display:none" onchange="handleMyPhotoUpload(event)" />
+              <button type="button" class="btn" onclick="document.getElementById('my-photo-input').click()"><i class="ti ti-camera"></i> 上傳照片</button>
+              ${myCard.image ? `<button type="button" class="btn btn-red" onclick="clearMyPhoto()"><i class="ti ti-trash"></i></button>` : ''}
+            </div>
+          </div>
+        </div>
         <div class="form-row"><label>郵遞區號</label><input type="text" id="my-zip" value="${myCard.zip||''}" /></div>
         <div class="form-row"><label>地址</label><input type="text" id="my-addr" value="${myCard.addr||''}" /></div>
       </div>
@@ -4274,6 +4295,39 @@ function cancelMyCardEdit() {
   renderMyCardModal(myCard, false);
 }
 
+function handleMyPhotoUpload(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    // 壓縮到最大 400px，存 base64
+    const img = new Image();
+    img.onload = function() {
+      const canvas = document.createElement('canvas');
+      const maxSize = 400;
+      const ratio = Math.min(maxSize / img.width, maxSize / img.height, 1);
+      canvas.width = img.width * ratio;
+      canvas.height = img.height * ratio;
+      canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
+      const base64 = canvas.toDataURL('image/jpeg', 0.85);
+      // 預覽
+      const preview = document.getElementById('my-photo-preview');
+      if (preview) preview.innerHTML = `<img src="${base64}" style="width:100%;height:100%;object-fit:cover;" />`;
+      // 暫存到 input dataset 供 saveMyCardForm 讀取
+      event.target.dataset.base64 = base64;
+    };
+    img.src = e.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+function clearMyPhoto() {
+  const preview = document.getElementById('my-photo-preview');
+  if (preview) preview.innerHTML = `<i class="ti ti-user" style="font-size:22px;color:var(--text-tertiary);"></i>`;
+  const input = document.getElementById('my-photo-input');
+  if (input) { input.value = ''; input.dataset.base64 = ''; }
+}
+
 function saveMyCardForm() {
   const nameVal = document.getElementById('my-name').value.trim();
   if (!nameVal) {
@@ -4294,6 +4348,16 @@ function saveMyCardForm() {
     lineId: (document.getElementById('my-lineid')?.value || '').trim(),
     zip: document.getElementById('my-zip').value.trim(),
     addr: document.getElementById('my-addr').value.trim(),
+    image: (() => {
+      const photoInput = document.getElementById('my-photo-input');
+      if (photoInput?.dataset.base64) return photoInput.dataset.base64;
+      // 保留舊照片（若沒有新上傳）
+      const oldCard = getMyCardData();
+      // 若 preview 被清除（clearMyPhoto），就不保留
+      const preview = document.getElementById('my-photo-preview');
+      if (preview && !preview.querySelector('img')) return '';
+      return oldCard.image || '';
+    })(),
     id: 'user_personal_card'
   };
 
