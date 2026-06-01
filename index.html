@@ -1501,60 +1501,67 @@ body {
   <main class="main-card">
     <!-- 0. 首頁分頁 -->
     <div id="view-home" style="display:block">
-      <div style="padding:20px 20px 28px;display:flex;flex-direction:column;gap:24px;">
+      <div style="padding:16px 16px 90px;display:flex;flex-direction:column;gap:14px;">
         <!-- KPI 2x2 grid -->
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;" id="home-kpi-grid"></div>
         <!-- 待處理名片 -->
-        <div>
-          <div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:14px;">
-            <div style="font-size:15px;font-weight:600;color:var(--text-primary);letter-spacing:0.3px;">待處理名片</div>
-            <div id="home-pending-link" style="font-size:13px;color:var(--accent);cursor:pointer;" onclick="setProcessedFilter('unprocessed');switchTab('cards');">查看全部</div>
-          </div>
-          <div style="background:var(--bg-secondary);border:1px solid var(--border-color);border-radius:16px;padding:4px 6px;" id="home-pending-cards"></div>
+        <div class="db-section">
+          <h3 style="margin-bottom:10px;">
+            <i class="ti ti-clock" style="color:var(--color-amber);"></i> 待處理名片
+            <span id="home-pending-link" style="margin-left:auto;font-size:12.5px;color:var(--accent);font-weight:500;cursor:pointer;" onclick="setProcessedFilter('unprocessed');switchTab('cards');">查看全部 →</span>
+          </h3>
+          <div id="home-pending-cards"></div>
         </div>
         <!-- Recent cards -->
-        <div>
-          <div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:14px;">
-            <div style="font-size:15px;font-weight:600;color:var(--text-primary);letter-spacing:0.3px;">最近新增</div>
-            <div style="font-size:13px;color:var(--accent);cursor:pointer;" onclick="switchTab('cards');">查看全部</div>
-          </div>
-          <div style="background:var(--bg-secondary);border:1px solid var(--border-color);border-radius:16px;padding:4px 6px;" id="home-recent-cards"></div>
+        <div class="db-section">
+          <h3 style="margin-bottom:10px;">
+            <i class="ti ti-history" style="color:var(--accent);"></i> 最近新增
+            <span style="margin-left:auto;font-size:12.5px;color:var(--accent);font-weight:500;cursor:pointer;" onclick="switchTab('cards');">查看全部 →</span>
+          </h3>
+          <div id="home-recent-cards"></div>
         </div>
       </div>
     </div>
 
     <!-- 1. 名片庫分頁 -->
     <div id="view-cards" style="display:none">
-      <div class="cards-col-layout">
+      <div style="padding:16px 16px 90px;display:flex;flex-direction:column;gap:14px;">
 
-        <!-- 搜尋欄 -->
-        <div class="cards-search-bar">
-          <i class="ti ti-search" style="color:var(--text-secondary);"></i>
-          <input type="text" id="search-input" placeholder="搜尋姓名、公司、電話..." oninput="filterCards()" style="flex:1;background:transparent;border:none;color:var(--text-primary);font-size:15px;outline:none;"/>
-        </div>
-
-        <!-- 標籤篩選 -->
-        <div id="tag-cloud" style="display:flex;flex-wrap:wrap;gap:8px;padding:0 18px;"></div>
-
-        <!-- 狀態和排序 -->
-        <div style="display:flex;gap:12px;padding:0 18px;align-items:center;justify-content:space-between;">
-          <div class="status-segmented">
-            <button class="seg-btn active" id="fc-all" onclick="setProcessedFilter('all')">全部</button>
-            <button class="seg-btn" id="fc-unprocessed" onclick="setProcessedFilter('unprocessed')">未處理</button>
-            <button class="seg-btn" id="fc-processed" onclick="setProcessedFilter('processed')">已處理</button>
+        <!-- 搜尋＋篩選區塊 -->
+        <div class="db-section" style="padding:14px 16px;gap:12px;display:flex;flex-direction:column;">
+          <!-- 搜尋欄 -->
+          <div class="cards-search-bar" style="margin:0;">
+            <i class="ti ti-search" style="color:var(--text-secondary);"></i>
+            <input type="text" id="search-input" placeholder="搜尋姓名、公司、電話..." oninput="filterCards()" style="flex:1;background:transparent;border:none;color:var(--text-primary);font-size:15px;outline:none;"/>
           </div>
-          <select id="sort-select" onchange="handleSortChange()" style="height:36px;border-radius:8px;border:1px solid var(--border-color);background:var(--bg-secondary);color:var(--text-primary);font-size:13px;padding:0 8px;cursor:pointer;">
-            <option value="time-desc">最新優先</option>
-            <option value="time-asc">最早優先</option>
-            <option value="name-asc">姓名 A→Z</option>
-            <option value="name-desc">姓名 Z→A</option>
-            <option value="org-asc">公司 A→Z</option>
-          </select>
+          <!-- 標籤篩選 -->
+          <div id="tag-cloud" style="display:flex;flex-wrap:wrap;gap:8px;"></div>
+          <!-- 狀態和排序 -->
+          <div style="display:flex;gap:10px;align-items:center;justify-content:space-between;">
+            <div class="status-segmented">
+              <button class="seg-btn active" id="fc-all" onclick="setProcessedFilter('all')">全部</button>
+              <button class="seg-btn" id="fc-unprocessed" onclick="setProcessedFilter('unprocessed')">未處理</button>
+              <button class="seg-btn" id="fc-processed" onclick="setProcessedFilter('processed')">已處理</button>
+            </div>
+            <select id="sort-select" onchange="handleSortChange()" style="height:34px;border-radius:8px;border:1px solid var(--border-color);background:var(--bg-primary);color:var(--text-primary);font-size:13px;padding:0 8px;cursor:pointer;">
+              <option value="time-desc">最新優先</option>
+              <option value="time-asc">最早優先</option>
+              <option value="name-asc">姓名 A→Z</option>
+              <option value="name-desc">姓名 Z→A</option>
+              <option value="org-asc">公司 A→Z</option>
+            </select>
+          </div>
         </div>
 
-        <!-- 名片卡片列表 -->
-        <div class="card-list-wrap" id="card-grid">
-          <!-- JS 動態渲染 renderCardsGrid() -->
+        <!-- 名片列表區塊 -->
+        <div class="db-section" style="padding:0;overflow:hidden;">
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 16px 0;">
+            <h3 style="margin:0;"><i class="ti ti-id"></i> 名片列表</h3>
+            <span style="font-size:13px;color:var(--text-tertiary);" id="cards-count-label"></span>
+          </div>
+          <div class="card-list-wrap" id="card-grid" style="border-radius:0;border:none;margin-top:10px;">
+            <!-- JS 動態渲染 renderCardsGrid() -->
+          </div>
         </div>
 
       </div>
@@ -3881,18 +3888,18 @@ function renderHomeScreen() {
   const kpiGrid = document.getElementById('home-kpi-grid');
   if (kpiGrid) {
     const kpis = [
-      { icon: 'ti-users', label: '名片總數', value: total },
-      { icon: 'ti-circle-check', label: '處理完成率', value: rate + '%' },
-      { icon: 'ti-folder', label: '分類群組', value: customGroups.length },
-      { icon: 'ti-tags', label: '使用標籤', value: customTags.length },
+      { icon: 'ti-users',        label: '名片總數',  value: total,                 color: 'var(--accent)',       bg: 'var(--accent-light)' },
+      { icon: 'ti-circle-check', label: '處理完成率', value: rate + '%',            color: 'var(--color-green)',  bg: 'var(--color-green-bg)' },
+      { icon: 'ti-folder',       label: '分類群組',  value: customGroups.length,   color: 'var(--accent)',       bg: 'var(--accent-light)' },
+      { icon: 'ti-tags',         label: '使用標籤',  value: customTags.length,     color: 'var(--color-amber)',  bg: 'var(--color-amber-bg)' },
     ];
     kpiGrid.innerHTML = kpis.map(k => `
-      <div style="background:var(--bg-secondary);border:1px solid var(--border-color);border-radius:16px;padding:18px 18px 20px;">
-        <div style="width:40px;height:40px;border-radius:12px;background:var(--accent-soft);border:1px solid var(--border-color);display:flex;align-items:center;justify-content:center;">
-          <i class="ti ${k.icon}" style="font-size:20px;color:var(--accent);"></i>
+      <div class="db-card" style="flex-direction:column;align-items:flex-start;gap:10px;padding:16px 18px 18px;">
+        <div class="db-card-icon" style="color:${k.color};background:${k.bg};"><i class="ti ${k.icon}"></i></div>
+        <div>
+          <div style="font-size:13px;color:var(--text-secondary);letter-spacing:0.05em;">${k.label}</div>
+          <div style="font-size:26px;font-weight:700;color:var(--text-primary);margin-top:2px;letter-spacing:-0.5px;line-height:1.1;">${k.value}</div>
         </div>
-        <div style="font-size:14px;color:var(--text-secondary);margin-top:16px;letter-spacing:0.2px;">${k.label}</div>
-        <div style="font-size:32px;font-weight:700;color:var(--text-primary);margin-top:4px;letter-spacing:-0.5px;line-height:1;">${k.value}</div>
       </div>`).join('');
   }
 
