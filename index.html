@@ -1676,15 +1676,17 @@ body {
         <!-- QR Code 雙欄 -->
         <div class="db-section">
           <h3 style="margin-bottom:16px;justify-content:center;text-align:center;"><i class="ti ti-qrcode" style="color:var(--accent);"></i> 掃碼交流</h3>
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;text-align:center;">
+          <div style="display:flex;flex-wrap:wrap;gap:16px;justify-content:center;text-align:center;">
             <!-- vCard QR -->
-            <div>
+            <div style="flex:1;min-width:140px;max-width:200px;">
               <div style="font-size:12px;color:var(--text-tertiary);margin-bottom:8px;font-weight:600;">加入通訊錄</div>
-              <div id="myprofile-qrcode" style="display:flex;justify-content:center;"></div>
+              <div id="myprofile-qrcode" style="display:flex;justify-content:center;">
+                <img style="width:100%;max-width:160px;height:auto;border-radius:10px;" />
+              </div>
               <div style="font-size:11px;color:var(--text-tertiary);margin-top:6px;">掃碼存手機</div>
             </div>
             <!-- LINE QR -->
-            <div>
+            <div style="flex:1;min-width:140px;max-width:200px;">
               <div style="font-size:12px;color:var(--text-tertiary);margin-bottom:8px;font-weight:600;display:flex;align-items:center;justify-content:center;gap:4px;">
                 <span style="color:#06C755;font-size:14px;">LINE</span> 加好友
               </div>
@@ -4063,10 +4065,10 @@ function renderMyProfile() {
       vcard += 'END:VCARD';
 
       // 用 qrserver.com API 產生 QR Code 圖片（支援中文，不需函式庫）
-      const qrUrl = 'https://api.qrserver.com/v1/create-qr-code/?size=200x200&ecc=L&data=' + encodeURIComponent(vcard);
+      const qrUrl = 'https://api.qrserver.com/v1/create-qr-code/?size=300x300&ecc=L&data=' + encodeURIComponent(vcard);
       qrDiv.innerHTML = `
-        <img src="${qrUrl}" width="200" height="200"
-             style="border-radius:10px;display:block;"
+        <img src="${qrUrl}"
+             style="width:100%;max-width:160px;height:auto;border-radius:10px;display:block;"
              alt="vCard QR Code"
              onerror="this.parentElement.innerHTML='<div style=color:var(--color-amber);font-size:13px;padding:20px;text-align:center;>離線狀態無法產生 QR Code</div>'"
         />`;
@@ -4084,8 +4086,8 @@ function renderMyProfile() {
     const lineId = c.lineId || '';
     if (lineId) {
       const lineUrl = `https://line.me/ti/p/~${encodeURIComponent(lineId)}`;
-      const lineQrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&ecc=L&data=${encodeURIComponent(lineUrl)}`;
-      lineQrDiv.innerHTML = `<img src="${lineQrUrl}" width="150" height="150" style="border-radius:10px;display:block;" alt="LINE QR Code"/>`;
+      const lineQrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&ecc=L&data=${encodeURIComponent(lineUrl)}`;
+      lineQrDiv.innerHTML = `<img src="${lineQrUrl}" style="width:100%;max-width:160px;height:auto;border-radius:10px;display:block;" alt="LINE QR Code"/>`;
       if (lineLabel) lineLabel.textContent = `LINE ID：${lineId}`;
     } else {
       lineQrDiv.innerHTML = `<div style="width:150px;height:150px;border:2px dashed var(--border-color);border-radius:12px;display:flex;align-items:center;justify-content:center;color:var(--text-tertiary);font-size:12px;text-align:center;">填入 LINE ID<br>後顯示</div>`;
@@ -4175,9 +4177,9 @@ function renderMyCardModal(myCard, isEditMode) {
 
       <div class="form-grid">
         <div class="form-row"><label>姓名</label><input type="text" id="my-name" value="${myCard.name}" /></div>
-        <div class="form-row"><label>職稱</label><input type="text" id="my-title" value="${myCard.title}" /></div>
-        <div class="form-row-full form-row"><label>公司名稱</label><input type="text" id="my-org" value="${myCard.org}" /></div>
-        <div class="form-row"><label>部門</label><input type="text" id="my-dept" value="${myCard.dept}" /></div>
+        <div class="form-row"><label>職稱</label><input type="text" id="my-title" value="${myCard.title||''}" /></div>
+        <div class="form-row-full form-row"><label>公司名稱</label><input type="text" id="my-org" value="${myCard.org||''}" /></div>
+        <div class="form-row"><label>部門</label><input type="text" id="my-dept" value="${myCard.dept||''}" /></div>
         <div class="form-row">
           <label>卡片主題顏色</label>
           <select id="my-theme">
@@ -4187,13 +4189,13 @@ function renderMyCardModal(myCard, isEditMode) {
             <option value="sunset" ${myCard.theme==='sunset'?'selected':''}>溫慢落日</option>
           </select>
         </div>
-        <div class="form-row"><label>聯絡電話</label><input type="text" id="my-phone" value="${myCard.phone}" /></div>
-        <div class="form-row"><label>手機號碼</label><input type="text" id="my-mobile" value="${myCard.mobile}" /></div>
-        <div class="form-row"><label>電子郵件 (Email)</label><input type="email" id="my-email" value="${myCard.email}" /></div>
-        <div class="form-row"><label>個人/公司網站</label><input type="text" id="my-website" value="${myCard.website}" /></div>
-        <div class="form-row"><label>LINE ID</label><input type="text" id="my-lineid" value="${myCard.lineId || ''}" placeholder="例：fullmodel" /></div>
-        <div class="form-row"><label>郵遞區號</label><input type="text" id="my-zip" value="${myCard.zip}" /></div>
-        <div class="form-row"><label>地址</label><input type="text" id="my-addr" value="${myCard.addr}" /></div>
+        <div class="form-row"><label>聯絡電話</label><input type="text" id="my-phone" value="${myCard.phone||''}" /></div>
+        <div class="form-row"><label>手機號碼</label><input type="text" id="my-mobile" value="${myCard.mobile||''}" /></div>
+        <div class="form-row"><label>電子郵件 (Email)</label><input type="email" id="my-email" value="${myCard.email||''}" /></div>
+        <div class="form-row"><label>個人/公司網站</label><input type="text" id="my-website" value="${myCard.website||''}" /></div>
+        <div class="form-row"><label>LINE ID</label><input type="text" id="my-lineid" value="${myCard.lineId||''}" placeholder="例：fullmodel" /></div>
+        <div class="form-row"><label>郵遞區號</label><input type="text" id="my-zip" value="${myCard.zip||''}" /></div>
+        <div class="form-row"><label>地址</label><input type="text" id="my-addr" value="${myCard.addr||''}" /></div>
       </div>
       <div class="form-actions">
         <button class="btn" onclick="cancelMyCardEdit()">取消</button>
