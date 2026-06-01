@@ -1506,8 +1506,6 @@ body {
   <main class="main-card">
     <!-- 0. 首頁分頁 -->
     <div id="view-home" style="display:none">
-      <!-- KPI 橫列（全寬） -->
-      <div style="padding:16px 14px 0;display:grid;grid-template-columns:1fr 1fr;gap:10px;" id="home-kpi-grid"></div>
       <!-- 區塊列表 -->
       <div style="padding:14px 14px 90px;display:flex;flex-direction:column;gap:12px;">
         <!-- 待處理名片 -->
@@ -3962,31 +3960,6 @@ function renderDashboard() {
  * 首頁畫面渲染
  */
 function renderHomeScreen() {
-  const customGroups = getCustomGroups();
-  const customTags = getCustomTags();
-  const total = cardsList.length;
-  const processed = cardsList.filter(c => c.processed).length;
-  const rate = total ? Math.round((processed / total) * 100) : 0;
-
-  // KPI grid
-  const kpiGrid = document.getElementById('home-kpi-grid');
-  if (kpiGrid) {
-    const kpis = [
-      { icon: 'ti-users',        label: '名片總數',  value: total,                 color: 'var(--accent)',       bg: 'var(--accent-light)' },
-      { icon: 'ti-circle-check', label: '處理完成率', value: rate + '%',            color: 'var(--color-green)',  bg: 'var(--color-green-bg)' },
-      { icon: 'ti-folder',       label: '分類群組',  value: customGroups.length,   color: 'var(--accent)',       bg: 'var(--accent-light)' },
-      { icon: 'ti-tags',         label: '使用標籤',  value: customTags.length,     color: 'var(--color-amber)',  bg: 'var(--color-amber-bg)' },
-    ];
-    kpiGrid.innerHTML = kpis.map(k => `
-      <div class="db-card" style="flex-direction:column;align-items:flex-start;gap:10px;padding:16px 18px 18px;">
-        <div class="db-card-icon" style="color:${k.color};background:${k.bg};"><i class="ti ${k.icon}"></i></div>
-        <div>
-          <div style="font-size:13px;color:var(--text-secondary);letter-spacing:0.05em;">${k.label}</div>
-          <div style="font-size:26px;font-weight:700;color:var(--text-primary);margin-top:2px;letter-spacing:-0.5px;line-height:1.1;">${k.value}</div>
-        </div>
-      </div>`).join('');
-  }
-
   // 待處理名片 (最多 3 筆)
   const pending = cardsList.filter(c => !c.processed).sort((a,b) => (b.createdAtTs||0) - (a.createdAtTs||0)).slice(0, 3);
   const pendingEl = document.getElementById('home-pending-cards');
