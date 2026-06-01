@@ -12,6 +12,8 @@
 
 <!-- Tabler Icons 向量圖標庫 -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css">
+<!-- QR Code 產生器 -->
+<script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
 <!-- Google Identity Services (GSI) 庫 -->
 <script src="https://accounts.google.com/gsi/client" async defer></script>
 <!-- 引入 Outfit 英文字型與 Noto Sans TC 中文字型 -->
@@ -1681,6 +1683,39 @@ body {
       <div id="dup-content"></div>
     </div>
 
+    <!-- 我的名片頁 -->
+    <div id="view-myprofile" style="display:none">
+      <div style="padding:20px 14px 90px;display:flex;flex-direction:column;gap:14px;">
+
+        <!-- 個人虛擬名片 -->
+        <div id="myprofile-card-section">
+          <!-- JS renderMyProfile() 動態渲染 -->
+        </div>
+
+        <!-- QR Code 區塊 -->
+        <div class="db-section" style="align-items:center;text-align:center;">
+          <h3 style="margin-bottom:14px;justify-content:center;"><i class="ti ti-qrcode" style="color:var(--accent);"></i> 掃碼加入通訊錄</h3>
+          <div id="myprofile-qrcode" style="display:flex;justify-content:center;margin-bottom:14px;">
+            <!-- JS 動態產生 QR Code -->
+          </div>
+          <p style="font-size:13px;color:var(--text-tertiary);margin:0;">對方掃描後自動加入手機通訊錄</p>
+          <div style="display:flex;gap:10px;justify-content:center;margin-top:14px;">
+            <button class="btn btn-primary" onclick="downloadMyProfileQR()"><i class="ti ti-download"></i> 儲存 QR Code</button>
+            <button class="btn" onclick="openMyCardModal()"><i class="ti ti-edit"></i> 編輯名片</button>
+          </div>
+        </div>
+
+        <!-- 聯絡資訊欄位 -->
+        <div class="db-section" id="myprofile-info-section">
+          <h3 style="margin-bottom:12px;"><i class="ti ti-info-circle" style="color:var(--accent);"></i> 聯絡資訊</h3>
+          <div id="myprofile-fields">
+            <!-- JS 動態渲染 -->
+          </div>
+        </div>
+
+      </div>
+    </div>
+
     <!-- 4. 工具箱分頁 -->
     <div id="view-batch" style="display:none">
 
@@ -1984,8 +2019,8 @@ body {
 
   <nav class="bottom-tab-bar">
     <button class="btab active" id="btab-home" onclick="switchTab('home')">
-      <div class="btab-pip"><i class="ti ti-home-2"></i></div>
-      <span>首頁</span>
+      <div class="btab-pip"><i class="ti ti-layout-dashboard"></i></div>
+      <span>總覽</span>
     </button>
     <button class="btab" id="btab-cards" onclick="switchTab('cards')">
       <div class="btab-pip"><i class="ti ti-id"></i></div>
@@ -1998,6 +2033,10 @@ body {
     <button class="btab" id="btab-batch" onclick="switchTab('batch')">
       <div class="btab-pip"><i class="ti ti-apps"></i></div>
       <span>工具</span>
+    </button>
+    <button class="btab" id="btab-myprofile" onclick="switchTab('myprofile')">
+      <div class="btab-pip"><i class="ti ti-user-circle"></i></div>
+      <span>我的</span>
     </button>
   </nav>
 </div>
@@ -3498,7 +3537,7 @@ function switchTab(tabId) {
   if (header) header.style.display = tabId === 'home' ? '' : 'none';
 
   // Map tab IDs to view IDs
-  const allViews = ['home','cards','dashboard','dups','batch','graph','settings'];
+  const allViews = ['home','cards','dashboard','dups','batch','graph','settings','myprofile'];
   allViews.forEach(v => {
     const el = document.getElementById('view-' + v);
     if (el) el.style.display = v === tabId ? 'block' : 'none';
@@ -3509,7 +3548,7 @@ function switchTab(tabId) {
     if (btn) btn.classList.toggle('active', t === tabId);
   });
   // Bottom tab bar
-  ['home','cards','dashboard','batch'].forEach(t => {
+  ['home','cards','dashboard','batch','myprofile'].forEach(t => {
     const btn = document.getElementById('btab-' + t);
     if (btn) btn.classList.toggle('active', t === tabId);
   });
@@ -3518,6 +3557,7 @@ function switchTab(tabId) {
   if (tabId === 'dashboard') { renderDashboard(); renderGraphTab(); }
   if (tabId === 'home') renderHomeScreen();
   if (tabId === 'graph') renderGraphTab();
+  if (tabId === 'myprofile') renderMyProfile();
   if (tabId !== 'graph' && tabId !== 'dashboard' && graphSimulation) { cancelAnimationFrame(graphSimulation); graphSimulation = null; }
 }
 
@@ -3997,6 +4037,129 @@ function renderHomeScreen() {
 function getMyCardData() {
   const data = localStorage.getItem('bizcard_user_mycard');
   return data ? JSON.parse(data) : { name: '', title: '', org: '', dept: '', phone: '', mobile: '', email: '', website: '', zip: '', addr: '', theme: 'indigo', image: '' };
+}
+
+function renderMyProfile() {
+  const c = getMyCardData();
+  const themeClass = `vc-theme-${c.theme || 'indigo'}`;
+
+  // 個人虛擬名片
+  const cardSection = document.getElementById('myprofile-card-section');
+  if (cardSection) {
+    if (!c.name) {
+      cardSection.innerHTML = `
+        <div class="db-section" style="text-align:center;padding:32px 20px;">
+          <i class="ti ti-user-circle" style="font-size:52px;color:var(--text-tertiary);opacity:0.4;display:block;margin-bottom:12px;"></i>
+          <div style="font-size:16px;font-weight:600;color:var(--text-primary);margin-bottom:6px;">尚未設定個人名片</div>
+          <div style="font-size:13px;color:var(--text-tertiary);margin-bottom:18px;">填寫後即可產生 QR Code 分享給他人</div>
+          <button class="btn btn-primary" onclick="openMyCardModal()"><i class="ti ti-edit"></i> 立即填寫</button>
+        </div>`;
+    } else {
+      cardSection.innerHTML = `
+        <div class="virtual-card-wrapper" style="margin:0;">
+          <div class="virtual-card ${themeClass}" style="border-radius:16px;">
+            <div class="virtual-card-glass"></div>
+            <div class="virtual-card-body">
+              <div class="vc-hd">
+                <span class="vc-logo"><i class="ti ti-address-book"></i></span>
+                <span class="vc-org">${c.org || '未設定公司'}</span>
+              </div>
+              <div class="vc-mid">
+                <div class="vc-name">${c.name}</div>
+                <div class="vc-title-row">
+                  <span>${c.title || ''}</span>
+                  ${c.dept ? `<span>·</span><span>${c.dept}</span>` : ''}
+                </div>
+              </div>
+              <div class="vc-ft">
+                <div class="vc-contact-item"><i class="ti ti-phone"></i> ${c.mobile || c.phone || '—'}</div>
+                <div class="vc-contact-item"><i class="ti ti-mail"></i> ${c.email || '—'}</div>
+              </div>
+            </div>
+          </div>
+        </div>`;
+    }
+  }
+
+  // QR Code
+  const qrDiv = document.getElementById('myprofile-qrcode');
+  if (qrDiv) {
+    qrDiv.innerHTML = '';
+    if (c.name) {
+      // 產生 vCard 格式字串
+      let vcard = 'BEGIN:VCARD\nVERSION:3.0\n';
+      vcard += `FN:${c.name}\n`;
+      if (c.org || c.dept) vcard += `ORG:${c.org || ''};${c.dept || ''}\n`;
+      if (c.title) vcard += `TITLE:${c.title}\n`;
+      if (c.mobile) vcard += `TEL;TYPE=CELL:${c.mobile}\n`;
+      if (c.phone) vcard += `TEL;TYPE=WORK:${c.phone}\n`;
+      if (c.email) vcard += `EMAIL:${c.email}\n`;
+      if (c.website) vcard += `URL:${c.website}\n`;
+      if (c.addr) vcard += `ADR;TYPE=WORK:;;${c.addr};;;;\n`;
+      vcard += 'END:VCARD';
+
+      try {
+        new QRCode(qrDiv, {
+          text: vcard,
+          width: 200,
+          height: 200,
+          colorDark: '#f4f4f5',
+          colorLight: '#1a1a1f',
+          correctLevel: QRCode.CorrectLevel.M
+        });
+      } catch(e) {
+        qrDiv.innerHTML = `<div style="color:var(--text-tertiary);font-size:13px;">QR Code 載入中...</div>`;
+      }
+    } else {
+      qrDiv.innerHTML = `<div style="width:200px;height:200px;border:2px dashed var(--border-color);border-radius:12px;display:flex;align-items:center;justify-content:center;color:var(--text-tertiary);font-size:13px;">填寫名片後顯示</div>`;
+    }
+  }
+
+  // 聯絡資訊欄位
+  const fields = document.getElementById('myprofile-fields');
+  if (fields) {
+    const rows = [
+      { icon: 'ti-user', label: '姓名', val: c.name },
+      { icon: 'ti-briefcase', label: '職稱', val: c.title },
+      { icon: 'ti-building', label: '公司', val: c.org },
+      { icon: 'ti-device-mobile', label: '手機', val: c.mobile },
+      { icon: 'ti-phone', label: '辦公室電話', val: c.phone },
+      { icon: 'ti-mail', label: 'Email', val: c.email },
+      { icon: 'ti-world', label: '網站', val: c.website },
+    ].filter(r => r.val);
+    if (rows.length === 0) {
+      fields.innerHTML = `<div style="color:var(--text-tertiary);font-size:13px;text-align:center;padding:12px 0;">尚無聯絡資訊</div>`;
+    } else {
+      fields.innerHTML = rows.map((r, i) => `
+        <div style="display:flex;align-items:center;gap:12px;padding:10px 0;${i>0?'border-top:1px solid var(--border-color);':''}">
+          <div style="width:34px;height:34px;border-radius:9px;background:var(--accent-light);color:var(--accent);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+            <i class="ti ${r.icon}" style="font-size:16px;"></i>
+          </div>
+          <div style="min-width:0;">
+            <div style="font-size:12px;color:var(--text-tertiary);">${r.label}</div>
+            <div style="font-size:14.5px;font-weight:500;color:var(--text-primary);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${r.val}</div>
+          </div>
+        </div>`).join('');
+    }
+  }
+}
+
+function downloadMyProfileQR() {
+  const canvas = document.querySelector('#myprofile-qrcode canvas');
+  const img = document.querySelector('#myprofile-qrcode img');
+  if (canvas) {
+    const a = document.createElement('a');
+    a.href = canvas.toDataURL('image/png');
+    a.download = 'mycard-qrcode.png';
+    a.click();
+  } else if (img) {
+    const a = document.createElement('a');
+    a.href = img.src;
+    a.download = 'mycard-qrcode.png';
+    a.click();
+  } else {
+    showToast('請先填寫個人名片再下載 QR Code');
+  }
 }
 
 function saveMyCardData(data) {
