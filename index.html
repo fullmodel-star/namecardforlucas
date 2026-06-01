@@ -3038,7 +3038,9 @@ async function systemLoadAllData() {
   renderSettingsBadgeManager();
   renderCardsGrid();
   renderDashboard();
-  renderHomeScreen();
+  switchTab('home'); // 預設顯示首頁
+  // 確保首頁在 DOM 完全更新後再次渲染
+  setTimeout(() => renderHomeScreen(), 50);
 }
 
 function renderSidebarFilters() {
@@ -3063,11 +3065,11 @@ function renderSidebarFilters() {
       <span class="group-count">${count}</span>
     </div>`;
   });
-  groupFilterList.innerHTML = groupHtml;
+  if (groupFilterList) groupFilterList.innerHTML = groupHtml;
 
   const tagCloud = document.getElementById('tag-cloud');
   const customTags = getCustomTags();
-  
+
   const tagCounts = {};
   cardsList.forEach(c => {
     if (c.tags) {
@@ -3076,28 +3078,27 @@ function renderSidebarFilters() {
       });
     }
   });
-  
+
   let tagHtml = `<button class="tag-filter-chip ${activeTagFilter === '' ? 'active' : ''}" onclick="setTagFilter('')">全部 (${cardsList.length})</button>`;
   customTags.forEach(t => {
     const count = tagCounts[t] || 0;
     tagHtml += `<button class="tag-filter-chip ${activeTagFilter === t ? 'active' : ''}" onclick="setTagFilter('${t}')">#${t} (${count})</button>`;
   });
-  tagCloud.innerHTML = tagHtml;
-  
-  document.getElementById('count-badge').textContent = cardsList.length + ' 張名片';
-  
+  if (tagCloud) tagCloud.innerHTML = tagHtml;
+
+  const countBadge = document.getElementById('count-badge');
+  if (countBadge) countBadge.textContent = cardsList.length + ' 張名片';
+
   const processedCount = cardsList.filter(c => c.processed).length;
   const procBadge = document.getElementById('proc-badge');
-  procBadge.textContent = '✓ 已處理 ' + processedCount;
-  procBadge.style.display = processedCount ? 'inline-block' : 'none';
-  
+  if (procBadge) { procBadge.textContent = '✓ 已處理 ' + processedCount; procBadge.style.display = processedCount ? 'inline-block' : 'none'; }
+
   const dups = detectAllDuplicateGroups();
   const dupBadge = document.getElementById('dup-badge');
-  dupBadge.textContent = '⚠ 重複 ' + dups.length + ' 組';
-  dupBadge.style.display = dups.length ? 'inline-block' : 'none';
-  
+  if (dupBadge) { dupBadge.textContent = '⚠ 重複 ' + dups.length + ' 組'; dupBadge.style.display = dups.length ? 'inline-block' : 'none'; }
+
   const tabDups = document.getElementById('tab-dups');
-  tabDups.innerHTML = `<i class="ti ti-copy"></i> 重複偵測${dups.length ? ' (' + dups.length + ')' : ''}`;
+  if (tabDups) tabDups.innerHTML = `<i class="ti ti-copy"></i> 重複偵測${dups.length ? ' (' + dups.length + ')' : ''}`;
 }
 
 function setGroupFilter(group) {
@@ -3389,6 +3390,7 @@ function switchTab(tabId) {
     const btn = document.getElementById('btab-' + t);
     if (btn) btn.classList.toggle('active', t === tabId);
   });
+  if (tabId === 'cards') renderCardsGrid();
   if (tabId === 'dups') renderDupsTab();
   if (tabId === 'dashboard') renderDashboard();
   if (tabId === 'home') renderHomeScreen();
