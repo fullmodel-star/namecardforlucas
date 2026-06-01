@@ -12,8 +12,7 @@
 
 <!-- Tabler Icons 向量圖標庫 -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css">
-<!-- QR Code 產生器 -->
-<script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+<!-- QR Code：使用 qrserver.com API，不需額外函式庫 -->
 <!-- Google Identity Services (GSI) 庫 -->
 <script src="https://accounts.google.com/gsi/client" async defer></script>
 <!-- 引入 Outfit 英文字型與 Noto Sans TC 中文字型 -->
@@ -4085,30 +4084,26 @@ function renderMyProfile() {
   if (qrDiv) {
     qrDiv.innerHTML = '';
     if (c.name) {
-      // 產生 vCard 格式字串
+      // 精簡 vCard（只放關鍵欄位，避免超過 QR Code 容量）
       let vcard = 'BEGIN:VCARD\nVERSION:3.0\n';
       vcard += `FN:${c.name}\n`;
-      if (c.org || c.dept) vcard += `ORG:${c.org || ''};${c.dept || ''}\n`;
+      if (c.org) vcard += `ORG:${c.org}\n`;
       if (c.title) vcard += `TITLE:${c.title}\n`;
-      if (c.mobile) vcard += `TEL;TYPE=CELL:${c.mobile}\n`;
-      if (c.phone) vcard += `TEL;TYPE=WORK:${c.phone}\n`;
+      if (c.mobile) vcard += `TEL;CELL:${c.mobile}\n`;
+      if (c.phone) vcard += `TEL;WORK:${c.phone}\n`;
       if (c.email) vcard += `EMAIL:${c.email}\n`;
-      if (c.website) vcard += `URL:${c.website}\n`;
-      if (c.addr) vcard += `ADR;TYPE=WORK:;;${c.addr};;;;\n`;
       vcard += 'END:VCARD';
 
-      try {
-        new QRCode(qrDiv, {
-          text: vcard,
-          width: 200,
-          height: 200,
-          colorDark: '#f4f4f5',
-          colorLight: '#1a1a1f',
-          correctLevel: QRCode.CorrectLevel.M
-        });
-      } catch(e) {
-        qrDiv.innerHTML = `<div style="color:var(--text-tertiary);font-size:13px;">QR Code 載入中...</div>`;
-      }
+      // 用 qrserver.com API 產生 QR Code 圖片（支援中文，不需函式庫）
+      const qrUrl = 'https://api.qrserver.com/v1/create-qr-code/?size=200x200&ecc=L&data=' + encodeURIComponent(vcard);
+      qrDiv.innerHTML = `
+        <img src="${qrUrl}" width="200" height="200"
+             style="border-radius:10px;display:block;"
+             alt="vCard QR Code"
+             onerror="this.parentElement.innerHTML='<div style=color:var(--color-amber);font-size:13px;padding:20px;text-align:center;>離線狀態無法產生 QR Code</div>'"
+        />`;
+      // 儲存 QR URL 供下載使用
+      qrDiv.dataset.qrUrl = qrUrl;
     } else {
       qrDiv.innerHTML = `<div style="width:200px;height:200px;border:2px dashed var(--border-color);border-radius:12px;display:flex;align-items:center;justify-content:center;color:var(--text-tertiary);font-size:13px;">填寫名片後顯示</div>`;
     }
@@ -4144,18 +4139,12 @@ function renderMyProfile() {
 }
 
 function downloadMyProfileQR() {
-  const canvas = document.querySelector('#myprofile-qrcode canvas');
-  const img = document.querySelector('#myprofile-qrcode img');
-  if (canvas) {
-    const a = document.createElement('a');
-    a.href = canvas.toDataURL('image/png');
-    a.download = 'mycard-qrcode.png';
-    a.click();
-  } else if (img) {
-    const a = document.createElement('a');
-    a.href = img.src;
-    a.download = 'mycard-qrcode.png';
-    a.click();
+  const qrDiv = document.getElementById('myprofile-qrcode');
+  const img = qrDiv?.querySelector('img');
+  if (img && img.src && !img.src.startsWith('data:')) {
+    // 開新分頁讓使用者長按存圖（跨域圖片無法直接下載）
+    window.open(img.src, '_blank');
+    showToast('長按圖片即可儲存 QR Code');
   } else {
     showToast('請先填寫個人名片再下載 QR Code');
   }
