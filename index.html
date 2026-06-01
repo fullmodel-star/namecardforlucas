@@ -1478,26 +1478,10 @@ body {
        [HTML] 頂部標題與狀態導覽列
        ========================================================================== -->
   <header class="app-header">
-    <div style="display:flex;align-items:center;gap:14px;">
-      <div style="width:38px;height:38px;border-radius:11px;background:var(--accent);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
-        <i class="ti ti-id" style="font-size:21px;color:#fff;"></i>
-      </div>
-      <div style="flex:1;min-width:0;">
-        <div style="font-size:17px;font-weight:700;color:var(--text-primary);letter-spacing:0.2px;">名片管理</div>
-        <div id="header-subtitle" style="font-size:12.5px;color:var(--text-tertiary);margin-top:1px;">智慧名片管理系統</div>
-      </div>
-    </div>
-    <div style="display:flex;align-items:center;gap:8px;">
-      <button class="btn btn-icon" id="theme-toggle-btn" onclick="toggleTheme()" title="切換主題">
-        <i class="ti ti-sun"></i>
-      </button>
-      <button class="btn" onclick="openMyCardModal()" title="我的名片" style="border-radius:11px;padding:9px 12px;background:var(--bg-secondary);border:1px solid var(--border-color);">
-        <i class="ti ti-user-circle" style="font-size:18px;"></i>
-      </button>
-      <button class="btn btn-primary" onclick="openFormModal()" style="border-radius:11px;font-size:14px;font-weight:600;padding:9px 15px;background:var(--accent);border:none;">
-        <i class="ti ti-plus" style="font-size:16px;"></i> 新增
-      </button>
-    </div>
+    <div style="font-size:18px;font-weight:700;color:var(--text-primary);letter-spacing:0.2px;">名片管理</div>
+    <button class="btn btn-primary" onclick="openFormModal()" style="border-radius:11px;font-size:14px;font-weight:600;padding:9px 18px;background:var(--accent);border:none;">
+      <i class="ti ti-plus" style="font-size:16px;"></i> 新增
+    </button>
   </header>
 
   <!-- ==========================================================================
