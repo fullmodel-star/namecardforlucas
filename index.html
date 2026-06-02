@@ -1608,21 +1608,30 @@ body {
     <div id="view-dashboard" style="display:none">
 
       <!-- 公司組織圖 -->
-      <div style="padding:14px 14px 90px;">
-      <div class="db-section">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
-          <h3 style="margin:0;"><i class="ti ti-organization"></i> 公司組織圖</h3>
-          <span style="font-size:13px;color:var(--text-tertiary);">依公司分組顯示</span>
+      <div style="padding:14px 14px 90px;display:flex;flex-direction:column;gap:12px;">
+
+        <!-- 統計列 -->
+        <div id="org-stats-bar" style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px;background:var(--bg-secondary);border:1px solid var(--border-color);border-radius:12px;">
+          <span style="font-size:14px;color:var(--text-secondary);" id="org-stats-label">載入中...</span>
+          <select id="org-sort" onchange="renderGraphTab()" style="height:32px;border-radius:8px;border:1px solid var(--border-color);background:var(--bg-primary);color:var(--text-primary);font-size:13px;padding:0 8px;cursor:pointer;">
+            <option value="count-desc">人數多→少</option>
+            <option value="count-asc">人數少→多</option>
+            <option value="name-asc">公司 A→Z</option>
+            <option value="name-desc">公司 Z→A</option>
+          </select>
         </div>
+
         <!-- 搜尋欄 -->
-        <div class="cards-search-bar" style="margin-bottom:14px;">
+        <div class="cards-search-bar">
           <i class="ti ti-search" style="color:var(--text-secondary);"></i>
-          <input type="text" id="org-search" placeholder="搜尋公司名稱..." oninput="renderGraphTab()" style="flex:1;background:transparent;border:none;color:var(--text-primary);font-size:14px;outline:none;"/>
+          <input type="text" id="org-search" placeholder="搜尋公司或人名..." oninput="renderGraphTab()" style="flex:1;background:transparent;border:none;color:var(--text-primary);font-size:14px;outline:none;"/>
         </div>
-        <div id="graph-canvas" style="min-height:120px;">
+
+        <!-- 組織圖卡片清單 -->
+        <div id="graph-canvas" style="display:flex;flex-direction:column;gap:10px;min-height:120px;">
           <!-- JS 動態渲染 renderGraphTab() -->
         </div>
-      </div>
+
       </div>
     </div>
 
@@ -5251,6 +5260,53 @@ async function executeSmartSync() {
 // ============================================================================
 // [8] 公司組織圖模組
 // ============================================================================
+// 記錄各公司展開/收合狀態
+const orgExpandState = {};
+
+function toggleOrgCompany(orgName) {
+  orgExpandState[orgName] = !orgExpandState[orgName];
+  renderGraphTab();
+}
+
+function showOrgPersonDetail(cardId) {
+  const c = cardsList.find(x => x.id === cardId);
+  if (!c) return;
+  const cleanMobile = (c.mobile||'').replace(/[^\d+]/g,'');
+  const cleanPhone  = (c.phone||'').replace(/[^\d+]/g,'');
+  const color = {'學校委員':'#6366f1','政府機關':'#0ea5e9','企業客戶':'#10b981','資訊夥伴':'#f59e0b','法人夥伴':'#8b5cf6','供應商夥伴':'#ec4899','其他':'#94a3b8'}[c.group||'其他']||'#94a3b8';
+  const html = `
+    <div style="display:flex;align-items:center;gap:14px;margin-bottom:16px;">
+      <div style="width:56px;height:56px;border-radius:50%;background:${color};color:#fff;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:700;flex-shrink:0;">${(c.name||'?').slice(0,1)}</div>
+      <div><div style="font-size:18px;font-weight:700;color:var(--text-primary);">${c.name||'—'}</div>
+        <div style="font-size:13px;color:var(--text-secondary);margin-top:3px;">${[c.title,c.dept].filter(Boolean).join(' · ')||''}</div>
+        <div style="font-size:13px;color:var(--text-tertiary);">${c.org||''}</div>
+      </div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:18px;">
+      ${c.mobile?`<div style="display:flex;align-items:center;gap:10px;"><i class="ti ti-device-mobile" style="color:var(--accent);width:20px;"></i><a href="tel:${cleanMobile}" style="color:var(--text-primary);font-size:15px;">${c.mobile}</a></div>`:''}
+      ${c.phone?`<div style="display:flex;align-items:center;gap:10px;"><i class="ti ti-phone" style="color:var(--accent);width:20px;"></i><a href="tel:${cleanPhone}" style="color:var(--text-primary);font-size:15px;">${c.phone}</a></div>`:''}
+      ${c.email?`<div style="display:flex;align-items:center;gap:10px;"><i class="ti ti-mail" style="color:var(--accent);width:20px;"></i><a href="mailto:${c.email}" style="color:var(--text-primary);font-size:15px;">${c.email}</a></div>`:''}
+    </div>
+    <div style="display:flex;gap:8px;">
+      <button class="btn btn-primary" style="flex:1;" onclick="selectCard('${c.id}');switchTab('cards');document.getElementById('org-detail-modal-bg').classList.remove('open');">
+        <i class="ti ti-id"></i> 查看完整名片
+      </button>
+      <button class="btn" onclick="document.getElementById('org-detail-modal-bg').classList.remove('open');">關閉</button>
+    </div>`;
+
+  let modal = document.getElementById('org-detail-modal-bg');
+  if (!modal) {
+    modal = document.createElement('div');
+    modal.id = 'org-detail-modal-bg';
+    modal.className = 'modal-overlay';
+    modal.onclick = e => { if (e.target === modal) modal.classList.remove('open'); };
+    modal.innerHTML = `<div class="modal" style="max-width:420px;" id="org-detail-modal-content"></div>`;
+    document.body.appendChild(modal);
+  }
+  document.getElementById('org-detail-modal-content').innerHTML = html;
+  modal.classList.add('open');
+}
+
 function renderGraphTab() {
   const container = document.getElementById('graph-canvas');
   if (!container) return;
@@ -5269,58 +5325,66 @@ function renderGraphTab() {
   // 依公司分組
   const orgMap = {};
   cardsList.forEach(c => {
-    const key = (c.org || '').trim() || '（未填公司）';
+    const key = (c.org||'').trim() || '（未填公司）';
     if (!orgMap[key]) orgMap[key] = [];
     orgMap[key].push(c);
   });
 
-  // 搜尋過濾
-  const q = (document.getElementById('org-search')?.value || '').trim().toLowerCase();
-  const entries = Object.entries(orgMap)
-    .filter(([name]) => !q || name.toLowerCase().includes(q))
-    .sort((a, b) => b[1].length - a[1].length);  // 人數多的排前面
+  // 搜尋過濾（公司名 + 人名）
+  const q = (document.getElementById('org-search')?.value||'').trim().toLowerCase();
+  let entries = Object.entries(orgMap).filter(([name, people]) =>
+    !q || name.toLowerCase().includes(q) || people.some(c => (c.name||'').toLowerCase().includes(q))
+  );
+
+  // 排序
+  const sortVal = document.getElementById('org-sort')?.value || 'count-desc';
+  if (sortVal === 'count-desc') entries.sort((a,b) => b[1].length - a[1].length);
+  else if (sortVal === 'count-asc') entries.sort((a,b) => a[1].length - b[1].length);
+  else if (sortVal === 'name-asc') entries.sort((a,b) => a[0].localeCompare(b[0], 'zh-TW'));
+  else if (sortVal === 'name-desc') entries.sort((a,b) => b[0].localeCompare(a[0], 'zh-TW'));
+
+  // 統計列
+  const statsLabel = document.getElementById('org-stats-label');
+  if (statsLabel) {
+    const totalC = entries.length, totalP = entries.reduce((s,[,v])=>s+v.length,0);
+    statsLabel.innerHTML = `共 <strong style="color:var(--text-primary)">${totalC}</strong> 家公司・<strong style="color:var(--text-primary)">${totalP}</strong> 位聯絡人`;
+  }
 
   if (entries.length === 0) {
-    container.innerHTML = `<div class="empty-state"><i class="ti ti-search-off"></i><p>找不到符合的公司</p></div>`;
+    container.innerHTML = `<div style="text-align:center;padding:40px;color:var(--text-tertiary);"><i class="ti ti-search-off" style="font-size:36px;display:block;margin-bottom:10px;"></i>找不到符合的公司或人名</div>`;
     return;
   }
 
-  const totalCompanies = entries.length;
-  const totalPeople = entries.reduce((s, [, v]) => s + v.length, 0);
-
-  container.innerHTML = `
-    <div style="font-size:15px;color:var(--text-secondary);margin-bottom:14px;">
-      共 <strong style="color:var(--text-primary)">${totalCompanies}</strong> 家公司・
-      <strong style="color:var(--text-primary)">${totalPeople}</strong> 位聯絡人
-    </div>
-    ${entries.map(([orgName, people]) => {
-      const peopleHTML = people.map(c => {
-        const color = groupColorMap[c.group || '其他'] || '#94a3b8';
-        const label = (c.group || '其他').slice(0,2);
-        const phone = c.mobile || c.phone || '';
-        return `
-          <div class="org-person-row" onclick="selectCard('${c.id}');switchTab('cards');">
-            <div class="org-person-avatar" style="background:${color};">${label}</div>
-            <div style="flex:1;min-width:0;">
-              <div class="org-person-name">${c.name || '—'}</div>
-              <div class="org-person-title">${[c.title, c.dept].filter(Boolean).join(' · ') || '—'}</div>
-            </div>
-            ${phone ? `<div style="font-size:14px;color:var(--text-tertiary);flex-shrink:0;">${phone}</div>` : ''}
-            ${c.processed ? `<i class="ti ti-circle-check" style="color:var(--color-green);font-size:16px;flex-shrink:0;"></i>` : ''}
-          </div>`;
-      }).join('');
-
-      const isNoOrg = orgName === '（未填公司）';
+  container.innerHTML = entries.map(([orgName, people]) => {
+    const isNoOrg = orgName === '（未填公司）';
+    const isExpanded = orgExpandState[orgName] !== false; // 預設展開
+    const peopleHTML = people.map(c => {
+      const color = groupColorMap[c.group||'其他']||'#94a3b8';
+      const label = (c.group||'其他').slice(0,2);
+      const phone = c.mobile||c.phone||'';
       return `
-        <div class="org-company-card">
-          <div class="org-company-header">
-            <i class="ti ${isNoOrg ? 'ti-user-question' : 'ti-building'}" style="color:var(--accent);font-size:16px;flex-shrink:0;"></i>
-            <div class="org-company-name">${orgName}</div>
-            <span class="org-company-count">${people.length} 人</span>
+        <div class="org-person-row" onclick="showOrgPersonDetail('${c.id}');" style="cursor:pointer;">
+          <div class="org-person-avatar" style="background:${color};">${label}</div>
+          <div style="flex:1;min-width:0;">
+            <div class="org-person-name">${c.name||'—'}</div>
+            <div class="org-person-title">${[c.title,c.dept].filter(Boolean).join(' · ')||'—'}</div>
           </div>
-          ${peopleHTML}
+          ${phone?`<div style="font-size:13px;color:var(--text-tertiary);flex-shrink:0;">${phone}</div>`:''}
+          ${c.processed?`<i class="ti ti-circle-check" style="color:var(--color-green);font-size:16px;flex-shrink:0;"></i>`:''}
         </div>`;
-    }).join('')}`;
+    }).join('');
+
+    return `
+      <div class="org-company-card">
+        <div class="org-company-header" onclick="toggleOrgCompany('${orgName.replace(/'/g,"\\'")}');" style="cursor:pointer;user-select:none;">
+          <i class="ti ${isNoOrg?'ti-user-question':'ti-building'}" style="color:var(--accent);font-size:16px;flex-shrink:0;"></i>
+          <div class="org-company-name" style="flex:1;">${orgName}</div>
+          <span class="org-company-count">${people.length} 人</span>
+          <i class="ti ${isExpanded?'ti-chevron-up':'ti-chevron-down'}" style="font-size:15px;color:var(--text-tertiary);margin-left:6px;"></i>
+        </div>
+        ${isExpanded ? peopleHTML : ''}
+      </div>`;
+  }).join('');
 }
 
 function showToast(msg) {
