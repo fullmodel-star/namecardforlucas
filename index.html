@@ -1689,6 +1689,41 @@ body {
     <!-- 4. 工具箱分頁 -->
     <div id="view-batch" style="display:none">
 
+      <!-- AI 掃名片區（置頂） -->
+      <div style="padding:14px 14px 0;">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:1rem;">
+          <div style="flex:1;height:1px;background:var(--border-color);"></div>
+          <span style="font-size:14px;font-weight:700;color:var(--text-secondary);white-space:nowrap;"><i class="ti ti-robot"></i> AI 批次掃名片</span>
+          <div style="flex:1;height:1px;background:var(--border-color);"></div>
+        </div>
+
+        <div id="api-notice-batch-top" class="api-notice" style="display:none">
+          <i class="ti ti-alert-triangle" style="flex-shrink:0;margin-top:1px"></i>
+          <span>需要 Gemini API 金鑰才能使用 AI 掃描。請先到「設定」頁面填入。</span>
+        </div>
+
+        <div class="batch-dropzone" id="drop-zone"
+          onclick="document.getElementById('batch-file-input').click()"
+          ondragover="event.preventDefault();this.classList.add('drag')"
+          ondragleave="this.classList.remove('drag')"
+          ondrop="handleBatchDrop(event)">
+          <i class="ti ti-cloud-upload"></i>
+          <h3>選取或拖曳名片照片至此</h3>
+          <p>支援多張名片照片，一張照片內多張名片也可自動拆分。</p>
+          <input type="file" id="batch-file-input" accept="image/*" multiple style="display:none" onchange="handleBatchSelect(event)" />
+        </div>
+
+        <div class="progress-bar" id="batch-progress-bar"><div class="progress-fill" id="batch-progress-fill"></div></div>
+        <div id="batch-progress-stats" style="display:none;font-size:14px;color:var(--text-secondary);margin:6px 0 0;text-align:center;min-height:18px;"></div>
+        <div class="queue-list" id="batch-queue-list"></div>
+
+        <div style="display:flex;gap:8px;margin-top:1.25rem;flex-wrap:wrap;margin-bottom:1.5rem;">
+          <button class="btn btn-primary" id="btn-start-batch" onclick="startBatchProcessing()"><i class="ti ti-robot"></i> 開始 AI 批次辨識</button>
+          <button class="btn btn-red" onclick="clearBatchQueue()"><i class="ti ti-trash"></i> 清空佇列</button>
+          <button class="btn btn-blue" onclick="initSyncFolders()" style="margin-left:auto;"><i class="ti ti-brand-google-drive"></i> Google Drive 同步</button>
+        </div>
+      </div>
+
       <!-- 工具卡片網格 -->
       <div class="toolbox-grid">
 
@@ -1742,38 +1777,6 @@ body {
 
       </div>
 
-      <!-- AI 掃名片區 -->
-      <div style="display:flex;align-items:center;gap:10px;margin-bottom:1rem;">
-        <div style="flex:1;height:1px;background:var(--border-color);"></div>
-        <span style="font-size:14px;font-weight:700;color:var(--text-secondary);white-space:nowrap;"><i class="ti ti-robot"></i> AI 批次掃名片</span>
-        <div style="flex:1;height:1px;background:var(--border-color);"></div>
-      </div>
-
-      <div id="api-notice-batch" class="api-notice" style="display:none">
-        <i class="ti ti-alert-triangle" style="flex-shrink:0;margin-top:1px"></i>
-        <span>需要 Gemini API 金鑰才能使用 AI 掃描。請先到「設定」頁面填入。</span>
-      </div>
-
-      <div class="batch-dropzone" id="drop-zone"
-        onclick="document.getElementById('batch-file-input').click()"
-        ondragover="event.preventDefault();this.classList.add('drag')"
-        ondragleave="this.classList.remove('drag')"
-        ondrop="handleBatchDrop(event)">
-        <i class="ti ti-cloud-upload"></i>
-        <h3>選取或拖曳名片照片至此</h3>
-        <p>支援多張名片照片，一張照片內多張名片也可自動拆分。</p>
-        <input type="file" id="batch-file-input" accept="image/*" multiple style="display:none" onchange="handleBatchSelect(event)" />
-      </div>
-
-      <div class="progress-bar" id="batch-progress-bar"><div class="progress-fill" id="batch-progress-fill"></div></div>
-      <div id="batch-progress-stats" style="display:none;font-size:14px;color:var(--text-secondary);margin:6px 0 0;text-align:center;min-height:18px;"></div>
-      <div class="queue-list" id="batch-queue-list"></div>
-
-      <div style="display:flex;gap:8px;margin-top:1.25rem;flex-wrap:wrap;">
-        <button class="btn btn-primary" id="btn-start-batch" onclick="startBatchProcessing()"><i class="ti ti-robot"></i> 開始 AI 批次辨識</button>
-        <button class="btn btn-red" onclick="clearBatchQueue()"><i class="ti ti-trash"></i> 清空佇列</button>
-        <button class="btn btn-blue" onclick="initSyncFolders()" style="margin-left:auto;"><i class="ti ti-brand-google-drive"></i> Google Drive 同步</button>
-      </div>
     </div>
 
     <!-- 5. 公司組織分頁 -->
