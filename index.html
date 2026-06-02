@@ -13,6 +13,8 @@
 <!-- Tabler Icons 向量圖標庫 -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css">
 <!-- QR Code：使用 qrserver.com API，不需額外函式庫 -->
+<!-- html2canvas：名片截圖下載 -->
+<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 <!-- Google Identity Services (GSI) 庫 -->
 <script src="https://accounts.google.com/gsi/client" async defer></script>
 <!-- 引入 Outfit 英文字型與 Noto Sans TC 中文字型 -->
@@ -795,7 +797,11 @@ body {
 .vc-theme-indigo { background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 50%, #a855f7 100%); }
 .vc-theme-emerald { background: linear-gradient(135deg, #0f766e 0%, #10b981 60%, #34d399 100%); }
 .vc-theme-charcoal { background: linear-gradient(135deg, #1e1b4b 0%, #18181b 60%, #3f3f46 100%); }
-.vc-theme-sunset { background: linear-gradient(135deg, #c2410c 0%, #ea580c 40%, #f97316 70%, #fcd34d 100%); }
+.vc-theme-sunset  { background: linear-gradient(135deg, #c2410c 0%, #ea580c 40%, #f97316 70%, #fcd34d 100%); }
+.vc-theme-ocean   { background: linear-gradient(135deg, #0369a1 0%, #0284c7 50%, #38bdf8 100%); }
+.vc-theme-rose    { background: linear-gradient(135deg, #9d174d 0%, #db2777 50%, #f472b6 100%); }
+.vc-theme-forest  { background: linear-gradient(135deg, #14532d 0%, #16a34a 60%, #4ade80 100%); }
+.vc-theme-gold    { background: linear-gradient(135deg, #78350f 0%, #d97706 50%, #fbbf24 100%); }
 
 .vc-theme-selector {
   display: flex;
@@ -1679,8 +1685,13 @@ body {
               <div style="font-size:11px;color:var(--text-tertiary);margin-top:6px;" id="myprofile-line-id-label"></div>
             </div>
           </div>
-          <div style="display:flex;gap:10px;justify-content:center;margin-top:16px;">
-            <button class="btn" onclick="openMyCardModal();setTimeout(enterMyCardEditMode,100);"><i class="ti ti-edit"></i> 編輯名片</button>
+          <!-- 分享操作列 -->
+          <div style="display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-top:16px;">
+            <button class="btn" onclick="copyMyCardInfo()" title="複製聯絡資訊"><i class="ti ti-clipboard-copy"></i> 複製</button>
+            <button class="btn" onclick="downloadMyCardImage()" title="下載名片圖片"><i class="ti ti-photo-down"></i> 存圖</button>
+            <button class="btn" onclick="shareMyCard()" title="手機原生分享"><i class="ti ti-share"></i> 分享</button>
+            <button class="btn" onclick="writeNfcCard()" title="寫入 NFC 標籤（Android）"><i class="ti ti-access-point"></i> NFC</button>
+            <button class="btn" onclick="openMyCardModal();setTimeout(enterMyCardEditMode,100);"><i class="ti ti-edit"></i> 編輯</button>
           </div>
         </div>
 
@@ -4117,6 +4128,88 @@ function downloadMyProfileQR() {
   }
 }
 
+// A — 複製聯絡資訊
+function copyMyCardInfo() {
+  const c = getMyCardData();
+  if (!c.name) { showToast('請先填寫個人名片'); return; }
+  const lines = [
+    c.name,
+    [c.title, c.dept].filter(Boolean).join(' · '),
+    c.org,
+    c.mobile ? '📱 ' + c.mobile : '',
+    c.phone  ? '☎ '  + c.phone  : '',
+    c.email  ? '✉ '  + c.email  : '',
+    c.lineId ? 'LINE：' + c.lineId : '',
+    c.website,
+  ].filter(Boolean);
+  navigator.clipboard.writeText(lines.join('\n'))
+    .then(() => showToast('✓ 聯絡資訊已複製！'))
+    .catch(() => showToast('複製失敗，請手動複製'));
+}
+
+// B — 下載名片圖片
+async function downloadMyCardImage() {
+  const c = getMyCardData();
+  if (!c.name) { showToast('請先填寫個人名片'); return; }
+  const card = document.querySelector('#myprofile-card-section .virtual-card');
+  if (!card) { showToast('找不到名片元素'); return; }
+  showToast('正在截圖...');
+  try {
+    const canvas = await html2canvas(card, { scale: 2, useCORS: true, backgroundColor: null });
+    const a = document.createElement('a');
+    a.href = canvas.toDataURL('image/png');
+    a.download = (c.name || 'mycard') + '-名片.png';
+    a.click();
+    showToast('✓ 名片圖片已下載！');
+  } catch(e) {
+    showToast('截圖失敗：' + e.message);
+  }
+}
+
+// C — Web Share 原生分享
+async function shareMyCard() {
+  const c = getMyCardData();
+  if (!c.name) { showToast('請先填寫個人名片'); return; }
+  const text = [c.name, [c.title,c.org].filter(Boolean).join(' · '),
+    c.mobile||c.phone||'', c.email||''].filter(Boolean).join('\n');
+  if (navigator.share) {
+    try {
+      await navigator.share({ title: c.name + ' 的名片', text });
+      showToast('✓ 已開啟分享');
+    } catch(e) { if (e.name !== 'AbortError') showToast('分享失敗'); }
+  } else {
+    // 桌機 fallback：複製
+    await navigator.clipboard.writeText(text);
+    showToast('您的裝置不支援直接分享，已複製到剪貼簿');
+  }
+}
+
+// NFC — 寫入名片資料到 NFC 標籤（Android Chrome）
+async function writeNfcCard() {
+  const c = getMyCardData();
+  if (!c.name) { showToast('請先填寫個人名片'); return; }
+  if (!('NDEFReader' in window)) {
+    showToast('您的裝置或瀏覽器不支援 Web NFC（需 Android Chrome）');
+    return;
+  }
+  let vcard = 'BEGIN:VCARD\nVERSION:3.0\n';
+  vcard += `FN:${c.name}\n`;
+  if (c.org) vcard += `ORG:${c.org}\n`;
+  if (c.title) vcard += `TITLE:${c.title}\n`;
+  if (c.mobile) vcard += `TEL;CELL:${c.mobile}\n`;
+  if (c.phone)  vcard += `TEL;WORK:${c.phone}\n`;
+  if (c.email)  vcard += `EMAIL:${c.email}\n`;
+  vcard += 'END:VCARD';
+  try {
+    showToast('📡 請將 NFC 標籤靠近手機背面...');
+    const ndef = new NDEFReader();
+    await ndef.write({ records: [{ recordType: 'mime', mediaType: 'text/vcard', data: new TextEncoder().encode(vcard) }] });
+    showToast('✓ NFC 標籤寫入成功！對方靠近即可讀取');
+  } catch(e) {
+    showToast('NFC 寫入失敗：' + (e.message || e));
+  }
+}
+
 function saveMyCardData(data) {
   localStorage.setItem('bizcard_user_mycard', JSON.stringify(data));
 }
@@ -4169,10 +4262,14 @@ function renderMyCardModal(myCard, isEditMode) {
         <div class="form-row">
           <label>卡片主題顏色</label>
           <select id="my-theme">
-            <option value="indigo" ${myCard.theme==='indigo'?'selected':''}>皇家靛藍</option>
+            <option value="indigo"  ${myCard.theme==='indigo' ?'selected':''}>皇家靛藍</option>
             <option value="emerald" ${myCard.theme==='emerald'?'selected':''}>森林翡翠</option>
-            <option value="charcoal" ${myCard.theme==='charcoal'?'selected':''}>極致深曜</option>
-            <option value="sunset" ${myCard.theme==='sunset'?'selected':''}>溫慢落日</option>
+            <option value="charcoal"${myCard.theme==='charcoal'?'selected':''}>極致深曜</option>
+            <option value="sunset"  ${myCard.theme==='sunset' ?'selected':''}>溫慢落日</option>
+            <option value="ocean"   ${myCard.theme==='ocean'  ?'selected':''}>海洋藍</option>
+            <option value="rose"    ${myCard.theme==='rose'   ?'selected':''}>玫瑰紅</option>
+            <option value="forest"  ${myCard.theme==='forest' ?'selected':''}>深林綠</option>
+            <option value="gold"    ${myCard.theme==='gold'   ?'selected':''}>暖金棕</option>
           </select>
         </div>
         <div class="form-row"><label>聯絡電話</label><input type="text" id="my-phone" value="${myCard.phone||''}" /></div>
