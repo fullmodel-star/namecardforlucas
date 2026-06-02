@@ -2171,6 +2171,7 @@ body {
         <option value="EUR">🇪🇺 EUR</option>
         <option value="CNY">🇨🇳 CNY</option>
         <option value="HKD">🇭🇰 HKD</option>
+        <option value="CHF">🇨🇭 CHF</option>
       </select>
     </div>
 
@@ -5664,10 +5665,10 @@ function renderGraphTab() {
 // ============================================================================
 // [匯率換算模組]
 // ============================================================================
-const FX_CURRENCIES = ['TWD','USD','JPY','EUR','CNY','HKD'];
-const FX_NAMES = { TWD:'🇹🇼 台幣', USD:'🇺🇸 美元', JPY:'🇯🇵 日圓', EUR:'🇪🇺 歐元', CNY:'🇨🇳 人民幣', HKD:'🇭🇰 港幣' };
+const FX_CURRENCIES = ['TWD','USD','JPY','EUR','CNY','HKD','CHF'];
+const FX_NAMES = { TWD:'🇹🇼 台幣', USD:'🇺🇸 美元', JPY:'🇯🇵 日圓', EUR:'🇪🇺 歐元', CNY:'🇨🇳 人民幣', HKD:'🇭🇰 港幣', CHF:'🇨🇭 瑞郎' };
 // 預設匯率（相對 USD），離線時或首次使用
-const FX_DEFAULT_RATES = { USD:1, TWD:32.5, JPY:157, EUR:0.92, CNY:7.25, HKD:7.8 };
+const FX_DEFAULT_RATES = { USD:1, TWD:32.5, JPY:157, EUR:0.92, CNY:7.25, HKD:7.8, CHF:0.88 };
 
 function getFxRates() {
   try {
@@ -5696,7 +5697,7 @@ async function refreshFxRates(showMsg) {
     const data = await res.json();
     if (!data.rates) throw new Error('資料格式錯誤');
     const r = data.rates;
-    const rates = { USD:1, TWD:r.TWD, JPY:r.JPY, EUR:r.EUR, CNY:r.CNY, HKD:r.HKD };
+    const rates = { USD:1, TWD:r.TWD, JPY:r.JPY, EUR:r.EUR, CNY:r.CNY, HKD:r.HKD, CHF:r.CHF };
     localStorage.setItem('bizcard_fx_rates', JSON.stringify({ rates, ts: Date.now() }));
     recalcFx();
     if (statusEl) {
