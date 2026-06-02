@@ -15,6 +15,8 @@
 <!-- QR Code：使用 qrserver.com API，不需額外函式庫 -->
 <!-- html2canvas：名片截圖下載 -->
 <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+<!-- pdf-lib：純前端 PDF 簽名（離線可用） -->
+<script src="https://cdn.jsdelivr.net/npm/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
 <!-- Google Identity Services (GSI) 庫 -->
 <script src="https://accounts.google.com/gsi/client" async defer></script>
 <!-- 引入 Outfit 英文字型與 Noto Sans TC 中文字型 -->
@@ -1795,6 +1797,12 @@ body {
           <div class="tool-card-desc">主題、同步設定、標籤管理</div>
         </button>
 
+        <button class="tool-card" style="--tc:#e11d48;" onclick="openSignatureModal()">
+          <div class="tool-card-icon"><i class="ti ti-signature"></i></div>
+          <div class="tool-card-title">PDF 簽名</div>
+          <div class="tool-card-desc">手寫簽名 + 蓋到 PDF 上下載</div>
+        </button>
+
       </div>
 
     </div>
@@ -2044,6 +2052,57 @@ body {
 <!-- ==========================================================================
      [HTML] 彈出式名片 QR Code 分享 Modal
      ========================================================================== -->
+<!-- PDF 簽名 Modal -->
+<div class="modal-overlay" id="sig-modal-bg" onclick="e => { if(e.target===this) closeSigModal(); }">
+  <div class="modal" style="max-width:480px;max-height:90vh;overflow-y:auto;" onclick="event.stopPropagation()">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+      <h2 style="margin:0;"><i class="ti ti-signature" style="color:#e11d48;"></i> 手寫簽名 ＋ PDF</h2>
+      <button class="btn btn-icon" onclick="closeSigModal()" style="width:32px;height:32px;"><i class="ti ti-x"></i></button>
+    </div>
+
+    <!-- 簽名板 -->
+    <div style="font-size:13.5px;font-weight:600;color:var(--text-secondary);margin-bottom:8px;">① 用手指簽名</div>
+    <canvas id="sig-canvas"
+      style="width:100%;height:160px;border:2px dashed var(--border-color);border-radius:12px;background:var(--bg-secondary);touch-action:none;display:block;cursor:crosshair;"></canvas>
+    <div style="display:flex;gap:8px;margin-top:8px;">
+      <button class="btn" onclick="clearSigCanvas()" style="flex:1;"><i class="ti ti-eraser"></i> 清除</button>
+      <button class="btn btn-primary" onclick="downloadSigPng()" style="flex:1;"><i class="ti ti-photo-down"></i> 儲存簽名 PNG</button>
+    </div>
+
+    <div style="height:1px;background:var(--border-color);margin:18px 0;"></div>
+
+    <!-- PDF 加簽名 -->
+    <div style="font-size:13.5px;font-weight:600;color:var(--text-secondary);margin-bottom:10px;">② 上傳 PDF 並蓋簽名</div>
+    <label style="display:flex;align-items:center;gap:10px;padding:12px 14px;border:1px dashed var(--border-color);border-radius:10px;cursor:pointer;font-size:14px;color:var(--text-secondary);">
+      <i class="ti ti-file-type-pdf" style="font-size:22px;color:#e11d48;"></i>
+      <span id="sig-pdf-label">點選選擇 PDF 檔案</span>
+      <input type="file" id="sig-pdf-input" accept="application/pdf" style="display:none;" onchange="onPdfSelected(event)">
+    </label>
+
+    <div style="display:flex;gap:12px;margin-top:12px;align-items:center;flex-wrap:wrap;">
+      <div style="display:flex;align-items:center;gap:8px;flex:1;">
+        <span style="font-size:13px;color:var(--text-secondary);white-space:nowrap;">加在第</span>
+        <input type="number" id="sig-page-num" value="1" min="1" style="width:56px;height:34px;border-radius:8px;border:1px solid var(--border-color);background:var(--bg-secondary);color:var(--text-primary);text-align:center;font-size:14px;">
+        <span style="font-size:13px;color:var(--text-secondary);">頁</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;flex:1;">
+        <span style="font-size:13px;color:var(--text-secondary);white-space:nowrap;">位置</span>
+        <select id="sig-position" style="flex:1;height:34px;border-radius:8px;border:1px solid var(--border-color);background:var(--bg-secondary);color:var(--text-primary);font-size:13px;padding:0 8px;">
+          <option value="br">右下角</option>
+          <option value="bl">左下角</option>
+          <option value="tr">右上角</option>
+          <option value="tl">左上角</option>
+        </select>
+      </div>
+    </div>
+
+    <button class="btn btn-primary" onclick="signAndDownloadPdf()" style="width:100%;margin-top:14px;font-size:15px;padding:11px;">
+      <i class="ti ti-file-check"></i> 產生已簽名 PDF
+    </button>
+    <div id="sig-status" style="text-align:center;font-size:13px;color:var(--text-tertiary);margin-top:8px;"></div>
+  </div>
+</div>
+
 <div class="modal-overlay" id="qrcode-modal-bg" onclick="closeQrCodeModal()">
   <div class="modal" style="max-width:380px; text-align:center;">
     <h2><i class="ti ti-qrcode" style="color:var(--accent)"></i> 分享名片二維碼</h2>
@@ -5489,6 +5548,131 @@ function renderGraphTab() {
         ${isExpanded ? peopleHTML : ''}
       </div>`;
   }).join('');
+}
+
+// ============================================================================
+// [PDF 簽名模組]
+// ============================================================================
+let sigCtx = null, sigDrawing = false, sigLastX = 0, sigLastY = 0;
+
+function openSignatureModal() {
+  document.getElementById('sig-modal-bg').classList.add('open');
+  setTimeout(initSigCanvas, 50);
+}
+
+function closeSigModal() {
+  document.getElementById('sig-modal-bg').classList.remove('open');
+}
+
+function initSigCanvas() {
+  const canvas = document.getElementById('sig-canvas');
+  if (!canvas || sigCtx) return;
+
+  // 設定 canvas 實際解析度（高 DPI）
+  const rect = canvas.getBoundingClientRect();
+  canvas.width = rect.width * window.devicePixelRatio;
+  canvas.height = rect.height * window.devicePixelRatio;
+  sigCtx = canvas.getContext('2d');
+  sigCtx.scale(window.devicePixelRatio, window.devicePixelRatio);
+  sigCtx.strokeStyle = '#f4f4f5';
+  sigCtx.lineWidth = 2.5;
+  sigCtx.lineCap = 'round';
+  sigCtx.lineJoin = 'round';
+
+  const getPos = e => {
+    const r = canvas.getBoundingClientRect();
+    const src = e.touches ? e.touches[0] : e;
+    return { x: src.clientX - r.left, y: src.clientY - r.top };
+  };
+
+  const start = e => { e.preventDefault(); sigDrawing = true; const p = getPos(e); sigLastX = p.x; sigLastY = p.y; sigCtx.beginPath(); sigCtx.moveTo(p.x, p.y); };
+  const move  = e => { e.preventDefault(); if (!sigDrawing) return; const p = getPos(e); sigCtx.lineTo(p.x, p.y); sigCtx.stroke(); sigLastX = p.x; sigLastY = p.y; };
+  const stop  = e => { sigDrawing = false; };
+
+  canvas.addEventListener('mousedown', start);
+  canvas.addEventListener('mousemove', move);
+  canvas.addEventListener('mouseup', stop);
+  canvas.addEventListener('touchstart', start, { passive: false });
+  canvas.addEventListener('touchmove', move, { passive: false });
+  canvas.addEventListener('touchend', stop);
+}
+
+function clearSigCanvas() {
+  const canvas = document.getElementById('sig-canvas');
+  if (sigCtx) sigCtx.clearRect(0, 0, canvas.width, canvas.height);
+}
+
+function getSigDataUrl() {
+  const canvas = document.getElementById('sig-canvas');
+  return canvas.toDataURL('image/png');
+}
+
+function downloadSigPng() {
+  const a = document.createElement('a');
+  a.href = getSigDataUrl();
+  a.download = 'signature.png';
+  a.click();
+  showToast('✓ 簽名圖片已下載');
+}
+
+function onPdfSelected(event) {
+  const file = event.target.files[0];
+  if (file) {
+    document.getElementById('sig-pdf-label').textContent = '✓ ' + file.name;
+  }
+}
+
+async function signAndDownloadPdf() {
+  const status = document.getElementById('sig-status');
+  const fileInput = document.getElementById('sig-pdf-input');
+  if (!fileInput.files[0]) { showToast('請先選擇 PDF 檔案'); return; }
+
+  const canvas = document.getElementById('sig-canvas');
+  const isEmpty = !sigCtx || canvas.getContext('2d').getImageData(0,0,canvas.width,canvas.height).data.every(v => v === 0);
+  if (isEmpty) { showToast('請先完成簽名'); return; }
+
+  status.textContent = '⏳ 處理中...';
+  try {
+    const { PDFDocument } = PDFLib;
+    const pdfBytes = await fileInput.files[0].arrayBuffer();
+    const pdfDoc = await PDFDocument.load(pdfBytes);
+    const pages = pdfDoc.getPages();
+
+    const pageNum = Math.min(Math.max(parseInt(document.getElementById('sig-page-num').value)||1, 1), pages.length);
+    const page = pages[pageNum - 1];
+    const { width, height } = page.getSize();
+
+    // 取得簽名圖
+    const sigDataUrl = getSigDataUrl();
+    const sigRes = await fetch(sigDataUrl);
+    const sigBytes = await sigRes.arrayBuffer();
+    const sigImg = await pdfDoc.embedPng(sigBytes);
+
+    // 縮放簽名至頁面寬度約 25%
+    const sigW = width * 0.25;
+    const sigH = sigW * (sigImg.height / sigImg.width);
+    const margin = 20;
+    const pos = document.getElementById('sig-position').value;
+    const x = pos.includes('r') ? width - sigW - margin : margin;
+    const y = pos.includes('t') ? height - sigH - margin : margin;
+
+    page.drawImage(sigImg, { x, y, width: sigW, height: sigH });
+
+    const signed = await pdfDoc.save();
+    const blob = new Blob([signed], { type: 'application/pdf' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'signed-' + fileInput.files[0].name;
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(url), 5000);
+
+    status.textContent = '✓ 已下載簽名後的 PDF！';
+    showToast('✓ PDF 簽名完成！');
+  } catch(e) {
+    status.textContent = '❌ 失敗：' + e.message;
+    showToast('簽名失敗：' + e.message);
+  }
 }
 
 function showToast(msg) {
