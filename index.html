@@ -3147,15 +3147,18 @@ async function systemLoadAllData() {
   cardsList = await dbGetAllCards();
   
   const k = getGeminiApiKey();
+  const apiKeyEl = document.getElementById('settings-api-key');
+  const apiStatusEl = document.getElementById('settings-api-key-status');
   if (k) {
-    document.getElementById('settings-api-key').value = k;
-    document.getElementById('settings-api-key-status').innerHTML = '<span style="color:var(--color-green);">✓ 金鑰已儲存於本地</span>';
-    document.getElementById('api-notice-batch').style.display = 'none';
+    if (apiKeyEl) apiKeyEl.value = k;
+    if (apiStatusEl) apiStatusEl.innerHTML = '<span style="color:var(--color-green);">✓ 金鑰已儲存於本地</span>';
+    const n1 = document.getElementById('api-notice-batch-top'); if (n1) n1.style.display = 'none';
   } else {
-    document.getElementById('api-notice-batch').style.display = 'flex';
+    const n2 = document.getElementById('api-notice-batch-top'); if (n2) n2.style.display = 'flex';
   }
-  
-  document.getElementById('settings-gemini-model').value = getGeminiModel();
+
+  const modelEl = document.getElementById('settings-gemini-model');
+  if (modelEl) modelEl.value = getGeminiModel();
   
   const delay = localStorage.getItem('bizcard_gemini_delay') || '5';
   const delayEl = document.getElementById('settings-gemini-delay');
@@ -4973,7 +4976,7 @@ function saveGeminiSettings() {
   localStorage.setItem('bizcard_gemini_model', model);
   localStorage.setItem('bizcard_gemini_delay', delay);
   document.getElementById('settings-api-key-status').innerHTML = '<span style="color:var(--color-green);">✓ 設定儲存成功！</span>';
-  document.getElementById('api-notice-batch').style.display = 'none';
+  const n3 = document.getElementById('api-notice-batch-top'); if (n3) n3.style.display = 'none';
   showToast('API Key 與延遲設定已更新儲存');
 }
 
@@ -4981,7 +4984,7 @@ function clearGeminiKey() {
   localStorage.removeItem('bizcard_gemini_api_key');
   document.getElementById('settings-api-key').value = '';
   document.getElementById('settings-api-key-status').innerHTML = '<span style="color:var(--color-red);">已清除金鑰</span>';
-  document.getElementById('api-notice-batch').style.display = 'flex';
+  const n4 = document.getElementById('api-notice-batch-top'); if (n4) n4.style.display = 'flex';
   showToast('已清除 API Key');
 }
 
