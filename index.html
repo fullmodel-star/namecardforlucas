@@ -1477,6 +1477,11 @@ body {
 .tools-section-divider { display:flex; align-items:center; gap:10px; margin:20px 0 16px; }
 .tools-section-divider::before,.tools-section-divider::after { content:''; flex:1; height:1px; background:var(--border-color); }
 .tools-section-divider span { font-size:12px; font-weight:700; color:var(--text-tertiary); white-space:nowrap; }
+.timer-preset { font-size:13px; padding:7px 14px; }
+.timer-preset.active { background:var(--accent); color:#fff; border-color:var(--accent); }
+.fx-result-row { display:flex; align-items:center; justify-content:space-between; padding:13px 16px; background:var(--bg-secondary); border:1px solid var(--border-color); border-radius:12px; }
+.fx-result-row .fx-cur { font-size:14px; font-weight:600; color:var(--text-secondary); }
+.fx-result-row .fx-val { font-size:19px; font-weight:700; color:var(--text-primary); font-variant-numeric:tabular-nums; }
 </style>
 </head>
 <body>
@@ -1809,6 +1814,18 @@ body {
           <div class="tool-card-desc">商務聚會破冰，隨機抽一則</div>
         </button>
 
+        <button class="tool-card" style="--tc:#14b8a6;" onclick="openFxModal()">
+          <div class="tool-card-icon"><i class="ti ti-currency-dollar"></i></div>
+          <div class="tool-card-title">匯率換算</div>
+          <div class="tool-card-desc">TWD / USD / JPY / EUR 即時換算</div>
+        </button>
+
+        <button class="tool-card" style="--tc:#ef4444;" onclick="openTimerModal()">
+          <div class="tool-card-icon"><i class="ti ti-clock-hour-4"></i></div>
+          <div class="tool-card-title">開會計時器</div>
+          <div class="tool-card-desc">倒數計時，控制會議時間</div>
+        </button>
+
       </div>
 
     </div>
@@ -2127,6 +2144,69 @@ body {
       <button class="btn btn-primary" onclick="showRandomJoke()" style="flex:2;"><i class="ti ti-refresh"></i> 換一則</button>
     </div>
     <div style="font-size:12px;color:var(--text-tertiary);text-align:center;margin-top:10px;" id="joke-counter"></div>
+  </div>
+</div>
+
+<!-- 匯率換算 Modal -->
+<div class="modal-overlay" id="fx-modal-bg" onclick="if(event.target===this)closeFxModal()">
+  <div class="modal" style="max-width:420px;" onclick="event.stopPropagation()">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;">
+      <h2 style="margin:0;"><i class="ti ti-currency-dollar" style="color:#14b8a6;"></i> 匯率換算</h2>
+      <button class="btn btn-icon" onclick="closeFxModal()" style="width:32px;height:32px;"><i class="ti ti-x"></i></button>
+    </div>
+
+    <!-- 輸入金額 -->
+    <div style="display:flex;gap:10px;align-items:center;margin-bottom:14px;">
+      <input type="number" id="fx-amount" value="1000" oninput="recalcFx()" inputmode="decimal"
+        style="flex:1;height:48px;border-radius:12px;border:1px solid var(--border-color);background:var(--bg-secondary);color:var(--text-primary);font-size:20px;font-weight:700;padding:0 14px;outline:none;">
+      <select id="fx-from" onchange="recalcFx()"
+        style="height:48px;border-radius:12px;border:1px solid var(--border-color);background:var(--bg-secondary);color:var(--text-primary);font-size:15px;font-weight:600;padding:0 10px;cursor:pointer;">
+        <option value="TWD">🇹🇼 TWD</option>
+        <option value="USD">🇺🇸 USD</option>
+        <option value="JPY">🇯🇵 JPY</option>
+        <option value="EUR">🇪🇺 EUR</option>
+        <option value="CNY">🇨🇳 CNY</option>
+        <option value="HKD">🇭🇰 HKD</option>
+      </select>
+    </div>
+
+    <!-- 換算結果 -->
+    <div id="fx-results" style="display:flex;flex-direction:column;gap:8px;"></div>
+
+    <div style="display:flex;gap:8px;margin-top:16px;">
+      <button class="btn" onclick="refreshFxRates(true)" style="flex:1;"><i class="ti ti-refresh"></i> 更新匯率</button>
+    </div>
+    <div id="fx-status" style="font-size:12px;color:var(--text-tertiary);text-align:center;margin-top:10px;"></div>
+  </div>
+</div>
+
+<!-- 開會計時器 Modal -->
+<div class="modal-overlay" id="timer-modal-bg" onclick="if(event.target===this)closeTimerModal()">
+  <div class="modal" style="max-width:400px;text-align:center;" onclick="event.stopPropagation()">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;">
+      <h2 style="margin:0;"><i class="ti ti-clock-hour-4" style="color:#ef4444;"></i> 開會計時器</h2>
+      <button class="btn btn-icon" onclick="closeTimerModal()" style="width:32px;height:32px;"><i class="ti ti-x"></i></button>
+    </div>
+
+    <!-- 倒數顯示 -->
+    <div id="timer-display" style="font-size:64px;font-weight:800;color:var(--text-primary);letter-spacing:2px;font-variant-numeric:tabular-nums;line-height:1;margin:8px 0 6px;">05:00</div>
+    <div id="timer-state" style="font-size:13px;color:var(--text-tertiary);margin-bottom:18px;">尚未開始</div>
+
+    <!-- 快捷時間 -->
+    <div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-bottom:18px;">
+      <button class="btn timer-preset" onclick="setTimerMinutes(3)">3 分</button>
+      <button class="btn timer-preset" onclick="setTimerMinutes(5)">5 分</button>
+      <button class="btn timer-preset" onclick="setTimerMinutes(10)">10 分</button>
+      <button class="btn timer-preset" onclick="setTimerMinutes(15)">15 分</button>
+      <button class="btn timer-preset" onclick="setTimerMinutes(30)">30 分</button>
+      <button class="btn timer-preset" onclick="setTimerMinutes(60)">60 分</button>
+    </div>
+
+    <!-- 控制按鈕 -->
+    <div style="display:flex;gap:10px;">
+      <button class="btn btn-primary" id="timer-start-btn" onclick="toggleTimer()" style="flex:2;font-size:16px;padding:12px;"><i class="ti ti-player-play"></i> 開始</button>
+      <button class="btn" onclick="resetTimer()" style="flex:1;"><i class="ti ti-rotate"></i> 重置</button>
+    </div>
   </div>
 </div>
 
@@ -5575,6 +5655,153 @@ function renderGraphTab() {
         ${isExpanded ? peopleHTML : ''}
       </div>`;
   }).join('');
+}
+
+// ============================================================================
+// [匯率換算模組]
+// ============================================================================
+const FX_CURRENCIES = ['TWD','USD','JPY','EUR','CNY','HKD'];
+const FX_NAMES = { TWD:'🇹🇼 台幣', USD:'🇺🇸 美元', JPY:'🇯🇵 日圓', EUR:'🇪🇺 歐元', CNY:'🇨🇳 人民幣', HKD:'🇭🇰 港幣' };
+// 預設匯率（相對 USD），離線時或首次使用
+const FX_DEFAULT_RATES = { USD:1, TWD:32.5, JPY:157, EUR:0.92, CNY:7.25, HKD:7.8 };
+
+function getFxRates() {
+  try {
+    const cached = JSON.parse(localStorage.getItem('bizcard_fx_rates') || 'null');
+    if (cached && cached.rates) return cached;
+  } catch(e) {}
+  return { rates: FX_DEFAULT_RATES, ts: 0 };
+}
+
+function openFxModal() {
+  document.getElementById('fx-modal-bg').classList.add('open');
+  recalcFx();
+  refreshFxRates(false); // 背景靜默更新
+}
+function closeFxModal() {
+  document.getElementById('fx-modal-bg').classList.remove('open');
+}
+
+async function refreshFxRates(showMsg) {
+  const statusEl = document.getElementById('fx-status');
+  if (showMsg && statusEl) statusEl.textContent = '⏳ 更新中...';
+  try {
+    // frankfurter.app 免費、免金鑰
+    const res = await fetch('https://api.frankfurter.app/latest?from=USD&to=TWD,JPY,EUR,CNY,HKD');
+    if (!res.ok) throw new Error('網路錯誤');
+    const data = await res.json();
+    const rates = { USD: 1, ...data.rates };
+    localStorage.setItem('bizcard_fx_rates', JSON.stringify({ rates, ts: Date.now(), date: data.date }));
+    recalcFx();
+    if (statusEl) statusEl.textContent = `✓ 匯率更新於 ${data.date}`;
+  } catch(e) {
+    const cached = getFxRates();
+    if (statusEl) {
+      if (cached.ts) {
+        const d = new Date(cached.ts);
+        statusEl.textContent = `離線中，使用 ${d.getMonth()+1}/${d.getDate()} 的匯率`;
+      } else {
+        statusEl.textContent = '離線中，使用預設參考匯率';
+      }
+    }
+  }
+}
+
+function recalcFx() {
+  const amount = parseFloat(document.getElementById('fx-amount')?.value) || 0;
+  const from = document.getElementById('fx-from')?.value || 'TWD';
+  const { rates } = getFxRates();
+  const resultsEl = document.getElementById('fx-results');
+  if (!resultsEl) return;
+
+  // 先換成 USD 基準，再換各幣別
+  const usdAmount = amount / (rates[from] || 1);
+  resultsEl.innerHTML = FX_CURRENCIES.filter(c => c !== from).map(c => {
+    const val = usdAmount * (rates[c] || 1);
+    const formatted = c === 'JPY' ? Math.round(val).toLocaleString() : val.toLocaleString(undefined, {maximumFractionDigits:2});
+    return `<div class="fx-result-row">
+      <span class="fx-cur">${FX_NAMES[c]}</span>
+      <span class="fx-val">${formatted}</span>
+    </div>`;
+  }).join('');
+}
+
+// ============================================================================
+// [開會計時器模組]
+// ============================================================================
+let timerTotal = 300, timerRemain = 300, timerInterval = null, timerRunning = false;
+
+function openTimerModal() {
+  document.getElementById('timer-modal-bg').classList.add('open');
+  updateTimerDisplay();
+}
+function closeTimerModal() {
+  document.getElementById('timer-modal-bg').classList.remove('open');
+}
+function setTimerMinutes(min) {
+  timerTotal = min * 60;
+  timerRemain = timerTotal;
+  if (timerInterval) { clearInterval(timerInterval); timerInterval = null; }
+  timerRunning = false;
+  document.querySelectorAll('.timer-preset').forEach(b => b.classList.toggle('active', b.textContent === min + ' 分'));
+  document.getElementById('timer-start-btn').innerHTML = '<i class="ti ti-player-play"></i> 開始';
+  document.getElementById('timer-state').textContent = '準備中';
+  updateTimerDisplay();
+}
+function updateTimerDisplay() {
+  const m = Math.floor(timerRemain / 60), s = timerRemain % 60;
+  const el = document.getElementById('timer-display');
+  if (el) el.textContent = `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+  if (el) el.style.color = timerRemain <= 30 && timerRemain > 0 ? '#ef4444' : 'var(--text-primary)';
+}
+function toggleTimer() {
+  const btn = document.getElementById('timer-start-btn');
+  const stateEl = document.getElementById('timer-state');
+  if (timerRunning) {
+    clearInterval(timerInterval); timerInterval = null; timerRunning = false;
+    btn.innerHTML = '<i class="ti ti-player-play"></i> 繼續';
+    stateEl.textContent = '已暫停';
+    return;
+  }
+  if (timerRemain <= 0) timerRemain = timerTotal;
+  timerRunning = true;
+  btn.innerHTML = '<i class="ti ti-player-pause"></i> 暫停';
+  stateEl.textContent = '倒數中...';
+  timerInterval = setInterval(() => {
+    timerRemain--;
+    updateTimerDisplay();
+    if (timerRemain <= 0) {
+      clearInterval(timerInterval); timerInterval = null; timerRunning = false;
+      btn.innerHTML = '<i class="ti ti-player-play"></i> 開始';
+      stateEl.textContent = '⏰ 時間到！';
+      timerAlert();
+    }
+  }, 1000);
+}
+function resetTimer() {
+  if (timerInterval) { clearInterval(timerInterval); timerInterval = null; }
+  timerRunning = false;
+  timerRemain = timerTotal;
+  document.getElementById('timer-start-btn').innerHTML = '<i class="ti ti-player-play"></i> 開始';
+  document.getElementById('timer-state').textContent = '已重置';
+  updateTimerDisplay();
+}
+function timerAlert() {
+  // 震動
+  if (navigator.vibrate) navigator.vibrate([300, 150, 300, 150, 300]);
+  // 嗶聲
+  try {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    [0, 0.5, 1].forEach(delay => {
+      const osc = ctx.createOscillator(), gain = ctx.createGain();
+      osc.connect(gain); gain.connect(ctx.destination);
+      osc.frequency.value = 880; osc.type = 'sine';
+      gain.gain.setValueAtTime(0.3, ctx.currentTime + delay);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + delay + 0.4);
+      osc.start(ctx.currentTime + delay); osc.stop(ctx.currentTime + delay + 0.4);
+    });
+  } catch(e) {}
+  showToast('⏰ 時間到！');
 }
 
 // ============================================================================
