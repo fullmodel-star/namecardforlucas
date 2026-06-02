@@ -1604,60 +1604,12 @@ body {
       </div>
     </div>
 
-    <!-- 2. 數據分析 (CRM Dashboard) 分頁 (優化為大氣的對稱雙欄版面) -->
+    <!-- 2. 數據分析 — 只保留公司組織圖 -->
     <div id="view-dashboard" style="display:none">
-      <div class="dashboard-grid">
-        <div class="db-card">
-          <div class="db-card-icon"><i class="ti ti-users"></i></div>
-          <div class="db-card-info">
-            <h4>名片總數量</h4>
-            <div id="db-stat-total">0</div>
-          </div>
-        </div>
-        <div class="db-card">
-          <div class="db-card-icon" style="color:var(--color-green); background:var(--color-green-bg)"><i class="ti ti-checkbox"></i></div>
-          <div class="db-card-info">
-            <h4>處理完成率</h4>
-            <div id="db-stat-rate">0%</div>
-          </div>
-        </div>
-        <div class="db-card">
-          <div class="db-card-icon" style="color:var(--accent); background:var(--accent-light)"><i class="ti ti-folder"></i></div>
-          <div class="db-card-info">
-            <h4>分類群組數</h4>
-            <div id="db-stat-groups">0</div>
-          </div>
-        </div>
-        <div class="db-card">
-          <div class="db-card-icon" style="color:var(--color-amber); background:var(--color-amber-bg)"><i class="ti ti-tags"></i></div>
-          <div class="db-card-info">
-            <h4>使用標籤數</h4>
-            <div id="db-stat-tags">0</div>
-          </div>
-        </div>
-      </div>
-      
-      <div class="dashboard-details-grid">
-        <div class="db-section">
-          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
-            <h3 style="margin:0;"><i class="ti ti-chart-pie"></i> 群組分佈</h3>
-            <span style="font-size:13px;color:var(--text-tertiary);">點選群組可篩選名片</span>
-          </div>
-          <div id="db-group-progress-list">
-            <!-- 動態生成 -->
-          </div>
-        </div>
-        
-        <div class="db-section">
-          <h3><i class="ti ti-tags"></i> 標籤雲分析</h3>
-          <div id="db-tag-cloud" style="display:flex; flex-wrap:wrap; gap:8px;">
-            <!-- 動態生成 -->
-          </div>
-        </div>
-      </div>
 
-      <!-- 公司組織圖 (Phase 2) -->
-      <div class="db-section" style="margin-top:24px;">
+      <!-- 公司組織圖 -->
+      <div style="padding:14px 14px 90px;">
+      <div class="db-section">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
           <h3 style="margin:0;"><i class="ti ti-organization"></i> 公司組織圖</h3>
           <span style="font-size:13px;color:var(--text-tertiary);">依公司分組顯示</span>
@@ -1670,6 +1622,7 @@ body {
         <div id="graph-canvas" style="min-height:120px;">
           <!-- JS 動態渲染 renderGraphTab() -->
         </div>
+      </div>
       </div>
     </div>
 
@@ -3893,76 +3846,7 @@ function sendEmailViaMailto() {
  * 數據分析分頁渲染 (重構為大氣的對稱雙欄版面)
  */
 function renderDashboard() {
-  document.getElementById('db-stat-total').textContent = cardsList.length;
-  
-  const processed = cardsList.filter(c => c.processed).length;
-  const rate = cardsList.length ? Math.round((processed / cardsList.length) * 100) : 0;
-  document.getElementById('db-stat-rate').textContent = rate + '%';
-  
-  const customGroups = getCustomGroups();
-  document.getElementById('db-stat-groups').textContent = customGroups.length;
-  
-  const customTags = getCustomTags();
-  document.getElementById('db-stat-tags').textContent = customTags.length;
-  
-  // 1. 群組佔比分佈 (左欄)
-  const groupCounts = {};
-  cardsList.forEach(c => {
-    const g = c.group || '其他';
-    groupCounts[g] = (groupCounts[g] || 0) + 1;
-  });
-  
-  const groupColorMap = {'學校委員':'#6366f1','政府機關':'#0ea5e9','企業客戶':'#10b981','資訊夥伴':'#f59e0b','法人夥伴':'#8b5cf6','供應商夥伴':'#ec4899','其他':'#94a3b8'};
-  const progressList = document.getElementById('db-group-progress-list');
-  progressList.innerHTML = customGroups.map(g => {
-    const count = groupCounts[g] || 0;
-    const pct = cardsList.length ? Math.round((count / cardsList.length) * 100) : 0;
-    const color = groupColorMap[g] || 'var(--accent)';
-    const isActive = activeGroupFilter === g;
-    return `
-      <div class="db-progress-row" onclick="setGroupFilter('${g}');switchTab('cards');"
-        style="cursor:pointer;border-radius:8px;padding:6px 8px;margin:-6px -8px;transition:background 0.15s;${isActive ? 'background:var(--accent-light);' : ''}"
-        onmouseover="this.style.background='var(--bg-tertiary)'"
-        onmouseout="this.style.background='${isActive ? 'var(--accent-light)' : ''}'">
-        <div class="db-progress-label">
-          <span style="display:flex;align-items:center;gap:7px;">
-            <span style="width:10px;height:10px;border-radius:50%;background:${color};flex-shrink:0;display:inline-block;"></span>
-            ${g}
-          </span>
-          <span style="font-weight:700;color:${count > 0 ? 'var(--text-primary)' : 'var(--text-tertiary)'};">${count} 張</span>
-        </div>
-        <div class="db-progress-bar-container">
-          <div class="db-progress-fill" style="width:${pct}%;background:${color};"></div>
-        </div>
-      </div>
-    `;
-  }).join('') + `
-    <div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--border-color);">
-      <div onclick="setGroupFilter('');switchTab('cards');"
-        style="cursor:pointer;font-size:14px;color:var(--accent);display:flex;align-items:center;gap:5px;padding:4px 0;">
-        <i class="ti ti-layout-grid"></i> 顯示全部名片
-      </div>
-    </div>`;
-  
-  // 2. 數據標籤雲 (右欄)
-  const tagCounts = {};
-  cardsList.forEach(c => {
-    if (c.tags) {
-      c.tags.forEach(t => { tagCounts[t] = (tagCounts[t] || 0) + 1; });
-    }
-  });
-  
-  const tagCloud = document.getElementById('db-tag-cloud');
-  const tagKeys = Object.keys(tagCounts);
-  if (tagKeys.length === 0) {
-    tagCloud.innerHTML = '<div style="font-size:14px; color:var(--text-tertiary);">暫無篩選標籤</div>';
-  } else {
-    tagCloud.innerHTML = tagKeys.sort((a,b)=>tagCounts[b]-tagCounts[a]).map(t => `
-      <span class="tag-filter-chip active" style="background:var(--bg-secondary); border-color:var(--border-color); color:var(--text-primary); cursor:default;">
-        #${t} (${tagCounts[t]})
-      </span>
-    `).join('');
-  }
+  // 分析頁已簡化，只顯示公司組織圖由 renderGraphTab() 負責
 }
 
 /**
