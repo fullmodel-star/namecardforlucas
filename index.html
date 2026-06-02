@@ -1803,6 +1803,12 @@ body {
           <div class="tool-card-desc">手寫簽名 + 蓋到 PDF 上下載</div>
         </button>
 
+        <button class="tool-card" style="--tc:#f59e0b;" onclick="openJokeModal()">
+          <div class="tool-card-icon"><i class="ti ti-mood-smile"></i></div>
+          <div class="tool-card-title">暖場笑話</div>
+          <div class="tool-card-desc">商務聚會破冰，隨機抽一則</div>
+        </button>
+
       </div>
 
     </div>
@@ -2100,6 +2106,27 @@ body {
       <i class="ti ti-file-check"></i> 產生已簽名 PDF
     </button>
     <div id="sig-status" style="text-align:center;font-size:13px;color:var(--text-tertiary);margin-top:8px;"></div>
+  </div>
+</div>
+
+<!-- 暖場笑話 Modal -->
+<div class="modal-overlay" id="joke-modal-bg" onclick="if(event.target===this)closeJokeModal()">
+  <div class="modal" style="max-width:440px;" onclick="event.stopPropagation()">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;">
+      <h2 style="margin:0;"><i class="ti ti-mood-smile" style="color:#f59e0b;"></i> 暖場笑話</h2>
+      <button class="btn btn-icon" onclick="closeJokeModal()" style="width:32px;height:32px;"><i class="ti ti-x"></i></button>
+    </div>
+
+    <div id="joke-card" style="background:var(--bg-secondary);border:1px solid var(--border-color);border-radius:16px;padding:24px 20px;min-height:160px;display:flex;flex-direction:column;justify-content:center;">
+      <div id="joke-category" style="font-size:12px;font-weight:700;color:#f59e0b;letter-spacing:0.05em;margin-bottom:10px;">　</div>
+      <div id="joke-text" style="font-size:16px;line-height:1.7;color:var(--text-primary);white-space:pre-line;">點下方按鈕，隨機抽一則笑話 😄</div>
+    </div>
+
+    <div style="display:flex;gap:10px;margin-top:16px;">
+      <button class="btn" onclick="copyCurrentJoke()" style="flex:1;"><i class="ti ti-clipboard-copy"></i> 複製</button>
+      <button class="btn btn-primary" onclick="showRandomJoke()" style="flex:2;"><i class="ti ti-refresh"></i> 換一則</button>
+    </div>
+    <div style="font-size:12px;color:var(--text-tertiary);text-align:center;margin-top:10px;" id="joke-counter"></div>
   </div>
 </div>
 
@@ -5548,6 +5575,56 @@ function renderGraphTab() {
         ${isExpanded ? peopleHTML : ''}
       </div>`;
   }).join('');
+}
+
+// ============================================================================
+// [暖場笑話模組]
+// ============================================================================
+const BUSINESS_JOKES = [
+  { cat: '開會', text: '主管問：「這個案子大家有沒有問題？」\n全場安靜。\n主管：「很好，沒問題。」\n散會後大家異口同聲：「問題可大了。」' },
+  { cat: '職場', text: '老闆：「為什麼遲到？」\n員工：「路上塞車。」\n老闆：「你住公司樓上。」\n員工：「電梯也會塞啊。」' },
+  { cat: '簡報', text: '同事問我簡報做得如何。\n我說：「老闆看了三秒就點頭。」\n同事：「哇，那麼滿意？」\n我：「不，他睡著了。」' },
+  { cat: '業績', text: '業務開會。\n主管：「這個月業績掛蛋的請站起來。」\n沒人站。\n主管很欣慰，結果是大家都在家上班。' },
+  { cat: '加班', text: '員工：「老闆，我可以準時下班嗎？」\n老闆：「當然可以。」\n員工超感動。\n老闆：「準時下班，然後晚上遠端再上線。」' },
+  { cat: '面試', text: '面試官：「你最大的缺點是什麼？」\n應徵者：「誠實。」\n面試官：「我覺得誠實不算缺點。」\n應徵者：「我不在乎你怎麼想。」' },
+  { cat: '會議', text: '一場會議能用一封 email 講完，\n但他們偏要開會。\n一封 email 能講完的會議，\n他們偏要再開一場檢討會。' },
+  { cat: '老闆', text: '老闆：「把這當成自己的公司全力以赴。」\n於是我開始考慮把公司賣掉去度假。' },
+  { cat: '咖啡', text: '同事問：「你怎麼有辦法整天保持清醒？」\n我指著桌上第四杯咖啡。\n他：「那是健康的嗎？」\n我：「不是，但我的 KPI 是。」' },
+  { cat: '報帳', text: '財務：「這筆餐費報帳，請附上發票。」\n我：「客戶吃太爽，發票被風吹走了。」\n財務：「那風很懂你。」' },
+  { cat: '專案', text: '專案三大定律：\n一、永遠比預期晚。\n二、永遠比預算多。\n三、上線當天永遠出事。' },
+  { cat: 'KPI', text: '主管：「目標訂高一點，這樣就算沒達成也會很接近。」\n結果我們把目標訂在月球，\n現在大家都在外太空飄著。' },
+  { cat: '客戶', text: '客戶：「我要的就是一個簡單的東西。」\n（三個月後）\n客戶：「為什麼這麼簡單的東西做這麼久？」' },
+  { cat: '同事', text: '最了解你工作內容的人，\n不是你的主管，\n是接你電話幫你請假的那位同事。' },
+  { cat: '時間', text: '「這個五分鐘就好。」\n——史上最大的謊言之一，\n僅次於「我已經在路上了」。' },
+  { cat: '視訊', text: '視訊會議經典三連發：\n「你那邊有聲音嗎？」\n「我好像被靜音了。」\n「你可以分享一下螢幕嗎？」' },
+  { cat: '需求', text: '客戶：「可以幫我改一個小地方嗎？」\n工程師聽到「小地方」三個字，\n已經開始更新履歷了。' },
+  { cat: '升遷', text: '老闆：「努力工作，機會是留給準備好的人。」\n我準備好了二十年，\n機會還在準備。' },
+];
+
+let currentJokeIdx = -1;
+
+function openJokeModal() {
+  document.getElementById('joke-modal-bg').classList.add('open');
+  showRandomJoke();
+}
+function closeJokeModal() {
+  document.getElementById('joke-modal-bg').classList.remove('open');
+}
+function showRandomJoke() {
+  let idx;
+  do { idx = Math.floor(Math.random() * BUSINESS_JOKES.length); }
+  while (idx === currentJokeIdx && BUSINESS_JOKES.length > 1);
+  currentJokeIdx = idx;
+  const j = BUSINESS_JOKES[idx];
+  document.getElementById('joke-category').textContent = '# ' + j.cat;
+  document.getElementById('joke-text').textContent = j.text;
+  document.getElementById('joke-counter').textContent = `${idx + 1} / ${BUSINESS_JOKES.length}`;
+}
+function copyCurrentJoke() {
+  if (currentJokeIdx < 0) return;
+  navigator.clipboard.writeText(BUSINESS_JOKES[currentJokeIdx].text)
+    .then(() => showToast('✓ 笑話已複製'))
+    .catch(() => showToast('複製失敗'));
 }
 
 // ============================================================================
