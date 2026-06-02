@@ -1483,7 +1483,7 @@ body {
 .tools-section-divider span { font-size:12px; font-weight:700; color:var(--text-tertiary); white-space:nowrap; }
 .timer-preset { font-size:13px; padding:7px 14px; }
 .timer-preset.active { background:var(--accent); color:#fff; border-color:var(--accent); }
-.fx-result-row { display:flex; align-items:center; justify-content:space-between; padding:13px 16px; background:var(--bg-secondary); border:1px solid var(--border-color); border-radius:12px; }
+.fx-result-row { display:flex; align-items:center; justify-content:space-between; gap:10px; padding:11px 16px; background:var(--bg-secondary); border:1px solid var(--border-color); border-radius:12px; }
 .fx-result-row .fx-cur { font-size:14px; font-weight:600; color:var(--text-secondary); }
 .fx-result-row .fx-val { font-size:19px; font-weight:700; color:var(--text-primary); font-variant-numeric:tabular-nums; }
 </style>
@@ -5724,13 +5724,22 @@ function recalcFx() {
   const resultsEl = document.getElementById('fx-results');
   if (!resultsEl) return;
 
+  const fromName = (FX_NAMES[from] || from).replace(/^.+\s/, ''); // 去掉國旗，留幣名
+
   // 先換成 USD 基準，再換各幣別
   const usdAmount = amount / (rates[from] || 1);
   resultsEl.innerHTML = FX_CURRENCIES.filter(c => c !== from).map(c => {
     const val = usdAmount * (rates[c] || 1);
     const formatted = c === 'JPY' ? Math.round(val).toLocaleString() : val.toLocaleString(undefined, {maximumFractionDigits:2});
+    // 反向單位匯率：1 個 c 幣 = 多少 from 幣
+    const unitInFrom = (rates[from] || 1) / (rates[c] || 1);
+    const unitFmt = unitInFrom.toLocaleString(undefined, {maximumFractionDigits: unitInFrom >= 10 ? 2 : 4});
+    const cName = (FX_NAMES[c] || c).replace(/^.+\s/, '');
     return `<div class="fx-result-row">
-      <span class="fx-cur">${FX_NAMES[c]}</span>
+      <div style="display:flex;flex-direction:column;gap:2px;">
+        <span class="fx-cur">${FX_NAMES[c]}</span>
+        <span style="font-size:11px;color:var(--text-tertiary);">1 ${cName} = ${unitFmt} ${fromName}</span>
+      </div>
       <span class="fx-val">${formatted}</span>
     </div>`;
   }).join('');
