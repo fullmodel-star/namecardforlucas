@@ -1,4 +1,4 @@
-const CACHE_NAME = 'bizcard-pwa-v7';
+const CACHE_NAME = 'bizcard-pwa-v8';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
@@ -39,6 +39,13 @@ self.addEventListener('activate', (event) => {
 self.addEventListener('fetch', (event) => {
   // 只處理 GET 請求，避開 Google 登入或 Gemini API 的 POST/PATCH 請求
   if (event.request.method !== 'GET') return;
+
+  // 排除即時 API（匯率、QR Code）— 不快取，直接走網路
+  const url = event.request.url;
+  if (url.includes('er-api.com') || url.includes('frankfurter') ||
+      url.includes('qrserver.com') || url.includes('googleapis.com')) {
+    return; // 交給瀏覽器原生處理，不攔截、不快取
+  }
 
   event.respondWith(
     fetch(event.request)
