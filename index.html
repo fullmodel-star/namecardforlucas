@@ -3178,12 +3178,12 @@ async function systemLoadAllData() {
     console.error('[IndexedDB] 載入暫存佇列失敗：', e);
   }
   
-  initGoogleSignIn();
-  renderSidebarFilters();
-  renderSettingsBadgeManager();
-  renderCardsGrid();
-  renderDashboard();
-  switchTab('myprofile'); // 預設開啟「我的」頁面
+  try { initGoogleSignIn(); } catch(e) { console.warn('initGoogleSignIn:', e); }
+  try { renderSidebarFilters(); } catch(e) { console.warn('renderSidebarFilters:', e); }
+  try { renderSettingsBadgeManager(); } catch(e) { console.warn('renderSettingsBadgeManager:', e); }
+  try { renderCardsGrid(); } catch(e) { console.warn('renderCardsGrid:', e); }
+  try { renderDashboard(); } catch(e) { console.warn('renderDashboard:', e); }
+  switchTab('myprofile');
   setTimeout(() => renderMyProfile(), 50);
 }
 
@@ -5007,21 +5007,25 @@ function toggleApiKeyGuide() {
 function renderSettingsBadgeManager() {
   const customGroups = getCustomGroups();
   const groupMgr = document.getElementById('badge-manager-groups');
-  groupMgr.innerHTML = customGroups.map(g => `
-    <span class="manage-badge-chip">
-      ${g}
-      <button onclick="deleteCustomGroup('${g}')" title="刪除群組">&times;</button>
-    </span>
-  `).join('');
-  
+  if (groupMgr) {
+    groupMgr.innerHTML = customGroups.map(g => `
+      <span class="manage-badge-chip">
+        ${g}
+        <button onclick="deleteCustomGroup('${g}')" title="刪除群組">&times;</button>
+      </span>
+    `).join('');
+  }
+
   const customTags = getCustomTags();
   const tagMgr = document.getElementById('badge-manager-tags');
-  tagMgr.innerHTML = customTags.map(t => `
-    <span class="manage-badge-chip">
-      ${t}
-      <button onclick="deleteCustomTag('${t}')" title="刪除標籤">&times;</button>
-    </span>
-  `).join('');
+  if (tagMgr) {
+    tagMgr.innerHTML = customTags.map(t => `
+      <span class="manage-badge-chip">
+        ${t}
+        <button onclick="deleteCustomTag('${t}')" title="刪除標籤">&times;</button>
+      </span>
+    `).join('');
+  }
 }
 
 function addCustomGroup() {
