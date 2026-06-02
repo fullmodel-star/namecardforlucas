@@ -1489,6 +1489,25 @@ body {
     <div id="view-home" style="display:none">
       <!-- 區塊列表 -->
       <div style="padding:14px 14px 90px;display:flex;flex-direction:column;gap:12px;">
+
+        <!-- KPI 橫列 (同分析頁) -->
+        <div class="dashboard-grid" id="home-kpi-row"></div>
+
+        <!-- 群組分佈 + 標籤雲 -->
+        <div class="dashboard-details-grid">
+          <div class="db-section" id="home-group-section">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+              <h3 style="margin:0;"><i class="ti ti-chart-pie"></i> 群組分佈</h3>
+              <span style="font-size:12px;color:var(--text-tertiary);">點選可篩選</span>
+            </div>
+            <div id="home-group-list"></div>
+          </div>
+          <div class="db-section" id="home-tag-section">
+            <h3 style="margin-bottom:10px;"><i class="ti ti-tags"></i> 標籤雲</h3>
+            <div id="home-tag-cloud" style="display:flex;flex-wrap:wrap;gap:8px;"></div>
+          </div>
+        </div>
+
         <!-- 待處理名片 -->
         <div class="db-section">
           <h3 style="margin-bottom:10px;">
@@ -3950,6 +3969,60 @@ function renderDashboard() {
  * 首頁畫面渲染
  */
 function renderHomeScreen() {
+  const customGroups = getCustomGroups();
+  const customTags = getCustomTags();
+  const total = cardsList.length;
+  const processed = cardsList.filter(c => c.processed).length;
+  const rate = total ? Math.round((processed / total) * 100) : 0;
+
+  // KPI 橫列
+  const kpiRow = document.getElementById('home-kpi-row');
+  if (kpiRow) {
+    const kpis = [
+      { icon:'ti-users',        label:'名片總數量',  value:total,              color:'var(--accent)',      bg:'var(--accent-light)' },
+      { icon:'ti-circle-check', label:'處理完成率',  value:rate+'%',           color:'var(--color-green)', bg:'var(--color-green-bg)' },
+      { icon:'ti-folder',       label:'分類群組數',  value:customGroups.length,color:'var(--accent)',      bg:'var(--accent-light)' },
+      { icon:'ti-tags',         label:'使用標籤數',  value:customTags.length,  color:'var(--color-amber)', bg:'var(--color-amber-bg)' },
+    ];
+    kpiRow.innerHTML = kpis.map(k => `
+      <div class="db-card">
+        <div class="db-card-icon" style="color:${k.color};background:${k.bg};"><i class="ti ${k.icon}"></i></div>
+        <div class="db-card-info"><h4>${k.label}</h4><div>${k.value}</div></div>
+      </div>`).join('');
+  }
+
+  // 群組分佈
+  const groupCounts = {};
+  cardsList.forEach(c => { const g = c.group||'其他'; groupCounts[g]=(groupCounts[g]||0)+1; });
+  const colorMap = {'學校委員':'#6366f1','政府機關':'#0ea5e9','企業客戶':'#10b981','資訊夥伴':'#f59e0b','法人夥伴':'#8b5cf6','供應商夥伴':'#ec4899','其他':'#94a3b8'};
+  const groupList = document.getElementById('home-group-list');
+  if (groupList) {
+    if (customGroups.length === 0) {
+      groupList.innerHTML = '<div style="font-size:13px;color:var(--text-tertiary);">尚無群組資料</div>';
+    } else {
+      groupList.innerHTML = customGroups.map((g, i) => {
+        const count = groupCounts[g]||0;
+        const color = colorMap[g]||'#94a3b8';
+        return `<div onclick="setGroupFilter('${g}');switchTab('cards');" style="display:flex;align-items:center;gap:10px;padding:8px 0;cursor:pointer;${i>0?'border-top:1px solid var(--border-color);':''}">
+          <span style="width:8px;height:8px;border-radius:50%;background:${color};flex-shrink:0;"></span>
+          <span style="flex:1;font-size:14px;color:var(--text-primary);">${g}</span>
+          <span style="font-size:13px;color:var(--text-secondary);font-weight:600;">${count} 張</span>
+        </div>`;
+      }).join('');
+    }
+  }
+
+  // 標籤雲
+  const tagCounts = {};
+  cardsList.forEach(c => { if(c.tags) c.tags.forEach(t => { tagCounts[t]=(tagCounts[t]||0)+1; }); });
+  const tagCloud = document.getElementById('home-tag-cloud');
+  if (tagCloud) {
+    const keys = Object.keys(tagCounts).sort((a,b)=>tagCounts[b]-tagCounts[a]);
+    tagCloud.innerHTML = keys.length === 0
+      ? '<div style="font-size:13px;color:var(--text-tertiary);">暫無標籤</div>'
+      : keys.map(t => `<span class="tag-filter-chip" style="cursor:default;">#${t} (${tagCounts[t]})</span>`).join('');
+  }
+
   // 待處理名片 (最多 3 筆)
   const pending = cardsList.filter(c => !c.processed).sort((a,b) => (b.createdAtTs||0) - (a.createdAtTs||0)).slice(0, 3);
   const pendingEl = document.getElementById('home-pending-cards');
