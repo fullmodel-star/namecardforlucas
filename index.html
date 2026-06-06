@@ -713,6 +713,54 @@ input, select, textarea, button { font-size: 16px; }
 .virtual-card-wrapper {
   margin-bottom: 1.25rem;
 }
+/* 翻面卡片 */
+.vc-flip {
+  perspective: 1400px;
+}
+.vc-flip-inner {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1.6 / 1;
+  transform-style: preserve-3d;
+  transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.vc-flip.flipped .vc-flip-inner {
+  transform: rotateY(180deg);
+}
+.vc-flip-face {
+  position: absolute;
+  inset: 0;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+.vc-flip-front .virtual-card {
+  height: 100%;
+  aspect-ratio: auto;
+  margin: 0;
+}
+.vc-flip-back {
+  transform: rotateY(180deg);
+  background: #0a0a0c;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: var(--shadow-lg);
+  border: 1px solid var(--border-color);
+}
+.vc-flip-back img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  cursor: zoom-in;
+}
+.vc-flip-noimg {
+  color: var(--text-tertiary);
+  font-size: 15px;
+  text-align: center;
+  padding: 20px;
+}
 .virtual-card {
   width: 100%;
   aspect-ratio: 1.6 / 1;
@@ -3571,33 +3619,52 @@ async function selectCard(id) {
     </div>
     
     <div class="virtual-card-wrapper">
-      <div class="virtual-card ${themeClass}">
-        <div class="virtual-card-glass"></div>
-        <div class="virtual-card-body">
-          <div class="vc-hd">
-            <span class="vc-logo"><i class="ti ti-address-book"></i></span>
-            <span class="vc-org">${c.org || '未設定公司名稱'}</span>
-          </div>
-          <div class="vc-mid">
-            <div class="vc-name">${c.name || '未輸入姓名'}</div>
-            <div class="vc-title-row">
-              <span>${c.title || '無職稱'}</span>
-              ${c.dept ? '<span>·</span>' : ''}
-              <span>${c.dept || ''}</span>
+      <div class="vc-flip" id="vc-flip-${c.id}">
+        <div class="vc-flip-inner">
+          <!-- 正面：漸層設計 -->
+          <div class="vc-flip-face vc-flip-front">
+            <div class="virtual-card ${themeClass}">
+              <div class="virtual-card-glass"></div>
+              <div class="virtual-card-body">
+                <div class="vc-hd">
+                  <span class="vc-logo"><i class="ti ti-address-book"></i></span>
+                  <span class="vc-org">${c.org || '未設定公司名稱'}</span>
+                </div>
+                <div class="vc-mid">
+                  <div class="vc-name">${c.name || '未輸入姓名'}</div>
+                  <div class="vc-title-row">
+                    <span>${c.title || '無職稱'}</span>
+                    ${c.dept ? '<span>·</span>' : ''}
+                    <span>${c.dept || ''}</span>
+                  </div>
+                </div>
+                <div class="vc-ft">
+                  <div class="vc-contact-item"><i class="ti ti-phone"></i> ${c.mobile || c.phone || '無電話號碼'}</div>
+                  <div class="vc-contact-item"><i class="ti ti-mail"></i> ${c.email || '無電子郵件'}</div>
+                </div>
+              </div>
             </div>
           </div>
-          <div class="vc-ft">
-            <div class="vc-contact-item"><i class="ti ti-phone"></i> ${c.mobile || c.phone || '無電話號碼'}</div>
-            <div class="vc-contact-item"><i class="ti ti-mail"></i> ${c.email || '無電子郵件'}</div>
+          <!-- 背面：真實名片照片 -->
+          <div class="vc-flip-face vc-flip-back">
+            ${imageBase64
+              ? `<img src="data:image/jpeg;base64,${imageBase64}" onclick="openLightbox('data:image/jpeg;base64,${imageBase64}')" title="點擊放大" />`
+              : `<div class="vc-flip-noimg"><i class="ti ti-photo-off" style="font-size:32px;display:block;margin-bottom:8px;opacity:0.5;"></i>此名片沒有掃描照片<br><span style="font-size:13px;">（手動新增的名片）</span></div>`}
           </div>
         </div>
       </div>
-      
-      <div class="vc-theme-selector">
-        <div class="theme-dot vc-theme-indigo" onclick="changeCardTheme('${c.id}', 'indigo')" title="皇家靛藍"></div>
-        <div class="theme-dot vc-theme-emerald" onclick="changeCardTheme('${c.id}', 'emerald')" title="森林翡翠"></div>
-        <div class="theme-dot vc-theme-charcoal" onclick="changeCardTheme('${c.id}', 'charcoal')" title="極致深曜"></div>
-        <div class="theme-dot vc-theme-sunset" onclick="changeCardTheme('${c.id}', 'sunset')" title="溫慢落日"></div>
+
+      <!-- 翻面按鈕 + 主題選色 -->
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-top:12px;gap:10px;">
+        <button class="btn" onclick="flipVirtualCard('${c.id}')" style="font-size:14px;padding:7px 14px;">
+          <i class="ti ti-rotate-360"></i> 翻面
+        </button>
+        <div class="vc-theme-selector" style="margin:0;">
+          <div class="theme-dot vc-theme-indigo" onclick="changeCardTheme('${c.id}', 'indigo')" title="皇家靛藍"></div>
+          <div class="theme-dot vc-theme-emerald" onclick="changeCardTheme('${c.id}', 'emerald')" title="森林翡翠"></div>
+          <div class="theme-dot vc-theme-charcoal" onclick="changeCardTheme('${c.id}', 'charcoal')" title="極致深曜"></div>
+          <div class="theme-dot vc-theme-sunset" onclick="changeCardTheme('${c.id}', 'sunset')" title="溫慢落日"></div>
+        </div>
       </div>
     </div>
     
@@ -3683,6 +3750,11 @@ function closeDetailPanel() {
   const wrapper = document.getElementById('detail-wrapper');
   if (panel) panel.classList.remove('open');
   if (wrapper) { wrapper.classList.remove('open'); wrapper.style.display = 'none'; }
+}
+
+function flipVirtualCard(id) {
+  const el = document.getElementById('vc-flip-' + id);
+  if (el) el.classList.toggle('flipped');
 }
 
 async function changeCardTheme(id, themeName) {
