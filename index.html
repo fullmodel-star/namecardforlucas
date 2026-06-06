@@ -125,7 +125,7 @@
 * { box-sizing: border-box; margin: 0; padding: 0; }
 body {
   font-family: var(--font-sans);
-  font-size: 15px;
+  font-size:17px;
   background: var(--bg-primary);
   color: var(--text-primary);
   min-height: 100vh;
@@ -133,6 +133,8 @@ body {
   overflow-x: hidden;
   position: relative;
 }
+/* 表單元素字體底線（老花友善），避免瀏覽器預設小字 */
+input, select, textarea, button { font-size: 16px; }
 
 /* Ambient glows removed per design spec */
 
@@ -182,11 +184,11 @@ body {
   align-items: center;
   justify-content: center;
   color: #ffffff;
-  font-size: 24px;
+  font-size:26px;
   box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
 }
 .app-title-text h1 {
-  font-size: 24px; /* 字體加大 */
+  font-size:26px; /* 字體加大 */
   font-weight: 800; /* 更厚實 professional */
   letter-spacing: -0.02em;
   background: linear-gradient(135deg, #6366f1 0%, #06b6d4 100%);
@@ -200,7 +202,7 @@ body {
   margin-top: 4px;
 }
 .badge {
-  font-size: 15px;
+  font-size:17px;
   font-weight: 500;
   padding: 2px 8px;
   border-radius: 20px;
@@ -220,7 +222,7 @@ body {
 /* 按鈕樣式 */
 .btn {
   padding: 8px 16px;
-  font-size: 15px;
+  font-size:17px;
   font-weight: 500;
   border: 1px solid var(--border-color);
   border-radius: var(--radius-md);
@@ -291,7 +293,7 @@ body {
   min-width: 0;
   white-space: nowrap;
   padding: 8px 10px;
-  font-size: 15px;
+  font-size:17px;
   font-weight: 500;
   text-align: center;
   border-radius: var(--radius-sm);
@@ -382,7 +384,7 @@ body {
   padding: 1rem;
 }
 .sidebar-label {
-  font-size: 15px;
+  font-size:17px;
   font-weight: 600;
   color: var(--text-tertiary);
   text-transform: uppercase;
@@ -395,7 +397,7 @@ body {
 .searchrow-new input {
   width: 100%;
   padding: 8px 12px;
-  font-size: 15px;
+  font-size:17px;
   border: 1px solid var(--border-color);
   border-radius: var(--radius-sm);
   background: var(--bg-secondary);
@@ -418,7 +420,7 @@ body {
   align-items: center;
   justify-content: space-between;
   padding: 6px 10px;
-  font-size: 14px;
+  font-size:16px;
   border-radius: var(--radius-sm);
   cursor: pointer;
   color: var(--text-secondary);
@@ -437,7 +439,7 @@ body {
   font-weight: 500;
 }
 .group-count {
-  font-size: 10px;
+  font-size:12px;
   padding: 1px 6px;
   border-radius: 10px;
   background: var(--bg-secondary);
@@ -454,7 +456,7 @@ body {
 }
 .tag-filter-chip {
   padding: 3px 8px;
-  font-size: 15px;
+  font-size:17px;
   border-radius: 20px;
   border: 1px solid var(--border-color);
   background: var(--bg-secondary);
@@ -491,7 +493,7 @@ body {
 }
 .filter-chip {
   padding: 5px 12px;
-  font-size: 14px;
+  font-size:16px;
   font-weight: 500;
   border-radius: 20px;
   border: 1px solid var(--border-color);
@@ -512,12 +514,12 @@ body {
   display: flex;
   align-items: center;
   gap: 6px;
-  font-size: 14px;
+  font-size:16px;
   color: var(--text-secondary);
 }
 .sort-selector select {
   padding: 4px 8px;
-  font-size: 14px;
+  font-size:16px;
   border: 1px solid var(--border-color);
   border-radius: var(--radius-sm);
   background: var(--bg-secondary);
@@ -564,7 +566,7 @@ body {
   position: absolute;
   top: 6px;
   right: 6px;
-  font-size: 9px;
+  font-size:11px;
   font-weight: 600;
   padding: 1px 6px;
   border-radius: 10px;
@@ -588,7 +590,7 @@ body {
   align-items: center;
   justify-content: center;
   font-weight: 700;
-  font-size: 15px;
+  font-size:17px;
   flex-shrink: 0;
   letter-spacing: -0.5px;
 }
@@ -597,7 +599,7 @@ body {
   flex: 1;
 }
 .card-name-text {
-  font-size: 15px;
+  font-size:17px;
   font-weight: 700;
   color: var(--text-primary);
   white-space: nowrap;
@@ -605,7 +607,7 @@ body {
   text-overflow: ellipsis;
 }
 .card-title-text {
-  font-size: 14px;
+  font-size:16px;
   color: var(--text-secondary);
   white-space: nowrap;
   overflow: hidden;
@@ -613,7 +615,7 @@ body {
   margin-top: 1px;
 }
 .card-org-text {
-  font-size: 14px;
+  font-size:16px;
   color: var(--accent);
   font-weight: 500;
   margin-top: 2px;
@@ -647,20 +649,20 @@ body {
 }
 .tool-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); border-color: var(--tc, var(--accent)); }
 .tool-card:active { transform: scale(0.98); }
-.tool-card-icon { font-size: 24px; line-height: 1; color: var(--tc, var(--accent)); }
-.tool-card-title { font-size: 14px; font-weight: 700; color: var(--text-primary); line-height: 1.3; }
-.tool-card-desc { font-size: 14px; color: var(--text-secondary); line-height: 1.4; }
+.tool-card-icon { font-size:26px; line-height: 1; color: var(--tc, var(--accent)); }
+.tool-card-title { font-size:16px; font-weight: 700; color: var(--text-primary); line-height: 1.3; }
+.tool-card-desc { font-size:16px; color: var(--text-secondary); line-height: 1.4; }
 /* 公司組織圖 */
 .org-company-card { background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: var(--radius-md); margin-bottom: 12px; overflow: hidden; }
 .org-company-header { display:flex; align-items:center; gap:10px; padding:12px 14px; background:var(--bg-tertiary); border-bottom:1px solid var(--border-color); cursor:pointer; }
-.org-company-name { font-size:14px; font-weight:700; color:var(--text-primary); flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-.org-company-count { font-size:14px; font-weight:700; color:#fff; background:var(--accent); border-radius:99px; padding:1px 9px; flex-shrink:0; }
+.org-company-name { font-size:16px; font-weight:700; color:var(--text-primary); flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.org-company-count { font-size:16px; font-weight:700; color:#fff; background:var(--accent); border-radius:99px; padding:1px 9px; flex-shrink:0; }
 .org-person-row { display:flex; align-items:center; gap:12px; padding:10px 14px; border-bottom:1px solid var(--border-color); cursor:pointer; transition:background 0.15s; }
 .org-person-row:last-child { border-bottom:none; }
 .org-person-row:hover { background:var(--bg-tertiary); }
-.org-person-avatar { width:34px; height:34px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:14px; font-weight:700; color:#fff; flex-shrink:0; }
-.org-person-name { font-size:14px; font-weight:600; color:var(--text-primary); }
-.org-person-title { font-size:13px; color:var(--text-secondary); margin-top:1px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:100%; }
+.org-person-avatar { width:34px; height:34px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:16px; font-weight:700; color:#fff; flex-shrink:0; }
+.org-person-name { font-size:16px; font-weight:600; color:var(--text-primary); }
+.org-person-title { font-size:15px; color:var(--text-secondary); margin-top:1px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:100%; }
 .card-tags-area {
   display: flex;
   flex-wrap: wrap;
@@ -670,7 +672,7 @@ body {
   padding-top: 6px;
 }
 .tag-mini {
-  font-size: 9px;
+  font-size:11px;
   padding: 1px 5px;
   background: var(--bg-tertiary);
   color: var(--text-secondary);
@@ -699,7 +701,7 @@ body {
   margin-bottom: 1rem;
 }
 .detail-header-title {
-  font-size: 14px;
+  font-size:16px;
   font-weight: 600;
   color: var(--text-secondary);
   display: flex;
@@ -754,11 +756,11 @@ body {
   justify-content: space-between;
 }
 .vc-logo {
-  font-size: 18px;
+  font-size:20px;
   opacity: 0.9;
 }
 .vc-org {
-  font-size: 10px;
+  font-size:12px;
   font-weight: 600;
   letter-spacing: 0.05em;
   opacity: 0.85;
@@ -768,7 +770,7 @@ body {
   margin-bottom: auto;
 }
 .vc-name {
-  font-size: 18px;
+  font-size:20px;
   font-weight: 700;
   letter-spacing: 0.05em;
   text-shadow: 0 2px 4px rgba(0,0,0,0.15);
@@ -777,14 +779,14 @@ body {
   display: flex;
   align-items: center;
   gap: 6px;
-  font-size: 10px;
+  font-size:12px;
   opacity: 0.85;
   margin-top: 2px;
 }
 .vc-ft {
   display: flex;
   justify-content: space-between;
-  font-size: 9px;
+  font-size:11px;
   opacity: 0.75;
   border-top: 1px solid rgba(255,255,255,0.15);
   padding-top: 6px;
@@ -854,7 +856,7 @@ body {
   background: var(--accent-light);
 }
 .df-label {
-  font-size: 9px;
+  font-size:11px;
   font-weight: 600;
   color: var(--text-tertiary);
   text-transform: uppercase;
@@ -865,7 +867,7 @@ body {
   gap: 4px;
 }
 .df-val {
-  font-size: 14px;
+  font-size:16px;
   font-weight: 500;
   color: var(--text-primary);
   word-break: break-all;
@@ -893,7 +895,7 @@ body {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  font-size: 15px;
+  font-size:17px;
   cursor: pointer;
   transition: var(--transition);
 }
@@ -961,16 +963,16 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 20px;
+  font-size:22px;
 }
 .db-card-info h4 {
-  font-size: 15px;
+  font-size:17px;
   color: var(--text-secondary);
   text-transform: uppercase;
   letter-spacing: 0.05em;
 }
 .db-card-info div {
-  font-size: 22px;
+  font-size:24px;
   font-weight: 700;
   color: var(--text-primary);
   margin-top: 2px;
@@ -993,7 +995,7 @@ body {
   padding: 1.25rem;
 }
 .db-section h3 {
-  font-size: 14px;
+  font-size:16px;
   font-weight: 700;
   margin-bottom: 1rem;
   display: flex;
@@ -1006,7 +1008,7 @@ body {
 .db-progress-label {
   display: flex;
   justify-content: space-between;
-  font-size: 14px;
+  font-size:16px;
   margin-bottom: 4px;
   color: var(--text-secondary);
 }
@@ -1032,7 +1034,7 @@ body {
   border: 1px solid var(--border-color);
   border-radius: var(--radius-sm);
   margin-bottom: 6px;
-  font-size: 14px;
+  font-size:16px;
 }
 
 /* ============================================================================
@@ -1060,12 +1062,12 @@ body {
   display: block;
 }
 .batch-dropzone h3 {
-  font-size: 15px;
+  font-size:17px;
   color: var(--text-primary);
   margin-bottom: 4px;
 }
 .batch-dropzone p {
-  font-size: 15px;
+  font-size:17px;
 }
 
 .queue-list {
@@ -1089,14 +1091,14 @@ body {
   flex: 1;
 }
 .qi-name {
-  font-size: 14px;
+  font-size:16px;
   font-weight: 600;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 .qi-status-text {
-  font-size: 10px;
+  font-size:12px;
   margin-top: 2px;
   display: flex;
   align-items: center;
@@ -1127,7 +1129,7 @@ body {
   margin-bottom: 1rem;
 }
 .dup-group-title {
-  font-size: 15px;
+  font-size:17px;
   font-weight: 700;
   color: var(--color-amber);
   margin-bottom: 8px;
@@ -1152,7 +1154,7 @@ body {
   border: 1px solid var(--color-amber-border);
   border-radius: var(--radius-md);
   padding: 10px 14px;
-  font-size: 14px;
+  font-size:16px;
   color: var(--color-amber);
   margin-bottom: 1rem;
   display: flex;
@@ -1164,7 +1166,7 @@ body {
   border: 1px solid var(--color-red-border);
   border-radius: var(--radius-md);
   padding: 12px 16px;
-  font-size: 14px;
+  font-size:16px;
   color: var(--color-red);
   margin-bottom: 1rem;
   display: flex;
@@ -1186,7 +1188,7 @@ body {
   margin-bottom: 1rem;
 }
 .settings-section-card h3 {
-  font-size: 14px;
+  font-size:16px;
   font-weight: 700;
   margin-bottom: 8px;
   display: flex;
@@ -1203,7 +1205,7 @@ body {
   flex: 1;
   min-width: 150px;
   padding: 8px 12px;
-  font-size: 15px;
+  font-size:17px;
   border: 1px solid var(--border-color);
   border-radius: var(--radius-sm);
   background: var(--bg-secondary);
@@ -1220,7 +1222,7 @@ body {
 }
 .manage-badge-chip {
   padding: 4px 10px;
-  font-size: 15px;
+  font-size:17px;
   border-radius: 20px;
   background: var(--bg-secondary);
   border: 1px solid var(--border-color);
@@ -1266,7 +1268,7 @@ body {
   .modal { padding: 1.25rem 1rem; margin: auto; }
 }
 .modal h2 {
-  font-size: 16px;
+  font-size:18px;
   font-weight: 700;
   margin-bottom: 1rem;
   display: flex;
@@ -1286,7 +1288,7 @@ body {
   grid-column: 1 / -1;
 }
 .form-row label {
-  font-size: 15px;
+  font-size:17px;
   font-weight: 600;
   color: var(--text-secondary);
   display: block;
@@ -1295,7 +1297,7 @@ body {
 .form-row input, .form-row select, .form-row textarea {
   width: 100%;
   padding: 8px 12px;
-  font-size: 15px;
+  font-size:17px;
   border: 1px solid var(--border-color);
   border-radius: var(--radius-sm);
   background: var(--bg-tertiary);
@@ -1343,7 +1345,7 @@ body {
   top: -40px;
   right: 0;
   color: #ffffff;
-  font-size: 28px;
+  font-size:30px;
   cursor: pointer;
   background: transparent;
   border: none;
@@ -1358,7 +1360,7 @@ body {
   padding: 10px 14px;
   border-radius: var(--radius-md);
   margin-bottom: 12px;
-  font-size: 14px;
+  font-size:16px;
   color: var(--accent);
 }
 .ai-thinking-box.show { display: flex; }
@@ -1383,7 +1385,7 @@ body {
   transform: translateX(-50%);
   background: var(--text-primary);
   color: var(--bg-primary);
-  font-size: 15px;
+  font-size:17px;
   font-weight: 500;
   padding: 8px 20px;
   border-radius: 20px;
@@ -1418,10 +1420,10 @@ body {
 .btab-pip {
   padding: 5px 20px; border-radius: 999px; background: transparent; transition: background .15s;
 }
-.btab i { font-size: 22px; color: var(--text-tertiary); display: block; }
+.btab i { font-size:24px; color: var(--text-tertiary); display: block; }
 .btab.active .btab-pip { background: var(--accent-soft); }
 .btab.active i { color: var(--accent); }
-.btab span { font-size: 11px; font-weight: 500; color: var(--text-tertiary); }
+.btab span { font-size:13px; font-weight: 500; color: var(--text-tertiary); }
 .btab.active span { color: var(--text-primary); font-weight: 700; }
 
 /* ============================================================================
@@ -1429,22 +1431,22 @@ body {
    ============================================================================ */
 .cards-col-layout { display:flex; flex-direction:column; gap:16px; padding:18px 20px 28px; }
 .cards-search-bar { display:flex; align-items:center; gap:10px; padding:0 14px; height:46px; background:var(--field-bg,#101013); border:1px solid var(--border-color); border-radius:13px; }
-.cards-search-bar input { flex:1; border:none; outline:none; background:transparent; font:inherit; font-size:14.5px; color:var(--text-primary); }
-.cards-search-bar i { color:var(--text-tertiary); font-size:18px; flex-shrink:0; }
+.cards-search-bar input { flex:1; border:none; outline:none; background:transparent; font:inherit; font-size:16.5px; color:var(--text-primary); }
+.cards-search-bar i { color:var(--text-tertiary); font-size:20px; flex-shrink:0; }
 .status-segmented { display:flex; background:var(--bg-tertiary); border-radius:11px; padding:3px; border:1px solid var(--border-color); }
-.seg-btn { padding:8px 16px; border-radius:8px; border:none; cursor:pointer; font-family:inherit; font-size:14px; font-weight:500; background:transparent; color:var(--text-secondary); transition:all .15s; white-space:nowrap; }
+.seg-btn { padding:8px 16px; border-radius:8px; border:none; cursor:pointer; font-family:inherit; font-size:16px; font-weight:500; background:transparent; color:var(--text-secondary); transition:all .15s; white-space:nowrap; }
 .seg-btn.active { background:var(--bg-secondary); color:var(--text-primary); font-weight:700; box-shadow:0 1px 2px rgba(0,0,0,0.12); }
-.sec-label { font-size:15px; font-weight:600; color:var(--text-primary); letter-spacing:0.3px; margin-bottom:10px; }
+.sec-label { font-size:17px; font-weight:600; color:var(--text-primary); letter-spacing:0.3px; margin-bottom:10px; }
 .card-list-wrap { background:var(--bg-secondary); border:1px solid var(--border-color); border-radius:16px; overflow:hidden; }
-.card-list-empty { padding:40px 0; text-align:center; color:var(--text-tertiary); font-size:14px; }
+.card-list-empty { padding:40px 0; text-align:center; color:var(--text-tertiary); font-size:16px; }
 .biz-card-row { display:flex; align-items:center; gap:13px; padding:12px 16px; border-bottom:1px solid var(--border-color); cursor:pointer; transition:background .15s; }
 .biz-card-row:last-child { border-bottom:none; }
 .biz-card-row:hover { background:var(--bg-tertiary); }
 .biz-card-row.selected { background:rgba(99,102,241,0.07); }
-.bcr-avatar { width:42px; height:42px; border-radius:12px; display:flex; align-items:center; justify-content:center; font-size:17px; font-weight:600; flex-shrink:0; }
-.bcr-name { font-size:15.5px; font-weight:600; color:var(--text-primary); }
-.bcr-sub { font-size:12.5px; color:var(--text-secondary); margin-top:2px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-.bcr-badge { font-size:11.5px; font-weight:600; color:var(--text-secondary); padding:3px 9px; border-radius:7px; background:var(--bg-tertiary); border:1px solid var(--border-color); flex-shrink:0; }
+.bcr-avatar { width:42px; height:42px; border-radius:12px; display:flex; align-items:center; justify-content:center; font-size:19px; font-weight:600; flex-shrink:0; }
+.bcr-name { font-size:17.5px; font-weight:600; color:var(--text-primary); }
+.bcr-sub { font-size:14.5px; color:var(--text-secondary); margin-top:2px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.bcr-badge { font-size:13.5px; font-weight:600; color:var(--text-secondary); padding:3px 9px; border-radius:7px; background:var(--bg-tertiary); border:1px solid var(--border-color); flex-shrink:0; }
 .bcr-badge.done { color:var(--color-green); border-color:var(--color-green-border); background:var(--color-green-bg); }
 .bcr-badge.dup  { color:var(--color-amber); border-color:var(--color-amber-border); background:var(--color-amber-bg); }
 /* 手機：detail-wrapper 以全螢幕 Modal 方式覆蓋 */
@@ -1480,12 +1482,12 @@ body {
 }
 .tools-section-divider { display:flex; align-items:center; gap:10px; margin:20px 0 16px; }
 .tools-section-divider::before,.tools-section-divider::after { content:''; flex:1; height:1px; background:var(--border-color); }
-.tools-section-divider span { font-size:12px; font-weight:700; color:var(--text-tertiary); white-space:nowrap; }
-.timer-preset { font-size:13px; padding:7px 14px; }
+.tools-section-divider span { font-size:14px; font-weight:700; color:var(--text-tertiary); white-space:nowrap; }
+.timer-preset { font-size:15px; padding:7px 14px; }
 .timer-preset.active { background:var(--accent); color:#fff; border-color:var(--accent); }
 .fx-result-row { display:flex; align-items:center; justify-content:space-between; gap:10px; padding:11px 16px; background:var(--bg-secondary); border:1px solid var(--border-color); border-radius:12px; }
-.fx-result-row .fx-cur { font-size:14px; font-weight:600; color:var(--text-secondary); }
-.fx-result-row .fx-val { font-size:19px; font-weight:700; color:var(--text-primary); font-variant-numeric:tabular-nums; }
+.fx-result-row .fx-cur { font-size:16px; font-weight:600; color:var(--text-secondary); }
+.fx-result-row .fx-val { font-size:21px; font-weight:700; color:var(--text-primary); font-variant-numeric:tabular-nums; }
 </style>
 </head>
 <body>
@@ -1495,7 +1497,7 @@ body {
        [HTML] 頂部標題與狀態導覽列
        ========================================================================== -->
   <header class="app-header">
-    <div style="font-size:18px;font-weight:700;color:var(--text-primary);letter-spacing:0.2px;">名片管理</div>
+    <div style="font-size:20px;font-weight:700;color:var(--text-primary);letter-spacing:0.2px;">名片管理</div>
   </header>
 
   <!-- ==========================================================================
@@ -1518,7 +1520,7 @@ body {
           <div class="db-section" id="home-group-section">
             <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
               <h3 style="margin:0;"><i class="ti ti-chart-pie"></i> 群組分佈</h3>
-              <span style="font-size:12px;color:var(--text-tertiary);">點選可篩選</span>
+              <span style="font-size:14px;color:var(--text-tertiary);">點選可篩選</span>
             </div>
             <div id="home-group-list"></div>
           </div>
@@ -1532,7 +1534,7 @@ body {
         <div class="db-section">
           <h3 style="margin-bottom:10px;">
             <i class="ti ti-clock" style="color:var(--color-amber);"></i> 待處理名片
-            <span id="home-pending-link" style="margin-left:auto;font-size:12.5px;color:var(--accent);font-weight:500;cursor:pointer;" onclick="setProcessedFilter('unprocessed');switchTab('cards');">查看全部 →</span>
+            <span id="home-pending-link" style="margin-left:auto;font-size:14.5px;color:var(--accent);font-weight:500;cursor:pointer;" onclick="setProcessedFilter('unprocessed');switchTab('cards');">查看全部 →</span>
           </h3>
           <div id="home-pending-cards"></div>
         </div>
@@ -1540,7 +1542,7 @@ body {
         <div class="db-section">
           <h3 style="margin-bottom:10px;">
             <i class="ti ti-history" style="color:var(--accent);"></i> 最近新增
-            <span style="margin-left:auto;font-size:12.5px;color:var(--accent);font-weight:500;cursor:pointer;" onclick="switchTab('cards');">查看全部 →</span>
+            <span style="margin-left:auto;font-size:14.5px;color:var(--accent);font-weight:500;cursor:pointer;" onclick="switchTab('cards');">查看全部 →</span>
           </h3>
           <div id="home-recent-cards"></div>
         </div>
@@ -1548,19 +1550,19 @@ body {
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
           <button class="db-section" style="text-align:left;cursor:pointer;border:none;width:100%;" onclick="switchTab('dashboard')">
             <div style="display:flex;align-items:center;gap:10px;">
-              <div class="db-card-icon" style="width:36px;height:36px;font-size:17px;color:var(--accent);background:var(--accent-light);flex-shrink:0;"><i class="ti ti-chart-bar"></i></div>
+              <div class="db-card-icon" style="width:36px;height:36px;font-size:19px;color:var(--accent);background:var(--accent-light);flex-shrink:0;"><i class="ti ti-chart-bar"></i></div>
               <div>
-                <div style="font-size:13.5px;font-weight:600;color:var(--text-primary);">數據分析</div>
-                <div style="font-size:12px;color:var(--text-tertiary);margin-top:2px;">群組・標籤・組織圖</div>
+                <div style="font-size:15.5px;font-weight:600;color:var(--text-primary);">數據分析</div>
+                <div style="font-size:14px;color:var(--text-tertiary);margin-top:2px;">群組・標籤・組織圖</div>
               </div>
             </div>
           </button>
           <button class="db-section" style="text-align:left;cursor:pointer;border:none;width:100%;" onclick="switchTab('batch')">
             <div style="display:flex;align-items:center;gap:10px;">
-              <div class="db-card-icon" style="width:36px;height:36px;font-size:17px;color:#10b981;background:rgba(16,185,129,0.12);flex-shrink:0;"><i class="ti ti-tools"></i></div>
+              <div class="db-card-icon" style="width:36px;height:36px;font-size:19px;color:#10b981;background:rgba(16,185,129,0.12);flex-shrink:0;"><i class="ti ti-tools"></i></div>
               <div>
-                <div style="font-size:13.5px;font-weight:600;color:var(--text-primary);">工具箱</div>
-                <div style="font-size:12px;color:var(--text-tertiary);margin-top:2px;">同步・匯出・設定</div>
+                <div style="font-size:15.5px;font-weight:600;color:var(--text-primary);">工具箱</div>
+                <div style="font-size:14px;color:var(--text-tertiary);margin-top:2px;">同步・匯出・設定</div>
               </div>
             </div>
           </button>
@@ -1577,7 +1579,7 @@ body {
           <!-- 搜尋欄 -->
           <div class="cards-search-bar" style="margin:0;">
             <i class="ti ti-search" style="color:var(--text-secondary);"></i>
-            <input type="text" id="search-input" placeholder="搜尋姓名、公司、電話..." oninput="filterCards()" style="flex:1;background:transparent;border:none;color:var(--text-primary);font-size:15px;outline:none;"/>
+            <input type="text" id="search-input" placeholder="搜尋姓名、公司、電話..." oninput="filterCards()" style="flex:1;background:transparent;border:none;color:var(--text-primary);font-size:17px;outline:none;"/>
           </div>
           <!-- 標籤篩選 -->
           <div id="tag-cloud" style="display:flex;flex-wrap:wrap;gap:8px;"></div>
@@ -1588,7 +1590,7 @@ body {
               <button class="seg-btn" id="fc-unprocessed" onclick="setProcessedFilter('unprocessed')">未處理</button>
               <button class="seg-btn" id="fc-processed" onclick="setProcessedFilter('processed')">已處理</button>
             </div>
-            <select id="sort-select" onchange="handleSortChange()" style="height:34px;border-radius:8px;border:1px solid var(--border-color);background:var(--bg-primary);color:var(--text-primary);font-size:13px;padding:0 8px;cursor:pointer;">
+            <select id="sort-select" onchange="handleSortChange()" style="height:34px;border-radius:8px;border:1px solid var(--border-color);background:var(--bg-primary);color:var(--text-primary);font-size:15px;padding:0 8px;cursor:pointer;">
               <option value="time-desc">最新優先</option>
               <option value="time-asc">最早優先</option>
               <option value="name-asc">姓名 A→Z</option>
@@ -1601,13 +1603,13 @@ body {
         <!-- 名片列表區塊 -->
         <div class="db-section" style="padding:0;overflow:hidden;">
           <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 16px 0;">
-            <h3 style="margin:0;"><i class="ti ti-id"></i> 名片列表 <span style="font-size:13px;color:var(--text-tertiary);font-weight:400;" id="cards-count-label"></span></h3>
+            <h3 style="margin:0;"><i class="ti ti-id"></i> 名片列表 <span style="font-size:15px;color:var(--text-tertiary);font-weight:400;" id="cards-count-label"></span></h3>
             <div style="display:flex;gap:8px;">
-              <button class="btn btn-primary" onclick="openFormModal()" style="border-radius:10px;font-size:13.5px;font-weight:600;padding:7px 14px;background:var(--accent);border:none;">
-                <i class="ti ti-plus" style="font-size:15px;"></i> 新增
+              <button class="btn btn-primary" onclick="openFormModal()" style="border-radius:10px;font-size:15.5px;font-weight:600;padding:7px 14px;background:var(--accent);border:none;">
+                <i class="ti ti-plus" style="font-size:17px;"></i> 新增
               </button>
-              <button class="btn" onclick="switchTab('batch')" style="border-radius:10px;font-size:13.5px;font-weight:600;padding:7px 14px;">
-                <i class="ti ti-printer" style="font-size:15px;"></i> 批次工具
+              <button class="btn" onclick="switchTab('batch')" style="border-radius:10px;font-size:15.5px;font-weight:600;padding:7px 14px;">
+                <i class="ti ti-printer" style="font-size:17px;"></i> 批次工具
               </button>
             </div>
           </div>
@@ -1632,8 +1634,8 @@ body {
 
         <!-- 統計列 -->
         <div id="org-stats-bar" style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px;background:var(--bg-secondary);border:1px solid var(--border-color);border-radius:12px;">
-          <span style="font-size:14px;color:var(--text-secondary);" id="org-stats-label">載入中...</span>
-          <select id="org-sort" onchange="renderGraphTab()" style="height:32px;border-radius:8px;border:1px solid var(--border-color);background:var(--bg-primary);color:var(--text-primary);font-size:13px;padding:0 8px;cursor:pointer;">
+          <span style="font-size:16px;color:var(--text-secondary);" id="org-stats-label">載入中...</span>
+          <select id="org-sort" onchange="renderGraphTab()" style="height:32px;border-radius:8px;border:1px solid var(--border-color);background:var(--bg-primary);color:var(--text-primary);font-size:15px;padding:0 8px;cursor:pointer;">
             <option value="count-desc">人數多→少</option>
             <option value="count-asc">人數少→多</option>
             <option value="name-asc">公司 A→Z</option>
@@ -1644,7 +1646,7 @@ body {
         <!-- 搜尋欄 -->
         <div class="cards-search-bar">
           <i class="ti ti-search" style="color:var(--text-secondary);"></i>
-          <input type="text" id="org-search" placeholder="搜尋公司或人名..." oninput="renderGraphTab()" style="flex:1;background:transparent;border:none;color:var(--text-primary);font-size:14px;outline:none;"/>
+          <input type="text" id="org-search" placeholder="搜尋公司或人名..." oninput="renderGraphTab()" style="flex:1;background:transparent;border:none;color:var(--text-primary);font-size:16px;outline:none;"/>
         </div>
 
         <!-- 組織圖卡片清單 -->
@@ -1658,7 +1660,7 @@ body {
     <!-- 3. 重複偵測分頁 -->
     <div id="view-dups" style="display:none">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.25rem">
-        <h2 style="font-size:15px;font-weight:700;display:flex;align-items:center;gap:6px;color:var(--color-amber)">
+        <h2 style="font-size:17px;font-weight:700;display:flex;align-items:center;gap:6px;color:var(--color-amber)">
           <i class="ti ti-copy"></i> 疑似重複名片清單
         </h2>
         <div style="display:flex;gap:8px;">
@@ -1684,19 +1686,19 @@ body {
           <div style="display:flex;flex-wrap:wrap;gap:16px;justify-content:center;text-align:center;">
             <!-- vCard QR -->
             <div style="flex:1;min-width:140px;max-width:200px;">
-              <div style="font-size:12px;color:var(--text-tertiary);margin-bottom:8px;font-weight:600;">加入通訊錄</div>
+              <div style="font-size:14px;color:var(--text-tertiary);margin-bottom:8px;font-weight:600;">加入通訊錄</div>
               <div id="myprofile-qrcode" style="display:flex;justify-content:center;">
                 <img style="width:100%;max-width:160px;height:auto;border-radius:10px;" />
               </div>
-              <div style="font-size:11px;color:var(--text-tertiary);margin-top:6px;">掃碼存手機</div>
+              <div style="font-size:13px;color:var(--text-tertiary);margin-top:6px;">掃碼存手機</div>
             </div>
             <!-- LINE QR -->
             <div style="flex:1;min-width:140px;max-width:200px;">
-              <div style="font-size:12px;color:var(--text-tertiary);margin-bottom:8px;font-weight:600;display:flex;align-items:center;justify-content:center;gap:4px;">
-                <span style="color:#06C755;font-size:14px;">LINE</span> 加好友
+              <div style="font-size:14px;color:var(--text-tertiary);margin-bottom:8px;font-weight:600;display:flex;align-items:center;justify-content:center;gap:4px;">
+                <span style="color:#06C755;font-size:16px;">LINE</span> 加好友
               </div>
               <div id="myprofile-line-qrcode" style="display:flex;justify-content:center;"></div>
-              <div style="font-size:11px;color:var(--text-tertiary);margin-top:6px;" id="myprofile-line-id-label"></div>
+              <div style="font-size:13px;color:var(--text-tertiary);margin-top:6px;" id="myprofile-line-id-label"></div>
             </div>
           </div>
           <!-- 分享操作列 -->
@@ -1727,7 +1729,7 @@ body {
       <div style="padding:14px 14px 0;">
         <div style="display:flex;align-items:center;gap:10px;margin-bottom:1rem;">
           <div style="flex:1;height:1px;background:var(--border-color);"></div>
-          <span style="font-size:14px;font-weight:700;color:var(--text-secondary);white-space:nowrap;"><i class="ti ti-robot"></i> AI 批次掃名片</span>
+          <span style="font-size:16px;font-weight:700;color:var(--text-secondary);white-space:nowrap;"><i class="ti ti-robot"></i> AI 批次掃名片</span>
           <div style="flex:1;height:1px;background:var(--border-color);"></div>
         </div>
 
@@ -1748,7 +1750,7 @@ body {
         </div>
 
         <div class="progress-bar" id="batch-progress-bar"><div class="progress-fill" id="batch-progress-fill"></div></div>
-        <div id="batch-progress-stats" style="display:none;font-size:14px;color:var(--text-secondary);margin:6px 0 0;text-align:center;min-height:18px;"></div>
+        <div id="batch-progress-stats" style="display:none;font-size:16px;color:var(--text-secondary);margin:6px 0 0;text-align:center;min-height:18px;"></div>
         <div class="queue-list" id="batch-queue-list"></div>
 
         <div style="display:flex;gap:8px;margin-top:1.25rem;flex-wrap:wrap;margin-bottom:1.5rem;">
@@ -1840,12 +1842,12 @@ body {
     <!-- 5. 公司組織分頁 -->
     <div id="view-graph" style="display:none">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;flex-wrap:wrap;gap:8px;">
-        <h2 style="font-size:16px;font-weight:700;display:flex;align-items:center;gap:7px;color:var(--accent)">
+        <h2 style="font-size:18px;font-weight:700;display:flex;align-items:center;gap:7px;color:var(--accent)">
           <i class="ti ti-building"></i> 公司組織圖
         </h2>
         <div style="display:flex;gap:8px;align-items:center;">
           <input id="org-search" type="text" placeholder="搜尋公司名稱…" oninput="renderGraphTab()"
-            style="font-size:15px;padding:6px 10px;border-radius:var(--radius-sm);border:1px solid var(--border-color);background:var(--bg-secondary);color:var(--text-primary);width:160px;">
+            style="font-size:17px;padding:6px 10px;border-radius:var(--radius-sm);border:1px solid var(--border-color);background:var(--bg-secondary);color:var(--text-primary);width:160px;">
           <button class="btn" onclick="renderGraphTab()"><i class="ti ti-refresh"></i></button>
         </div>
       </div>
@@ -1856,16 +1858,16 @@ body {
     <div id="view-settings" style="display:none">
 
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem;margin-top:0.5rem;">
-        <h2 style="font-size:17px;font-weight:700;display:flex;align-items:center;gap:6px;color:var(--text-primary);margin:0;">
+        <h2 style="font-size:19px;font-weight:700;display:flex;align-items:center;gap:6px;color:var(--text-primary);margin:0;">
           <i class="ti ti-settings"></i> 應用設定
         </h2>
         <button class="btn" onclick="switchTab('batch')"><i class="ti ti-arrow-left"></i> 返回工具箱</button>
       </div>
 
       <div class="local-server-notice" id="local-server-notice" style="display:none">
-        <i class="ti ti-info-circle" style="font-size: 18px; margin-top: 1px;"></i>
+        <i class="ti ti-info-circle" style="font-size:20px; margin-top: 1px;"></i>
         <div>
-          <strong style="font-size:15px;">偵測到您目前直接雙擊開啟 HTML 檔案 (file:// 協定)</strong>
+          <strong style="font-size:17px;">偵測到您目前直接雙擊開啟 HTML 檔案 (file:// 協定)</strong>
           <p style="margin-top: 2px;">由於 Google OAuth 機制限制，在本地檔案模式下 Google 雲端登入與初始化將無法使用。若需要此功能，請使用本地伺服器啟動網頁，例如：在終端機執行 <code>python -m http.server 8000</code>，並瀏覽 <code>http://localhost:8000</code>。</p>
         </div>
       </div>
@@ -1873,7 +1875,7 @@ body {
       <!-- API 設定 -->
       <div class="settings-section-card">
         <h3><i class="ti ti-robot" style="color:var(--accent)"></i> AI 掃名片設定</h3>
-        <p style="font-size:14px; color:var(--text-secondary); margin-bottom:8px;">填入 API 金鑰後，即可用 AI 自動辨識名片照片內容。</p>
+        <p style="font-size:16px; color:var(--text-secondary); margin-bottom:8px;">填入 API 金鑰後，即可用 AI 自動辨識名片照片內容。</p>
         <div class="settings-input-group">
           <input type="password" id="settings-api-key" placeholder="貼上您的 Gemini API Key" />
           <select id="settings-gemini-model" style="max-width:200px;">
@@ -1886,7 +1888,7 @@ body {
           <button class="btn btn-red" onclick="clearGeminiKey()" title="清除金鑰"><i class="ti ti-trash"></i></button>
         </div>
         <div class="settings-input-group" style="margin-top: 10px; align-items: center; gap: 8px;">
-          <label for="settings-gemini-delay" style="font-size: 14px; color: var(--text-secondary);">批次辨識間隔：</label>
+          <label for="settings-gemini-delay" style="font-size:16px; color: var(--text-secondary);">批次辨識間隔：</label>
           <select id="settings-gemini-delay" style="max-width:180px; padding: 6px 10px;">
             <option value="1">1 秒 (付費版/無限制)</option>
             <option value="5" selected>5 秒 (免費版 15 RPM)</option>
@@ -1895,20 +1897,20 @@ body {
             <option value="20">20 秒 (極度安全)</option>
             <option value="30">30 秒 (免費 Pro 版 2 RPM)</option>
           </select>
-          <span style="font-size: 15px; color: var(--text-tertiary);">免費版建議設定為 5 秒以上，以避免觸發 15 RPM 限制。</span>
+          <span style="font-size:17px; color: var(--text-tertiary);">免費版建議設定為 5 秒以上，以避免觸發 15 RPM 限制。</span>
         </div>
-        <div id="settings-api-key-status" style="font-size:14px; margin-top:6px; font-weight:500;"></div>
+        <div id="settings-api-key-status" style="font-size:16px; margin-top:6px; font-weight:500;"></div>
 
         <!-- API Key 取得教學 -->
         <div style="margin-top:14px;">
-          <button onclick="toggleApiKeyGuide()" style="border:none;background:none;cursor:pointer;font-size:14px;color:var(--accent);display:flex;align-items:center;gap:5px;padding:0;font-family:inherit;">
+          <button onclick="toggleApiKeyGuide()" style="border:none;background:none;cursor:pointer;font-size:16px;color:var(--accent);display:flex;align-items:center;gap:5px;padding:0;font-family:inherit;">
             <i class="ti ti-help-circle"></i>
             <span id="api-guide-toggle-text">❓ 如何免費取得 Gemini API Key？</span>
             <i class="ti ti-chevron-down" id="api-guide-chevron" style="transition:transform 0.2s;"></i>
           </button>
           <div id="api-key-guide" style="display:none;margin-top:12px;border:1px solid var(--border-color);border-radius:var(--radius-md);overflow:hidden;">
             <!-- 標題列 -->
-            <div style="background:var(--accent);color:#fff;padding:10px 14px;font-size:15px;font-weight:700;display:flex;align-items:center;gap:8px;">
+            <div style="background:var(--accent);color:#fff;padding:10px 14px;font-size:17px;font-weight:700;display:flex;align-items:center;gap:8px;">
               <i class="ti ti-sparkles"></i> Gemini API Key 申請教學（完全免費）
             </div>
             <!-- 步驟內容 -->
@@ -1916,11 +1918,11 @@ body {
 
               <!-- Step 1 -->
               <div style="display:flex;gap:12px;align-items:flex-start;">
-                <div style="flex-shrink:0;width:28px;height:28px;border-radius:50%;background:var(--accent);color:#fff;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:700;">1</div>
+                <div style="flex-shrink:0;width:28px;height:28px;border-radius:50%;background:var(--accent);color:#fff;display:flex;align-items:center;justify-content:center;font-size:17px;font-weight:700;">1</div>
                 <div>
-                  <div style="font-size:15px;font-weight:600;margin-bottom:3px;">前往 Google AI Studio</div>
-                  <div style="font-size:14px;color:var(--text-secondary);margin-bottom:5px;">點下方連結，用你的 Google 帳號登入。</div>
-                  <a href="https://aistudio.google.com/apikey" target="_blank" style="display:inline-flex;align-items:center;gap:5px;font-size:14px;color:#fff;background:var(--accent);border-radius:6px;padding:5px 12px;text-decoration:none;font-weight:600;">
+                  <div style="font-size:17px;font-weight:600;margin-bottom:3px;">前往 Google AI Studio</div>
+                  <div style="font-size:16px;color:var(--text-secondary);margin-bottom:5px;">點下方連結，用你的 Google 帳號登入。</div>
+                  <a href="https://aistudio.google.com/apikey" target="_blank" style="display:inline-flex;align-items:center;gap:5px;font-size:16px;color:#fff;background:var(--accent);border-radius:6px;padding:5px 12px;text-decoration:none;font-weight:600;">
                     <i class="ti ti-external-link"></i> 開啟 Google AI Studio
                   </a>
                 </div>
@@ -1930,10 +1932,10 @@ body {
 
               <!-- Step 2 -->
               <div style="display:flex;gap:12px;align-items:flex-start;">
-                <div style="flex-shrink:0;width:28px;height:28px;border-radius:50%;background:var(--accent);color:#fff;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:700;">2</div>
+                <div style="flex-shrink:0;width:28px;height:28px;border-radius:50%;background:var(--accent);color:#fff;display:flex;align-items:center;justify-content:center;font-size:17px;font-weight:700;">2</div>
                 <div>
-                  <div style="font-size:15px;font-weight:600;margin-bottom:3px;">點「建立 API 金鑰」</div>
-                  <div style="font-size:14px;color:var(--text-secondary);">進入頁面後，點藍色按鈕 <strong>「建立 API 金鑰 (Create API Key)」</strong>，選擇現有的 Google Cloud 專案或建立新專案，系統會自動產生一組金鑰。</div>
+                  <div style="font-size:17px;font-weight:600;margin-bottom:3px;">點「建立 API 金鑰」</div>
+                  <div style="font-size:16px;color:var(--text-secondary);">進入頁面後，點藍色按鈕 <strong>「建立 API 金鑰 (Create API Key)」</strong>，選擇現有的 Google Cloud 專案或建立新專案，系統會自動產生一組金鑰。</div>
                 </div>
               </div>
 
@@ -1941,10 +1943,10 @@ body {
 
               <!-- Step 3 -->
               <div style="display:flex;gap:12px;align-items:flex-start;">
-                <div style="flex-shrink:0;width:28px;height:28px;border-radius:50%;background:var(--accent);color:#fff;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:700;">3</div>
+                <div style="flex-shrink:0;width:28px;height:28px;border-radius:50%;background:var(--accent);color:#fff;display:flex;align-items:center;justify-content:center;font-size:17px;font-weight:700;">3</div>
                 <div>
-                  <div style="font-size:15px;font-weight:600;margin-bottom:3px;">複製 API Key</div>
-                  <div style="font-size:14px;color:var(--text-secondary);">金鑰格式為 <code style="background:var(--bg-tertiary);padding:1px 5px;border-radius:3px;font-size:15px;">AIzaSy...</code> 開頭，點旁邊的複製按鈕複製起來。</div>
+                  <div style="font-size:17px;font-weight:600;margin-bottom:3px;">複製 API Key</div>
+                  <div style="font-size:16px;color:var(--text-secondary);">金鑰格式為 <code style="background:var(--bg-tertiary);padding:1px 5px;border-radius:3px;font-size:17px;">AIzaSy...</code> 開頭，點旁邊的複製按鈕複製起來。</div>
                 </div>
               </div>
 
@@ -1952,15 +1954,15 @@ body {
 
               <!-- Step 4 -->
               <div style="display:flex;gap:12px;align-items:flex-start;">
-                <div style="flex-shrink:0;width:28px;height:28px;border-radius:50%;background:var(--color-green);color:#fff;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:700;">4</div>
+                <div style="flex-shrink:0;width:28px;height:28px;border-radius:50%;background:var(--color-green);color:#fff;display:flex;align-items:center;justify-content:center;font-size:17px;font-weight:700;">4</div>
                 <div>
-                  <div style="font-size:15px;font-weight:600;margin-bottom:3px;">貼到上方輸入框，按「儲存」</div>
-                  <div style="font-size:14px;color:var(--text-secondary);">回到本 App，把金鑰貼入上方輸入框，按 <strong>「儲存」</strong>，再按 <strong>「測試連線」</strong> 確認正常運作。完成！</div>
+                  <div style="font-size:17px;font-weight:600;margin-bottom:3px;">貼到上方輸入框，按「儲存」</div>
+                  <div style="font-size:16px;color:var(--text-secondary);">回到本 App，把金鑰貼入上方輸入框，按 <strong>「儲存」</strong>，再按 <strong>「測試連線」</strong> 確認正常運作。完成！</div>
                 </div>
               </div>
 
               <!-- 費用說明 -->
-              <div style="background:var(--color-green-bg,rgba(16,185,129,0.08));border:1px solid var(--color-green,#10b981);border-radius:8px;padding:10px 12px;font-size:14px;">
+              <div style="background:var(--color-green-bg,rgba(16,185,129,0.08));border:1px solid var(--color-green,#10b981);border-radius:8px;padding:10px 12px;font-size:16px;">
                 <div style="font-weight:700;color:var(--color-green,#10b981);margin-bottom:4px;"><i class="ti ti-coin"></i> 費用說明</div>
                 <div style="color:var(--text-secondary);line-height:1.7;">
                   免費額度每天 <strong>1,500 次</strong>請求，一般個人使用完全不會超過。<br>
@@ -1975,14 +1977,14 @@ body {
       <!-- 分類與標籤管理 -->
       <div class="settings-section-card">
         <h3><i class="ti ti-folder" style="color:var(--accent)"></i> 分類與標籤管理</h3>
-        <p style="font-size:14px;color:var(--text-secondary);margin-bottom:12px;">管理名片的群組分類和標籤。</p>
-        <div style="font-size:14px;font-weight:600;color:var(--text-secondary);margin-bottom:6px;">群組</div>
+        <p style="font-size:16px;color:var(--text-secondary);margin-bottom:12px;">管理名片的群組分類和標籤。</p>
+        <div style="font-size:16px;font-weight:600;color:var(--text-secondary);margin-bottom:6px;">群組</div>
         <div class="setting-badge-manager" id="badge-manager-groups"></div>
         <div class="settings-input-group" style="max-width:400px;margin-bottom:16px;">
           <input type="text" id="new-group-input" placeholder="輸入新群組名稱..." onkeydown="if(event.key==='Enter') addCustomGroup();" />
           <button class="btn btn-primary" onclick="addCustomGroup()"><i class="ti ti-plus"></i> 新增</button>
         </div>
-        <div style="font-size:14px;font-weight:600;color:var(--text-secondary);margin-bottom:6px;">標籤</div>
+        <div style="font-size:16px;font-weight:600;color:var(--text-secondary);margin-bottom:6px;">標籤</div>
         <div class="setting-badge-manager" id="badge-manager-tags"></div>
         <div class="settings-input-group" style="max-width:400px;">
           <input type="text" id="new-tag-input" placeholder="輸入新標籤名稱..." onkeydown="if(event.key==='Enter') addCustomTag();" />
@@ -1993,7 +1995,7 @@ body {
       <!-- 備份與還原 -->
       <div class="settings-section-card">
         <h3><i class="ti ti-database" style="color:var(--accent)"></i> 備份與還原</h3>
-        <p style="font-size:14px;color:var(--text-secondary);margin-bottom:12px;">定期備份可防止資料遺失。備份檔案包含所有名片及圖片。</p>
+        <p style="font-size:16px;color:var(--text-secondary);margin-bottom:12px;">定期備份可防止資料遺失。備份檔案包含所有名片及圖片。</p>
         <div style="display:flex;gap:8px;flex-wrap:wrap;">
           <button class="btn btn-green" onclick="exportFullJsonBackup()"><i class="ti ti-download"></i> 備份名片庫</button>
           <button class="btn btn-blue" onclick="document.getElementById('import-backup-file').click()"><i class="ti ti-upload"></i> 還原備份</button>
@@ -2003,7 +2005,7 @@ body {
 
       <!-- 進階設定（可收合） -->
       <div class="settings-section-card">
-        <button onclick="toggleAdvSettings()" style="border:none;background:none;cursor:pointer;font-size:14px;font-weight:700;color:var(--text-primary);display:flex;align-items:center;gap:8px;padding:0;font-family:inherit;width:100%;">
+        <button onclick="toggleAdvSettings()" style="border:none;background:none;cursor:pointer;font-size:16px;font-weight:700;color:var(--text-primary);display:flex;align-items:center;gap:8px;padding:0;font-family:inherit;width:100%;">
           <i class="ti ti-settings-2" style="color:var(--text-secondary);"></i>
           進階設定
           <i class="ti ti-chevron-down" id="adv-chevron" style="margin-left:auto;transition:transform 0.2s;color:var(--text-tertiary);"></i>
@@ -2012,7 +2014,7 @@ body {
 
           <!-- Google 帳號 -->
           <div>
-            <div style="font-size:14px;font-weight:600;color:var(--text-secondary);margin-bottom:8px;display:flex;align-items:center;gap:6px;">
+            <div style="font-size:16px;font-weight:600;color:var(--text-secondary);margin-bottom:8px;display:flex;align-items:center;gap:6px;">
               <i class="ti ti-brand-google"></i> Google 帳號連結
             </div>
             <div id="gdrive-login-area">
@@ -2020,21 +2022,21 @@ body {
             </div>
             <div id="gdrive-logged-area" style="display:none">
               <div style="display:flex;align-items:center;gap:12px;background:var(--bg-tertiary);border:1px solid var(--border-color);padding:8px 16px;border-radius:var(--radius-md);max-width:400px;">
-                <div style="font-size:22px;color:var(--color-green)"><i class="ti ti-circle-check-filled"></i></div>
+                <div style="font-size:24px;color:var(--color-green)"><i class="ti ti-circle-check-filled"></i></div>
                 <div>
-                  <div style="font-size:15px;font-weight:600;" id="gdrive-name">帳號已連結</div>
-                  <div style="font-size:15px;color:var(--text-secondary);" id="gdrive-email"></div>
+                  <div style="font-size:17px;font-weight:600;" id="gdrive-name">帳號已連結</div>
+                  <div style="font-size:17px;color:var(--text-secondary);" id="gdrive-email"></div>
                 </div>
-                <button class="btn btn-red" style="margin-left:auto;padding:4px 10px;font-size:15px;" onclick="gdriveLogout()"><i class="ti ti-logout"></i> 中斷</button>
+                <button class="btn btn-red" style="margin-left:auto;padding:4px 10px;font-size:17px;" onclick="gdriveLogout()"><i class="ti ti-logout"></i> 中斷</button>
               </div>
             </div>
           </div>
 
           <!-- 危險區 -->
           <div style="border:1px solid var(--color-red-border);border-radius:var(--radius-md);padding:12px 14px;background:var(--color-red-bg);">
-            <div style="font-size:14px;font-weight:700;color:var(--color-red);margin-bottom:8px;"><i class="ti ti-alert-triangle"></i> 危險操作</div>
+            <div style="font-size:16px;font-weight:700;color:var(--color-red);margin-bottom:8px;"><i class="ti ti-alert-triangle"></i> 危險操作</div>
             <button class="btn btn-red" onclick="clearAllSystemData()"><i class="ti ti-trash"></i> 清空全部名片資料</button>
-            <div style="font-size:15px;color:var(--color-red);margin-top:6px;opacity:0.8;">此操作無法復原，請先備份再執行。</div>
+            <div style="font-size:17px;color:var(--color-red);margin-top:6px;opacity:0.8;">此操作無法復原，請先備份再執行。</div>
           </div>
 
         </div>
@@ -2091,7 +2093,7 @@ body {
     </div>
 
     <!-- 簽名板 -->
-    <div style="font-size:13.5px;font-weight:600;color:var(--text-secondary);margin-bottom:8px;">① 用手指簽名</div>
+    <div style="font-size:15.5px;font-weight:600;color:var(--text-secondary);margin-bottom:8px;">① 用手指簽名</div>
     <canvas id="sig-canvas"
       style="width:100%;height:160px;border:2px dashed var(--border-color);border-radius:12px;background:var(--bg-secondary);touch-action:none;display:block;cursor:crosshair;"></canvas>
     <div style="display:flex;gap:8px;margin-top:8px;">
@@ -2102,22 +2104,22 @@ body {
     <div style="height:1px;background:var(--border-color);margin:18px 0;"></div>
 
     <!-- PDF 加簽名 -->
-    <div style="font-size:13.5px;font-weight:600;color:var(--text-secondary);margin-bottom:10px;">② 上傳 PDF 並蓋簽名</div>
-    <label style="display:flex;align-items:center;gap:10px;padding:12px 14px;border:1px dashed var(--border-color);border-radius:10px;cursor:pointer;font-size:14px;color:var(--text-secondary);">
-      <i class="ti ti-file-type-pdf" style="font-size:22px;color:#e11d48;"></i>
+    <div style="font-size:15.5px;font-weight:600;color:var(--text-secondary);margin-bottom:10px;">② 上傳 PDF 並蓋簽名</div>
+    <label style="display:flex;align-items:center;gap:10px;padding:12px 14px;border:1px dashed var(--border-color);border-radius:10px;cursor:pointer;font-size:16px;color:var(--text-secondary);">
+      <i class="ti ti-file-type-pdf" style="font-size:24px;color:#e11d48;"></i>
       <span id="sig-pdf-label">點選選擇 PDF 檔案</span>
       <input type="file" id="sig-pdf-input" accept="application/pdf" style="display:none;" onchange="onPdfSelected(event)">
     </label>
 
     <div style="display:flex;gap:12px;margin-top:12px;align-items:center;flex-wrap:wrap;">
       <div style="display:flex;align-items:center;gap:8px;flex:1;">
-        <span style="font-size:13px;color:var(--text-secondary);white-space:nowrap;">加在第</span>
-        <input type="number" id="sig-page-num" value="1" min="1" style="width:56px;height:34px;border-radius:8px;border:1px solid var(--border-color);background:var(--bg-secondary);color:var(--text-primary);text-align:center;font-size:14px;">
-        <span style="font-size:13px;color:var(--text-secondary);">頁</span>
+        <span style="font-size:15px;color:var(--text-secondary);white-space:nowrap;">加在第</span>
+        <input type="number" id="sig-page-num" value="1" min="1" style="width:56px;height:34px;border-radius:8px;border:1px solid var(--border-color);background:var(--bg-secondary);color:var(--text-primary);text-align:center;font-size:16px;">
+        <span style="font-size:15px;color:var(--text-secondary);">頁</span>
       </div>
       <div style="display:flex;align-items:center;gap:8px;flex:1;">
-        <span style="font-size:13px;color:var(--text-secondary);white-space:nowrap;">位置</span>
-        <select id="sig-position" style="flex:1;height:34px;border-radius:8px;border:1px solid var(--border-color);background:var(--bg-secondary);color:var(--text-primary);font-size:13px;padding:0 8px;">
+        <span style="font-size:15px;color:var(--text-secondary);white-space:nowrap;">位置</span>
+        <select id="sig-position" style="flex:1;height:34px;border-radius:8px;border:1px solid var(--border-color);background:var(--bg-secondary);color:var(--text-primary);font-size:15px;padding:0 8px;">
           <option value="br">右下角</option>
           <option value="bl">左下角</option>
           <option value="tr">右上角</option>
@@ -2126,10 +2128,10 @@ body {
       </div>
     </div>
 
-    <button class="btn btn-primary" onclick="signAndDownloadPdf()" style="width:100%;margin-top:14px;font-size:15px;padding:11px;">
+    <button class="btn btn-primary" onclick="signAndDownloadPdf()" style="width:100%;margin-top:14px;font-size:17px;padding:11px;">
       <i class="ti ti-file-check"></i> 產生已簽名 PDF
     </button>
-    <div id="sig-status" style="text-align:center;font-size:13px;color:var(--text-tertiary);margin-top:8px;"></div>
+    <div id="sig-status" style="text-align:center;font-size:15px;color:var(--text-tertiary);margin-top:8px;"></div>
   </div>
 </div>
 
@@ -2142,15 +2144,15 @@ body {
     </div>
 
     <div id="joke-card" style="background:var(--bg-secondary);border:1px solid var(--border-color);border-radius:16px;padding:24px 20px;min-height:160px;display:flex;flex-direction:column;justify-content:center;">
-      <div id="joke-category" style="font-size:12px;font-weight:700;color:#f59e0b;letter-spacing:0.05em;margin-bottom:10px;">　</div>
-      <div id="joke-text" style="font-size:16px;line-height:1.7;color:var(--text-primary);white-space:pre-line;">點下方按鈕，隨機抽一則笑話 😄</div>
+      <div id="joke-category" style="font-size:14px;font-weight:700;color:#f59e0b;letter-spacing:0.05em;margin-bottom:10px;">　</div>
+      <div id="joke-text" style="font-size:18px;line-height:1.7;color:var(--text-primary);white-space:pre-line;">點下方按鈕，隨機抽一則笑話 😄</div>
     </div>
 
     <div style="display:flex;gap:10px;margin-top:16px;">
       <button class="btn" onclick="copyCurrentJoke()" style="flex:1;"><i class="ti ti-clipboard-copy"></i> 複製</button>
       <button class="btn btn-primary" onclick="showRandomJoke()" style="flex:2;"><i class="ti ti-refresh"></i> 換一則</button>
     </div>
-    <div style="font-size:12px;color:var(--text-tertiary);text-align:center;margin-top:10px;" id="joke-counter"></div>
+    <div style="font-size:14px;color:var(--text-tertiary);text-align:center;margin-top:10px;" id="joke-counter"></div>
   </div>
 </div>
 
@@ -2165,9 +2167,9 @@ body {
     <!-- 輸入金額 -->
     <div style="display:flex;gap:10px;align-items:center;margin-bottom:14px;">
       <input type="number" id="fx-amount" value="1000" oninput="recalcFx()" inputmode="decimal"
-        style="flex:1;min-width:0;height:48px;border-radius:12px;border:1px solid var(--border-color);background:var(--bg-secondary);color:var(--text-primary);font-size:20px;font-weight:700;padding:0 14px;outline:none;box-sizing:border-box;">
+        style="flex:1;min-width:0;height:48px;border-radius:12px;border:1px solid var(--border-color);background:var(--bg-secondary);color:var(--text-primary);font-size:22px;font-weight:700;padding:0 14px;outline:none;box-sizing:border-box;">
       <select id="fx-from" onchange="recalcFx()"
-        style="flex-shrink:0;height:48px;border-radius:12px;border:1px solid var(--border-color);background:var(--bg-secondary);color:var(--text-primary);font-size:15px;font-weight:600;padding:0 8px;cursor:pointer;">
+        style="flex-shrink:0;height:48px;border-radius:12px;border:1px solid var(--border-color);background:var(--bg-secondary);color:var(--text-primary);font-size:17px;font-weight:600;padding:0 8px;cursor:pointer;">
         <option value="TWD">🇹🇼 TWD</option>
         <option value="USD">🇺🇸 USD</option>
         <option value="JPY">🇯🇵 JPY</option>
@@ -2184,7 +2186,7 @@ body {
     <div style="display:flex;gap:8px;margin-top:16px;">
       <button class="btn" onclick="refreshFxRates(true)" style="flex:1;"><i class="ti ti-refresh"></i> 更新匯率</button>
     </div>
-    <div id="fx-status" style="font-size:12px;color:var(--text-tertiary);text-align:center;margin-top:10px;"></div>
+    <div id="fx-status" style="font-size:14px;color:var(--text-tertiary);text-align:center;margin-top:10px;"></div>
   </div>
 </div>
 
@@ -2198,7 +2200,7 @@ body {
 
     <!-- 倒數顯示 -->
     <div id="timer-display" style="font-size:64px;font-weight:800;color:var(--text-primary);letter-spacing:2px;font-variant-numeric:tabular-nums;line-height:1;margin:8px 0 6px;">05:00</div>
-    <div id="timer-state" style="font-size:13px;color:var(--text-tertiary);margin-bottom:18px;">尚未開始</div>
+    <div id="timer-state" style="font-size:15px;color:var(--text-tertiary);margin-bottom:18px;">尚未開始</div>
 
     <!-- 快捷時間 -->
     <div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-bottom:18px;">
@@ -2212,7 +2214,7 @@ body {
 
     <!-- 控制按鈕 -->
     <div style="display:flex;gap:10px;">
-      <button class="btn btn-primary" id="timer-start-btn" onclick="toggleTimer()" style="flex:2;font-size:16px;padding:12px;"><i class="ti ti-player-play"></i> 開始</button>
+      <button class="btn btn-primary" id="timer-start-btn" onclick="toggleTimer()" style="flex:2;font-size:18px;padding:12px;"><i class="ti ti-player-play"></i> 開始</button>
       <button class="btn" onclick="resetTimer()" style="flex:1;"><i class="ti ti-rotate"></i> 重置</button>
     </div>
   </div>
@@ -2224,7 +2226,7 @@ body {
     <div style="background: white; padding:16px; display:inline-block; border-radius:var(--radius-md); border:1px solid var(--border-color); margin-top:1rem; margin-bottom:1rem;">
       <img id="share-qrcode-img" src="" alt="vCard QR Code" style="width:200px; height:200px; display:block;" />
     </div>
-    <p style="font-size:14px; color:var(--text-secondary); line-height:1.5; margin-bottom:1.5rem; padding:0 8px;">
+    <p style="font-size:16px; color:var(--text-secondary); line-height:1.5; margin-bottom:1.5rem; padding:0 8px;">
       讓對方使用手機相機或 LINE 掃描此二維碼，即可直接將此聯絡人儲存至其電話通訊錄中。
     </p>
     <button class="btn btn-primary" style="width:100%" onclick="closeQrCodeModal()">關閉視窗</button>
@@ -3499,7 +3501,7 @@ function renderCardsGrid() {
   if (filtered.length === 0) {
     grid.innerHTML = `<div style="text-align:center;padding:40px 20px;color:var(--text-tertiary);">
       <i class="ti ti-inbox" style="font-size:48px;opacity:0.4;"></i>
-      <p style="margin-top:12px;font-size:14px;">沒有符合條件的名片資料</p>
+      <p style="margin-top:12px;font-size:16px;">沒有符合條件的名片資料</p>
     </div>`;
     return;
   }
@@ -4074,12 +4076,12 @@ async function renderSystemStatus() {
     backupHtml = ''; // 沒名片不提醒
   } else if (!backupInfo) {
     backupHtml = `<div onclick="exportFullJsonBackup()" style="cursor:pointer;display:flex;align-items:center;gap:10px;padding:12px 14px;background:rgba(245,158,11,0.12);border:1px solid rgba(245,158,11,0.3);border-radius:12px;">
-      <i class="ti ti-alert-triangle" style="color:var(--color-amber);font-size:20px;flex-shrink:0;"></i>
+      <i class="ti ti-alert-triangle" style="color:var(--color-amber);font-size:22px;flex-shrink:0;"></i>
       <div style="flex:1;min-width:0;">
-        <div style="font-size:13.5px;font-weight:600;color:var(--text-primary);">尚未備份過資料</div>
-        <div style="font-size:12px;color:var(--text-tertiary);margin-top:1px;">資料只存在本機，點此立即備份保護</div>
+        <div style="font-size:15.5px;font-weight:600;color:var(--text-primary);">尚未備份過資料</div>
+        <div style="font-size:14px;color:var(--text-tertiary);margin-top:1px;">資料只存在本機，點此立即備份保護</div>
       </div>
-      <i class="ti ti-download" style="color:var(--color-amber);font-size:18px;flex-shrink:0;"></i>
+      <i class="ti ti-download" style="color:var(--color-amber);font-size:20px;flex-shrink:0;"></i>
     </div>`;
   } else {
     const days = Math.floor((Date.now() - backupInfo.ts) / 86400000);
@@ -4089,21 +4091,21 @@ async function renderSystemStatus() {
     const dateStr = `${d.getMonth()+1}/${d.getDate()}`;
     if (overdue) {
       backupHtml = `<div onclick="exportFullJsonBackup()" style="cursor:pointer;display:flex;align-items:center;gap:10px;padding:12px 14px;background:rgba(245,158,11,0.12);border:1px solid rgba(245,158,11,0.3);border-radius:12px;">
-        <i class="ti ti-clock-exclamation" style="color:var(--color-amber);font-size:20px;flex-shrink:0;"></i>
+        <i class="ti ti-clock-exclamation" style="color:var(--color-amber);font-size:22px;flex-shrink:0;"></i>
         <div style="flex:1;min-width:0;">
-          <div style="font-size:13.5px;font-weight:600;color:var(--text-primary);">建議重新備份</div>
-          <div style="font-size:12px;color:var(--text-tertiary);margin-top:1px;">上次備份 ${dateStr}（${days} 天前）${newCards>0?`，新增 ${newCards} 張`:''}</div>
+          <div style="font-size:15.5px;font-weight:600;color:var(--text-primary);">建議重新備份</div>
+          <div style="font-size:14px;color:var(--text-tertiary);margin-top:1px;">上次備份 ${dateStr}（${days} 天前）${newCards>0?`，新增 ${newCards} 張`:''}</div>
         </div>
-        <i class="ti ti-download" style="color:var(--color-amber);font-size:18px;flex-shrink:0;"></i>
+        <i class="ti ti-download" style="color:var(--color-amber);font-size:20px;flex-shrink:0;"></i>
       </div>`;
     } else {
       backupHtml = `<div style="display:flex;align-items:center;gap:10px;padding:12px 14px;background:var(--bg-secondary);border:1px solid var(--border-color);border-radius:12px;">
-        <i class="ti ti-shield-check" style="color:var(--color-green);font-size:20px;flex-shrink:0;"></i>
+        <i class="ti ti-shield-check" style="color:var(--color-green);font-size:22px;flex-shrink:0;"></i>
         <div style="flex:1;min-width:0;">
-          <div style="font-size:13.5px;font-weight:600;color:var(--text-primary);">資料已備份</div>
-          <div style="font-size:12px;color:var(--text-tertiary);margin-top:1px;">上次備份 ${dateStr}（${days===0?'今天':days+' 天前'}）</div>
+          <div style="font-size:15.5px;font-weight:600;color:var(--text-primary);">資料已備份</div>
+          <div style="font-size:14px;color:var(--text-tertiary);margin-top:1px;">上次備份 ${dateStr}（${days===0?'今天':days+' 天前'}）</div>
         </div>
-        <button class="btn" style="padding:5px 10px;font-size:12px;flex-shrink:0;" onclick="exportFullJsonBackup()"><i class="ti ti-download"></i></button>
+        <button class="btn" style="padding:5px 10px;font-size:14px;flex-shrink:0;" onclick="exportFullJsonBackup()"><i class="ti ti-download"></i></button>
       </div>`;
     }
   }
@@ -4118,10 +4120,10 @@ async function renderSystemStatus() {
       const avgPerCard = total > 0 ? usedMB / total : 0;
       const estimate = avgPerCard > 0 ? `，平均每張約 ${(avgPerCard*1024).toFixed(0)} KB` : '';
       storageHtml = `<div style="display:flex;align-items:center;gap:10px;padding:12px 14px;background:var(--bg-secondary);border:1px solid var(--border-color);border-radius:12px;">
-        <i class="ti ti-database" style="color:var(--accent);font-size:20px;flex-shrink:0;"></i>
+        <i class="ti ti-database" style="color:var(--accent);font-size:22px;flex-shrink:0;"></i>
         <div style="flex:1;min-width:0;">
-          <div style="font-size:13.5px;font-weight:600;color:var(--text-primary);">已用儲存空間 ${usedStr}</div>
-          <div style="font-size:12px;color:var(--text-tertiary);margin-top:1px;">${total} 張名片${estimate}</div>
+          <div style="font-size:15.5px;font-weight:600;color:var(--text-primary);">已用儲存空間 ${usedStr}</div>
+          <div style="font-size:14px;color:var(--text-tertiary);margin-top:1px;">${total} 張名片${estimate}</div>
         </div>
       </div>`;
     } catch(e) {}
@@ -4168,15 +4170,15 @@ function renderHomeScreen() {
   const groupList = document.getElementById('home-group-list');
   if (groupList) {
     if (customGroups.length === 0) {
-      groupList.innerHTML = '<div style="font-size:13px;color:var(--text-tertiary);">尚無群組資料</div>';
+      groupList.innerHTML = '<div style="font-size:15px;color:var(--text-tertiary);">尚無群組資料</div>';
     } else {
       groupList.innerHTML = customGroups.map((g, i) => {
         const count = groupCounts[g]||0;
         const color = colorMap[g]||'#94a3b8';
         return `<div onclick="setGroupFilter('${g}');switchTab('cards');" style="display:flex;align-items:center;gap:10px;padding:8px 0;cursor:pointer;${i>0?'border-top:1px solid var(--border-color);':''}">
           <span style="width:8px;height:8px;border-radius:50%;background:${color};flex-shrink:0;"></span>
-          <span style="flex:1;font-size:14px;color:var(--text-primary);">${g}</span>
-          <span style="font-size:13px;color:var(--text-secondary);font-weight:600;">${count} 張</span>
+          <span style="flex:1;font-size:16px;color:var(--text-primary);">${g}</span>
+          <span style="font-size:15px;color:var(--text-secondary);font-weight:600;">${count} 張</span>
         </div>`;
       }).join('');
     }
@@ -4189,7 +4191,7 @@ function renderHomeScreen() {
   if (tagCloud) {
     const keys = Object.keys(tagCounts).sort((a,b)=>tagCounts[b]-tagCounts[a]);
     tagCloud.innerHTML = keys.length === 0
-      ? '<div style="font-size:13px;color:var(--text-tertiary);">暫無標籤</div>'
+      ? '<div style="font-size:15px;color:var(--text-tertiary);">暫無標籤</div>'
       : keys.map(t => `<span class="tag-filter-chip" style="cursor:default;">#${t} (${tagCounts[t]})</span>`).join('');
   }
 
@@ -4200,7 +4202,7 @@ function renderHomeScreen() {
   if (pendingLink) pendingLink.style.display = cardsList.filter(c => !c.processed).length > 3 ? '' : 'none';
   if (pendingEl) {
     if (pending.length === 0) {
-      pendingEl.innerHTML = `<div style="padding:28px 0;text-align:center;color:var(--text-tertiary);font-size:14px;"><i class="ti ti-circle-check" style="font-size:28px;display:block;margin-bottom:8px;color:#34d399;opacity:0.7;"></i>全部名片都已處理完畢</div>`;
+      pendingEl.innerHTML = `<div style="padding:28px 0;text-align:center;color:var(--text-tertiary);font-size:16px;"><i class="ti ti-circle-check" style="font-size:30px;display:block;margin-bottom:8px;color:#34d399;opacity:0.7;"></i>全部名片都已處理完畢</div>`;
     } else {
       pendingEl.innerHTML = pending.map((c, i) => {
         const hue = nameToHue(c.name || '');
@@ -4208,12 +4210,12 @@ function renderHomeScreen() {
         const fg = `hsl(${hue} 55% 76%)`;
         return `
           <div onclick="selectCard('${c.id}');switchTab('cards');" style="display:flex;align-items:center;gap:13px;padding:12px 12px;border-top:${i===0?'none':'1px solid var(--border-color)'};cursor:pointer;">
-            <div style="width:42px;height:42px;border-radius:12px;background:${bg};color:${fg};display:flex;align-items:center;justify-content:center;font-size:17px;font-weight:600;flex-shrink:0;">${(c.name||'?').slice(0,1)}</div>
+            <div style="width:42px;height:42px;border-radius:12px;background:${bg};color:${fg};display:flex;align-items:center;justify-content:center;font-size:19px;font-weight:600;flex-shrink:0;">${(c.name||'?').slice(0,1)}</div>
             <div style="flex:1;min-width:0;">
-              <div style="font-size:15.5px;font-weight:600;color:var(--text-primary);">${c.name || '—'}</div>
-              <div style="font-size:12.5px;color:var(--text-secondary);margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${[c.title, c.org].filter(Boolean).join(' · ') || '—'}</div>
+              <div style="font-size:17.5px;font-weight:600;color:var(--text-primary);">${c.name || '—'}</div>
+              <div style="font-size:14.5px;color:var(--text-secondary);margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${[c.title, c.org].filter(Boolean).join(' · ') || '—'}</div>
             </div>
-            <div style="font-size:11.5px;font-weight:600;color:#f59e0b;padding:4px 9px;border-radius:7px;background:rgba(245,158,11,0.12);border:1px solid rgba(245,158,11,0.25);flex-shrink:0;">待處理</div>
+            <div style="font-size:13.5px;font-weight:600;color:#f59e0b;padding:4px 9px;border-radius:7px;background:rgba(245,158,11,0.12);border:1px solid rgba(245,158,11,0.25);flex-shrink:0;">待處理</div>
           </div>`;
       }).join('');
     }
@@ -4224,7 +4226,7 @@ function renderHomeScreen() {
   const recentEl = document.getElementById('home-recent-cards');
   if (recentEl) {
     if (recent.length === 0) {
-      recentEl.innerHTML = `<div style="padding:40px 0;text-align:center;color:var(--text-tertiary);font-size:14px;">尚無名片資料</div>`;
+      recentEl.innerHTML = `<div style="padding:40px 0;text-align:center;color:var(--text-tertiary);font-size:16px;">尚無名片資料</div>`;
     } else {
       recentEl.innerHTML = recent.map((c, i) => {
         const hue = nameToHue(c.name || '');
@@ -4234,12 +4236,12 @@ function renderHomeScreen() {
         const tag = c.tags && c.tags[0] ? c.tags[0] : (c.group || '');
         return `
           <div onclick="selectCard('${c.id}');switchTab('cards');" style="display:flex;align-items:center;gap:13px;padding:12px 12px;border-top:${i===0?'none':'1px solid var(--border-color)'};cursor:pointer;">
-            <div style="width:42px;height:42px;border-radius:12px;background:${bg};color:${fg};display:flex;align-items:center;justify-content:center;font-size:17px;font-weight:600;flex-shrink:0;">${initial}</div>
+            <div style="width:42px;height:42px;border-radius:12px;background:${bg};color:${fg};display:flex;align-items:center;justify-content:center;font-size:19px;font-weight:600;flex-shrink:0;">${initial}</div>
             <div style="flex:1;min-width:0;">
-              <div style="font-size:15.5px;font-weight:600;color:var(--text-primary);">${c.name || '—'}</div>
-              <div style="font-size:12.5px;color:var(--text-secondary);margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${[c.title, c.org].filter(Boolean).join(' · ') || '—'}</div>
+              <div style="font-size:17.5px;font-weight:600;color:var(--text-primary);">${c.name || '—'}</div>
+              <div style="font-size:14.5px;color:var(--text-secondary);margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${[c.title, c.org].filter(Boolean).join(' · ') || '—'}</div>
             </div>
-            ${tag ? `<div style="font-size:11.5px;font-weight:600;color:var(--text-secondary);padding:4px 9px;border-radius:7px;background:var(--bg-tertiary);border:1px solid var(--border-color);flex-shrink:0;">${tag}</div>` : ''}
+            ${tag ? `<div style="font-size:13.5px;font-weight:600;color:var(--text-secondary);padding:4px 9px;border-radius:7px;background:var(--bg-tertiary);border:1px solid var(--border-color);flex-shrink:0;">${tag}</div>` : ''}
           </div>`;
       }).join('');
     }
@@ -4265,8 +4267,8 @@ function renderMyProfile() {
       cardSection.innerHTML = `
         <div class="db-section" style="text-align:center;padding:32px 20px;">
           <i class="ti ti-user-circle" style="font-size:52px;color:var(--text-tertiary);opacity:0.4;display:block;margin-bottom:12px;"></i>
-          <div style="font-size:16px;font-weight:600;color:var(--text-primary);margin-bottom:6px;">尚未設定個人名片</div>
-          <div style="font-size:13px;color:var(--text-tertiary);margin-bottom:18px;">填寫後即可產生 QR Code 分享給他人</div>
+          <div style="font-size:18px;font-weight:600;color:var(--text-primary);margin-bottom:6px;">尚未設定個人名片</div>
+          <div style="font-size:15px;color:var(--text-tertiary);margin-bottom:18px;">填寫後即可產生 QR Code 分享給他人</div>
           <button class="btn btn-primary" onclick="openMyCardModal();setTimeout(enterMyCardEditMode,100);"><i class="ti ti-edit"></i> 立即填寫</button>
         </div>`;
     } else {
@@ -4325,12 +4327,12 @@ function renderMyProfile() {
         <img src="${qrUrl}"
              style="width:100%;max-width:160px;height:auto;border-radius:10px;display:block;"
              alt="vCard QR Code"
-             onerror="this.parentElement.innerHTML='<div style=color:var(--color-amber);font-size:13px;padding:20px;text-align:center;>離線狀態無法產生 QR Code</div>'"
+             onerror="this.parentElement.innerHTML='<div style=color:var(--color-amber);font-size:15px;padding:20px;text-align:center;>離線狀態無法產生 QR Code</div>'"
         />`;
       // 儲存 QR URL 供下載使用
       qrDiv.dataset.qrUrl = qrUrl;
     } else {
-      qrDiv.innerHTML = `<div style="width:150px;height:150px;border:2px dashed var(--border-color);border-radius:12px;display:flex;align-items:center;justify-content:center;color:var(--text-tertiary);font-size:12px;text-align:center;">填寫名片<br>後顯示</div>`;
+      qrDiv.innerHTML = `<div style="width:150px;height:150px;border:2px dashed var(--border-color);border-radius:12px;display:flex;align-items:center;justify-content:center;color:var(--text-tertiary);font-size:14px;text-align:center;">填寫名片<br>後顯示</div>`;
     }
   }
 
@@ -4345,7 +4347,7 @@ function renderMyProfile() {
       lineQrDiv.innerHTML = `<img src="${lineQrUrl}" style="width:100%;max-width:160px;height:auto;border-radius:10px;display:block;" alt="LINE QR Code"/>`;
       if (lineLabel) lineLabel.textContent = `LINE ID：${lineId}`;
     } else {
-      lineQrDiv.innerHTML = `<div style="width:150px;height:150px;border:2px dashed var(--border-color);border-radius:12px;display:flex;align-items:center;justify-content:center;color:var(--text-tertiary);font-size:12px;text-align:center;">填入 LINE ID<br>後顯示</div>`;
+      lineQrDiv.innerHTML = `<div style="width:150px;height:150px;border:2px dashed var(--border-color);border-radius:12px;display:flex;align-items:center;justify-content:center;color:var(--text-tertiary);font-size:14px;text-align:center;">填入 LINE ID<br>後顯示</div>`;
       if (lineLabel) lineLabel.textContent = '';
     }
   }
@@ -4363,16 +4365,16 @@ function renderMyProfile() {
       { icon: 'ti-world', label: '網站', val: c.website },
     ].filter(r => r.val);
     if (rows.length === 0) {
-      fields.innerHTML = `<div style="color:var(--text-tertiary);font-size:13px;text-align:center;padding:12px 0;">尚無聯絡資訊</div>`;
+      fields.innerHTML = `<div style="color:var(--text-tertiary);font-size:15px;text-align:center;padding:12px 0;">尚無聯絡資訊</div>`;
     } else {
       fields.innerHTML = rows.map((r, i) => `
         <div style="display:flex;align-items:center;gap:12px;padding:10px 0;${i>0?'border-top:1px solid var(--border-color);':''}">
           <div style="width:34px;height:34px;border-radius:9px;background:var(--accent-light);color:var(--accent);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
-            <i class="ti ${r.icon}" style="font-size:16px;"></i>
+            <i class="ti ${r.icon}" style="font-size:18px;"></i>
           </div>
           <div style="min-width:0;">
-            <div style="font-size:12px;color:var(--text-tertiary);">${r.label}</div>
-            <div style="font-size:14.5px;font-weight:500;color:var(--text-primary);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${r.val}</div>
+            <div style="font-size:14px;color:var(--text-tertiary);">${r.label}</div>
+            <div style="font-size:16.5px;font-weight:500;color:var(--text-primary);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${r.val}</div>
           </div>
         </div>`).join('');
     }
@@ -4501,7 +4503,7 @@ function renderMyCardModal(myCard, isEditMode) {
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.25rem;">
         <h2 style="margin:0;"><i class="ti ti-edit" style="color:var(--accent)"></i> 編輯我的個人名片</h2>
         <button class="btn btn-icon" onclick="closeMyCardModal()" style="width:34px;height:34px;flex-shrink:0;" title="關閉">
-          <i class="ti ti-x" style="font-size:18px;"></i>
+          <i class="ti ti-x" style="font-size:20px;"></i>
         </button>
       </div>
 
@@ -4544,7 +4546,7 @@ function renderMyCardModal(myCard, isEditMode) {
           <label>個人照片</label>
           <div style="display:flex;align-items:center;gap:12px;">
             <div id="my-photo-preview" style="width:56px;height:56px;border-radius:50%;overflow:hidden;background:var(--bg-tertiary);border:2px solid var(--border-color);flex-shrink:0;display:flex;align-items:center;justify-content:center;">
-              ${myCard.image ? `<img src="${myCard.image}" style="width:100%;height:100%;object-fit:cover;" />` : `<i class="ti ti-user" style="font-size:22px;color:var(--text-tertiary);"></i>`}
+              ${myCard.image ? `<img src="${myCard.image}" style="width:100%;height:100%;object-fit:cover;" />` : `<i class="ti ti-user" style="font-size:24px;color:var(--text-tertiary);"></i>`}
             </div>
             <div style="display:flex;gap:8px;flex-wrap:wrap;">
               <input type="file" id="my-photo-input" accept="image/*" style="display:none" onchange="handleMyPhotoUpload(event)" />
@@ -4597,7 +4599,7 @@ function renderMyCardModal(myCard, isEditMode) {
           <div style="background: white; padding:12px; display:inline-block; border-radius:var(--radius-md); border:1px solid var(--border-color); box-shadow:var(--shadow-sm);">
             <img src="${qrUrl}" style="width:160px; height:160px; display:block;" alt="My QR Code" />
           </div>
-          <p style="font-size:15px; color:var(--text-secondary); margin-top:8px; line-height:1.4; padding:0 12px;">
+          <p style="font-size:17px; color:var(--text-secondary); margin-top:8px; line-height:1.4; padding:0 12px;">
             讓對方用手機相機掃描上方二維碼，即可直接在對方手機中將您儲存為通訊錄聯絡人！
           </p>
         </div>
@@ -4661,7 +4663,7 @@ function handleMyPhotoUpload(event) {
 
 function clearMyPhoto() {
   const preview = document.getElementById('my-photo-preview');
-  if (preview) preview.innerHTML = `<i class="ti ti-user" style="font-size:22px;color:var(--text-tertiary);"></i>`;
+  if (preview) preview.innerHTML = `<i class="ti ti-user" style="font-size:24px;color:var(--text-tertiary);"></i>`;
   const input = document.getElementById('my-photo-input');
   if (input) { input.value = ''; input.dataset.base64 = ''; }
 }
@@ -4837,17 +4839,17 @@ function renderDupsTab() {
     return `
       <div class="dup-card-item">
         <div style="min-width:0; flex:1;">
-          <div style="font-size:15px; font-weight:600;">${c.name || '—'}</div>
-          <div style="font-size:14px; color:var(--text-secondary); margin-top:2px;">
-            <i class="ti ti-building" style="font-size:13px;"></i> ${c.org || '無公司'} · ${c.title || '無職稱'}
+          <div style="font-size:17px; font-weight:600;">${c.name || '—'}</div>
+          <div style="font-size:16px; color:var(--text-secondary); margin-top:2px;">
+            <i class="ti ti-building" style="font-size:15px;"></i> ${c.org || '無公司'} · ${c.title || '無職稱'}
           </div>
-          <div style="font-size:13px; color:var(--text-tertiary); margin-top:1px;">
+          <div style="font-size:15px; color:var(--text-tertiary); margin-top:1px;">
             手機 ${c.mobile || '—'} ｜ ${c.email || '無 Email'}
           </div>
         </div>
         <div style="display:flex;flex-direction:column;gap:5px;flex-shrink:0;">
-          <button class="btn" style="padding:5px 10px; font-size:13px;" onclick="selectCard('${c.id}');switchTab('cards');">查看</button>
-          <button class="btn btn-red" style="padding:5px 10px; font-size:13px;" onclick="deleteDupCard('${c.id}')">刪除</button>
+          <button class="btn" style="padding:5px 10px; font-size:15px;" onclick="selectCard('${c.id}');switchTab('cards');">查看</button>
+          <button class="btn btn-red" style="padding:5px 10px; font-size:15px;" onclick="deleteDupCard('${c.id}')">刪除</button>
         </div>
       </div>`;
   };
@@ -4856,7 +4858,7 @@ function renderDupsTab() {
 
   // 完全重複區
   if (dupGroups.length > 0) {
-    html += `<div style="font-size:14px;font-weight:700;color:var(--color-red);margin:4px 0 12px;display:flex;align-items:center;gap:6px;">
+    html += `<div style="font-size:16px;font-weight:700;color:var(--color-red);margin:4px 0 12px;display:flex;align-items:center;gap:6px;">
       <i class="ti ti-copy"></i> 完全重複（同公司同人，建議只留一張）· ${dupGroups.length} 組
     </div>`;
     html += dupGroups.map((g, i) => `
@@ -4868,10 +4870,10 @@ function renderDupsTab() {
 
   // 換工作區
   if (jobGroups.length > 0) {
-    html += `<div style="font-size:14px;font-weight:700;color:var(--color-amber);margin:${dupGroups.length?'22px':'4px'} 0 8px;display:flex;align-items:center;gap:6px;">
+    html += `<div style="font-size:16px;font-weight:700;color:var(--color-amber);margin:${dupGroups.length?'22px':'4px'} 0 8px;display:flex;align-items:center;gap:6px;">
       <i class="ti ti-briefcase"></i> 疑似換工作（同一人、不同公司）· ${jobGroups.length} 組
     </div>
-    <div style="font-size:12.5px;color:var(--text-tertiary);margin-bottom:12px;line-height:1.5;">
+    <div style="font-size:14.5px;color:var(--text-tertiary);margin-bottom:12px;line-height:1.5;">
       💡 這些是同一個人但公司不同，可能是換了工作。建議<strong>保留兩張</strong>當作職涯歷程，或刪除舊的那張。
     </div>`;
     html += jobGroups.map((g, i) => {
@@ -4883,20 +4885,20 @@ function renderDupsTab() {
           ${sorted.map((c, idx) => `
             <div class="dup-card-item">
               <div style="min-width:0; flex:1;">
-                <div style="font-size:15px; font-weight:600;">
+                <div style="font-size:17px; font-weight:600;">
                   ${c.name || '—'}
-                  ${idx === 0 ? '<span style="font-size:11px;background:var(--color-green-bg);color:var(--color-green);padding:2px 7px;border-radius:6px;margin-left:6px;font-weight:600;">最新</span>' : '<span style="font-size:11px;background:var(--bg-tertiary);color:var(--text-tertiary);padding:2px 7px;border-radius:6px;margin-left:6px;">舊</span>'}
+                  ${idx === 0 ? '<span style="font-size:13px;background:var(--color-green-bg);color:var(--color-green);padding:2px 7px;border-radius:6px;margin-left:6px;font-weight:600;">最新</span>' : '<span style="font-size:13px;background:var(--bg-tertiary);color:var(--text-tertiary);padding:2px 7px;border-radius:6px;margin-left:6px;">舊</span>'}
                 </div>
-                <div style="font-size:14px; color:var(--text-secondary); margin-top:2px;">
-                  <i class="ti ti-building" style="font-size:13px;"></i> ${c.org || '無公司'} · ${c.title || '無職稱'}
+                <div style="font-size:16px; color:var(--text-secondary); margin-top:2px;">
+                  <i class="ti ti-building" style="font-size:15px;"></i> ${c.org || '無公司'} · ${c.title || '無職稱'}
                 </div>
-                <div style="font-size:13px; color:var(--text-tertiary); margin-top:1px;">
+                <div style="font-size:15px; color:var(--text-tertiary); margin-top:1px;">
                   手機 ${c.mobile || '—'} ｜ ${c.email || '無 Email'}
                 </div>
               </div>
               <div style="display:flex;flex-direction:column;gap:5px;flex-shrink:0;">
-                <button class="btn" style="padding:5px 10px; font-size:13px;" onclick="selectCard('${c.id}');switchTab('cards');">查看</button>
-                <button class="btn btn-red" style="padding:5px 10px; font-size:13px;" onclick="deleteDupCard('${c.id}')">刪除</button>
+                <button class="btn" style="padding:5px 10px; font-size:15px;" onclick="selectCard('${c.id}');switchTab('cards');">查看</button>
+                <button class="btn btn-red" style="padding:5px 10px; font-size:15px;" onclick="deleteDupCard('${c.id}')">刪除</button>
               </div>
             </div>
           `).join('')}
@@ -5476,7 +5478,7 @@ function _syncStepBar(active) {
       const cur  = i === active - 1;
       const bg   = done ? 'var(--color-green)' : cur ? 'var(--accent)' : 'var(--bg-tertiary)';
       const color= (done || cur) ? '#fff' : 'var(--text-tertiary)';
-      return `<div style="flex:1;padding:8px;text-align:center;font-size:14px;font-weight:700;background:${bg};color:${color};">${l}${done ? ' ✓' : ''}</div>`;
+      return `<div style="flex:1;padding:8px;text-align:center;font-size:16px;font-weight:700;background:${bg};color:${color};">${l}${done ? ' ✓' : ''}</div>`;
     }).join('')}
   </div>`;
 }
@@ -5488,21 +5490,21 @@ function renderSmartSyncStep1() {
   const dupHTML = dups.length === 0
     ? `<div style="text-align:center;padding:28px 0;color:var(--color-green);">
          <i class="ti ti-circle-check" style="font-size:38px;"></i>
-         <div style="font-size:14px;font-weight:600;margin-top:8px;">名片庫整潔！無重複資料 🎉</div>
+         <div style="font-size:16px;font-weight:600;margin-top:8px;">名片庫整潔！無重複資料 🎉</div>
        </div>`
     : dups.map((g, idx) => `
         <div style="border:1px solid var(--color-amber-border);border-radius:var(--radius-md);padding:10px 12px;margin-bottom:8px;background:var(--color-amber-bg);">
-          <div style="font-size:14px;font-weight:700;color:var(--color-amber);margin-bottom:6px;">
+          <div style="font-size:16px;font-weight:700;color:var(--color-amber);margin-bottom:6px;">
             <i class="ti ti-copy"></i> 第 ${idx+1} 組：${g[0].name || '未命名'}（共 ${g.length} 張）
           </div>
           ${g.map(c => `
-            <div style="display:flex;align-items:center;gap:8px;padding:4px 0;font-size:14px;">
+            <div style="display:flex;align-items:center;gap:8px;padding:4px 0;font-size:16px;">
               <div style="flex:1;min-width:0;">
                 <strong>${c.name || '—'}</strong>
                 <span style="color:var(--text-secondary);margin-left:6px;">${c.org || ''}${c.mobile ? ' · ' + c.mobile : ''}</span>
               </div>
               <button onclick="smartSyncDeleteDup('${c.id}')"
-                style="border:none;background:var(--color-red-bg);color:var(--color-red);border-radius:4px;padding:3px 10px;cursor:pointer;font-size:15px;flex-shrink:0;">
+                style="border:none;background:var(--color-red-bg);color:var(--color-red);border-radius:4px;padding:3px 10px;cursor:pointer;font-size:17px;flex-shrink:0;">
                 <i class="ti ti-trash"></i> 刪除
               </button>
             </div>`).join('')}
@@ -5510,11 +5512,11 @@ function renderSmartSyncStep1() {
 
   modal.innerHTML = `
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.25rem;">
-      <h2 style="margin:0;font-size:15px;"><i class="ti ti-wand" style="color:var(--accent)"></i> 智慧一鍵同步精靈</h2>
-      <button onclick="closeSmartSyncModal()" style="border:none;background:none;cursor:pointer;font-size:22px;color:var(--text-tertiary);line-height:1;padding:0 4px;">×</button>
+      <h2 style="margin:0;font-size:17px;"><i class="ti ti-wand" style="color:var(--accent)"></i> 智慧一鍵同步精靈</h2>
+      <button onclick="closeSmartSyncModal()" style="border:none;background:none;cursor:pointer;font-size:24px;color:var(--text-tertiary);line-height:1;padding:0 4px;">×</button>
     </div>
     ${_syncStepBar(1)}
-    <div style="font-size:15px;font-weight:600;margin-bottom:10px;color:var(--text-primary);">
+    <div style="font-size:17px;font-weight:600;margin-bottom:10px;color:var(--text-primary);">
       ${dups.length > 0 ? `偵測到 <strong>${dups.length}</strong> 組疑似重複，刪除後再繼續：` : '重複檢查通過，可直接繼續：'}
     </div>
     <div style="max-height:340px;overflow-y:auto;margin-bottom:1.25rem;">${dupHTML}</div>
@@ -5545,26 +5547,26 @@ function renderSmartSyncStep2() {
 
   modal.innerHTML = `
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.25rem;">
-      <h2 style="margin:0;font-size:15px;"><i class="ti ti-wand" style="color:var(--accent)"></i> 智慧一鍵同步精靈</h2>
-      <button onclick="closeSmartSyncModal()" style="border:none;background:none;cursor:pointer;font-size:22px;color:var(--text-tertiary);line-height:1;padding:0 4px;">×</button>
+      <h2 style="margin:0;font-size:17px;"><i class="ti ti-wand" style="color:var(--accent)"></i> 智慧一鍵同步精靈</h2>
+      <button onclick="closeSmartSyncModal()" style="border:none;background:none;cursor:pointer;font-size:24px;color:var(--text-tertiary);line-height:1;padding:0 4px;">×</button>
     </div>
     ${_syncStepBar(2)}
-    <div style="font-size:15px;font-weight:600;margin-bottom:14px;">共 <strong>${total}</strong> 張名片，請選擇匯出目標（可多選）：</div>
+    <div style="font-size:17px;font-weight:600;margin-bottom:14px;">共 <strong>${total}</strong> 張名片，請選擇匯出目標（可多選）：</div>
 
     <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:1.5rem;">
       <label id="lbl-vcf" style="display:flex;align-items:flex-start;gap:12px;padding:14px;border-radius:var(--radius-md);border:2px solid var(--border-color);cursor:pointer;background:var(--bg-secondary);transition:var(--transition);">
         <input type="checkbox" id="sync-opt-vcf" style="width:18px;height:18px;margin-top:1px;cursor:pointer;" onchange="updateSyncLabel()">
         <div style="flex:1;">
-          <div style="font-size:15px;font-weight:700;display:flex;align-items:center;gap:6px;">
+          <div style="font-size:17px;font-weight:700;display:flex;align-items:center;gap:6px;">
             <i class="ti ti-file-export" style="color:var(--color-green);"></i> 匯出 VCF 檔案
           </div>
-          <div style="font-size:15px;color:var(--text-secondary);margin-top:3px;">下載 .vcf 檔 → 手機開啟即可匯入 iOS / Android 通訊錄。</div>
+          <div style="font-size:17px;color:var(--text-secondary);margin-top:3px;">下載 .vcf 檔 → 手機開啟即可匯入 iOS / Android 通訊錄。</div>
           <div style="margin-top:8px;display:flex;gap:12px;flex-wrap:wrap;">
-            <label style="display:flex;align-items:center;gap:5px;font-size:14px;cursor:pointer;">
+            <label style="display:flex;align-items:center;gap:5px;font-size:16px;cursor:pointer;">
               <input type="radio" name="vcf-mode" value="new" checked style="cursor:pointer;">
               <span>只匯出新增 <strong id="vcf-new-count"></strong> <span style="color:var(--color-green);font-weight:600;">✓ 不重複</span></span>
             </label>
-            <label style="display:flex;align-items:center;gap:5px;font-size:14px;cursor:pointer;">
+            <label style="display:flex;align-items:center;gap:5px;font-size:16px;cursor:pointer;">
               <input type="radio" name="vcf-mode" value="all" style="cursor:pointer;">
               <span>全部匯出（${total} 張）</span>
             </label>
@@ -5575,10 +5577,10 @@ function renderSmartSyncStep2() {
       <label id="lbl-google" style="display:flex;align-items:flex-start;gap:12px;padding:14px;border-radius:var(--radius-md);border:2px solid var(--border-color);cursor:pointer;background:var(--bg-secondary);transition:var(--transition);">
         <input type="checkbox" id="sync-opt-google" style="width:18px;height:18px;margin-top:1px;cursor:pointer;" onchange="updateSyncLabel()">
         <div>
-          <div style="font-size:15px;font-weight:700;display:flex;align-items:center;gap:6px;">
+          <div style="font-size:17px;font-weight:700;display:flex;align-items:center;gap:6px;">
             <i class="ti ti-brand-google" style="color:#4285F4;"></i> 同步至 Google 通訊錄
           </div>
-          <div style="font-size:15px;color:var(--text-secondary);margin-top:3px;">
+          <div style="font-size:17px;color:var(--text-secondary);margin-top:3px;">
             推送至 Google → Android 自動同步，iOS 設 Google 帳號亦可使用。<br>
             <span style="color:var(--color-green);">已同步 ${synced} 張</span>・
             <span style="color:var(--color-amber);">待推送 ${unsynced} 張</span>
@@ -5619,10 +5621,10 @@ async function executeSmartSync() {
 
   modal.innerHTML = `
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.25rem;">
-      <h2 style="margin:0;font-size:15px;"><i class="ti ti-wand" style="color:var(--accent)"></i> 智慧一鍵同步精靈</h2>
+      <h2 style="margin:0;font-size:17px;"><i class="ti ti-wand" style="color:var(--accent)"></i> 智慧一鍵同步精靈</h2>
     </div>
     ${_syncStepBar(3)}
-    <div id="ss-log" style="font-size:14px;color:var(--text-secondary);line-height:2.1;min-height:130px;max-height:260px;overflow-y:auto;"></div>
+    <div id="ss-log" style="font-size:16px;color:var(--text-secondary);line-height:2.1;min-height:130px;max-height:260px;overflow-y:auto;"></div>
     <div class="progress-bar show" style="margin-top:10px;"><div class="progress-fill" id="ss-pf" style="width:0%;transition:width 0.3s;"></div></div>
     <div id="ss-result" style="margin-top:16px;"></div>`;
 
@@ -5679,12 +5681,12 @@ async function executeSmartSync() {
   pfEl.style.width = '100%';
   // Update step bar to all green
   modal.querySelector('[style*="display:flex;gap:0"]').innerHTML = ['① 清理重複 ✓','② 選目標 ✓','③ 完成 ✓']
-    .map(l => `<div style="flex:1;padding:8px;text-align:center;font-size:14px;font-weight:700;background:var(--color-green);color:#fff;">${l}</div>`).join('');
+    .map(l => `<div style="flex:1;padding:8px;text-align:center;font-size:16px;font-weight:700;background:var(--color-green);color:#fff;">${l}</div>`).join('');
 
   resultEl.innerHTML = `
     <div style="text-align:center;padding:16px 0 8px;">
       <i class="ti ti-circle-check" style="font-size:40px;color:var(--color-green);"></i>
-      <div style="font-size:15px;font-weight:700;margin-top:6px;">同步完成！</div>
+      <div style="font-size:17px;font-weight:700;margin-top:6px;">同步完成！</div>
     </div>
     <button class="btn btn-primary" style="width:100%;margin-top:8px;" onclick="closeSmartSyncModal()">✓ 關閉</button>`;
 
@@ -5710,16 +5712,16 @@ function showOrgPersonDetail(cardId) {
   const color = {'學校委員':'#6366f1','政府機關':'#0ea5e9','企業客戶':'#10b981','資訊夥伴':'#f59e0b','法人夥伴':'#8b5cf6','供應商夥伴':'#ec4899','其他':'#94a3b8'}[c.group||'其他']||'#94a3b8';
   const html = `
     <div style="display:flex;align-items:center;gap:14px;margin-bottom:16px;">
-      <div style="width:56px;height:56px;border-radius:50%;background:${color};color:#fff;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:700;flex-shrink:0;">${(c.name||'?').slice(0,1)}</div>
-      <div><div style="font-size:18px;font-weight:700;color:var(--text-primary);">${c.name||'—'}</div>
-        <div style="font-size:13px;color:var(--text-secondary);margin-top:3px;">${[c.title,c.dept].filter(Boolean).join(' · ')||''}</div>
-        <div style="font-size:13px;color:var(--text-tertiary);">${c.org||''}</div>
+      <div style="width:56px;height:56px;border-radius:50%;background:${color};color:#fff;display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:700;flex-shrink:0;">${(c.name||'?').slice(0,1)}</div>
+      <div><div style="font-size:20px;font-weight:700;color:var(--text-primary);">${c.name||'—'}</div>
+        <div style="font-size:15px;color:var(--text-secondary);margin-top:3px;">${[c.title,c.dept].filter(Boolean).join(' · ')||''}</div>
+        <div style="font-size:15px;color:var(--text-tertiary);">${c.org||''}</div>
       </div>
     </div>
     <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:18px;">
-      ${c.mobile?`<div style="display:flex;align-items:center;gap:10px;"><i class="ti ti-device-mobile" style="color:var(--accent);width:20px;"></i><a href="tel:${cleanMobile}" style="color:var(--text-primary);font-size:15px;">${c.mobile}</a></div>`:''}
-      ${c.phone?`<div style="display:flex;align-items:center;gap:10px;"><i class="ti ti-phone" style="color:var(--accent);width:20px;"></i><a href="tel:${cleanPhone}" style="color:var(--text-primary);font-size:15px;">${c.phone}</a></div>`:''}
-      ${c.email?`<div style="display:flex;align-items:center;gap:10px;"><i class="ti ti-mail" style="color:var(--accent);width:20px;"></i><a href="mailto:${c.email}" style="color:var(--text-primary);font-size:15px;">${c.email}</a></div>`:''}
+      ${c.mobile?`<div style="display:flex;align-items:center;gap:10px;"><i class="ti ti-device-mobile" style="color:var(--accent);width:20px;"></i><a href="tel:${cleanMobile}" style="color:var(--text-primary);font-size:17px;">${c.mobile}</a></div>`:''}
+      ${c.phone?`<div style="display:flex;align-items:center;gap:10px;"><i class="ti ti-phone" style="color:var(--accent);width:20px;"></i><a href="tel:${cleanPhone}" style="color:var(--text-primary);font-size:17px;">${c.phone}</a></div>`:''}
+      ${c.email?`<div style="display:flex;align-items:center;gap:10px;"><i class="ti ti-mail" style="color:var(--accent);width:20px;"></i><a href="mailto:${c.email}" style="color:var(--text-primary);font-size:17px;">${c.email}</a></div>`:''}
     </div>
     <div style="display:flex;gap:8px;">
       <button class="btn btn-primary" style="flex:1;" onclick="selectCard('${c.id}');switchTab('cards');document.getElementById('org-detail-modal-bg').classList.remove('open');">
@@ -5803,18 +5805,18 @@ function renderGraphTab() {
             <div class="org-person-name">${c.name||'—'}</div>
             <div class="org-person-title">${[c.title,c.dept].filter(Boolean).join(' · ')||'—'}</div>
           </div>
-          ${phone?`<div style="font-size:13px;color:var(--text-tertiary);flex-shrink:0;">${phone}</div>`:''}
-          ${c.processed?`<i class="ti ti-circle-check" style="color:var(--color-green);font-size:16px;flex-shrink:0;"></i>`:''}
+          ${phone?`<div style="font-size:15px;color:var(--text-tertiary);flex-shrink:0;">${phone}</div>`:''}
+          ${c.processed?`<i class="ti ti-circle-check" style="color:var(--color-green);font-size:18px;flex-shrink:0;"></i>`:''}
         </div>`;
     }).join('');
 
     return `
       <div class="org-company-card">
         <div class="org-company-header" onclick="toggleOrgCompany('${orgName.replace(/'/g,"\\'")}');" style="cursor:pointer;user-select:none;">
-          <i class="ti ${isNoOrg?'ti-user-question':'ti-building'}" style="color:var(--accent);font-size:16px;flex-shrink:0;"></i>
+          <i class="ti ${isNoOrg?'ti-user-question':'ti-building'}" style="color:var(--accent);font-size:18px;flex-shrink:0;"></i>
           <div class="org-company-name" style="flex:1;">${orgName}</div>
           <span class="org-company-count">${people.length} 人</span>
-          <i class="ti ${isExpanded?'ti-chevron-up':'ti-chevron-down'}" style="font-size:15px;color:var(--text-tertiary);margin-left:6px;"></i>
+          <i class="ti ${isExpanded?'ti-chevron-up':'ti-chevron-down'}" style="font-size:17px;color:var(--text-tertiary);margin-left:6px;"></i>
         </div>
         ${isExpanded ? peopleHTML : ''}
       </div>`;
@@ -5897,7 +5899,7 @@ function recalcFx() {
     return `<div class="fx-result-row">
       <div style="display:flex;flex-direction:column;gap:2px;">
         <span class="fx-cur">${FX_NAMES[c]}</span>
-        <span style="font-size:11px;color:var(--text-tertiary);">1 ${cName} = ${unitFmt} ${fromName}</span>
+        <span style="font-size:13px;color:var(--text-tertiary);">1 ${cName} = ${unitFmt} ${fromName}</span>
       </div>
       <span class="fx-val">${formatted}</span>
     </div>`;
