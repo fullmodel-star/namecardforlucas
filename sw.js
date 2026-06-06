@@ -1,8 +1,11 @@
-const CACHE_NAME = 'bizcard-pwa-v8';
+const CACHE_NAME = 'bizcard-pwa-v9';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
   './manifest.json',
+  './icons/icon-192.png',
+  './icons/icon-512.png',
+  './icons/icon-maskable-512.png',
   'https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css',
   'https://accounts.google.com/gsi/client'
 ];
