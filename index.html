@@ -1244,7 +1244,7 @@ body {
   position: fixed;
   inset: 0;
   background: rgba(0,0,0,0.5);
-  z-index: 100;
+  z-index: 300;
   align-items: flex-start;
   justify-content: center;
   padding: 3rem 16px;
@@ -1262,8 +1262,8 @@ body {
   border: 1px solid var(--border-color);
 }
 @media (max-width: 480px) {
-  .modal-overlay { padding: 16px 12px; align-items: center; }
-  .modal { padding: 1.25rem 1rem; }
+  .modal-overlay { padding: 16px 12px 32px; align-items: flex-start; }
+  .modal { padding: 1.25rem 1rem; margin: auto; }
 }
 .modal h2 {
   font-size: 16px;
