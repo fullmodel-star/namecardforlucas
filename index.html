@@ -720,7 +720,7 @@ input, select, textarea, button { font-size: 16px; }
 .vc-flip-inner {
   position: relative;
   width: 100%;
-  aspect-ratio: 1.6 / 1;
+  aspect-ratio: 1.55 / 1;
   transform-style: preserve-3d;
   transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
 }
@@ -763,7 +763,7 @@ input, select, textarea, button { font-size: 16px; }
 }
 .virtual-card {
   width: 100%;
-  aspect-ratio: 1.6 / 1;
+  aspect-ratio: 1.55 / 1;
   border-radius: var(--radius-md);
   position: relative;
   overflow: hidden;
@@ -802,26 +802,37 @@ input, select, textarea, button { font-size: 16px; }
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 10px;
 }
 .vc-logo {
   font-size:20px;
   opacity: 0.9;
+  flex-shrink: 0;
 }
 .vc-org {
   font-size:14px;
   font-weight: 600;
   letter-spacing: 0.05em;
   opacity: 0.9;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-align: right;
 }
 .vc-mid {
   margin-top: auto;
   margin-bottom: auto;
+  min-width: 0;
 }
 .vc-name {
   font-size:24px;
   font-weight: 700;
   letter-spacing: 0.05em;
   text-shadow: 0 2px 4px rgba(0,0,0,0.15);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 .vc-title-row {
   display: flex;
@@ -829,20 +840,44 @@ input, select, textarea, button { font-size: 16px; }
   gap: 6px;
   font-size:14px;
   opacity: 0.9;
-  margin-top: 3px;
+  margin-top: 4px;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+}
+.vc-title-row > span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 .vc-ft {
   display: flex;
   justify-content: space-between;
+  gap: 12px;
   font-size:13px;
   opacity: 0.85;
   border-top: 1px solid rgba(255,255,255,0.15);
-  padding-top: 6px;
+  padding-top: 8px;
+  margin-top: 6px;
 }
 .vc-contact-item {
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 5px;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.vc-contact-item i {
+  flex-shrink: 0;
+}
+/* 電話完整顯示，Email 才截斷 */
+.vc-ft .vc-contact-item:first-child {
+  flex-shrink: 0;
+}
+.vc-ft .vc-contact-item:last-child {
+  min-width: 0;
 }
 
 /* 虛擬名片主題配色 */
