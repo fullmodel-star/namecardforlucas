@@ -3667,11 +3667,7 @@ async function selectCard(id) {
                 </div>
                 <div class="vc-mid">
                   <div class="vc-name">${c.name || '未輸入姓名'}</div>
-                  <div class="vc-title-row">
-                    <span>${c.title || '無職稱'}</span>
-                    ${c.dept ? '<span>·</span>' : ''}
-                    <span>${c.dept || ''}</span>
-                  </div>
+                  <div class="vc-title-row" style="display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${[c.title, c.dept].filter(Boolean).join(' · ') || '無職稱'}</div>
                 </div>
                 <div class="vc-ft">
                   <div class="vc-contact-item"><i class="ti ti-phone"></i> ${c.mobile || c.phone || '無電話號碼'}</div>
@@ -4380,9 +4376,10 @@ function renderMyProfile() {
         </div>`;
     } else {
       const photoHtml = c.image ? `
-        <div style="width:96px;height:96px;border-radius:50%;overflow:hidden;border:3px solid rgba(255,255,255,0.55);box-shadow:0 6px 18px rgba(0,0,0,0.35);flex-shrink:0;">
+        <div style="width:78px;height:78px;border-radius:50%;overflow:hidden;border:3px solid rgba(255,255,255,0.55);box-shadow:0 6px 18px rgba(0,0,0,0.35);flex-shrink:0;">
           <img src="${c.image}" style="width:100%;height:100%;object-fit:cover;" />
         </div>` : '';
+      const titleDept = [c.title, c.dept].filter(Boolean).join(' · ') || '';
 
       cardSection.innerHTML = `
         <div class="virtual-card-wrapper" style="margin:0;">
@@ -4393,13 +4390,10 @@ function renderMyProfile() {
                 <span class="vc-logo"><i class="ti ti-address-book"></i></span>
                 <span class="vc-org">${c.org || '未設定公司'}</span>
               </div>
-              <div class="vc-mid" style="display:flex;align-items:center;justify-content:space-between;gap:12px;">
+              <div class="vc-mid" style="display:flex;align-items:center;justify-content:space-between;gap:14px;">
                 <div style="flex:1;min-width:0;">
                   <div class="vc-name">${c.name}</div>
-                  <div class="vc-title-row">
-                    <span>${c.title || ''}</span>
-                    ${c.dept ? `<span>·</span><span>${c.dept}</span>` : ''}
-                  </div>
+                  ${titleDept ? `<div style="font-size:14px;opacity:0.9;margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${titleDept}</div>` : ''}
                 </div>
                 ${photoHtml}
               </div>
