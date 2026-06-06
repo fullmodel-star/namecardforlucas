@@ -1507,6 +1507,9 @@ body {
       <!-- 區塊列表 -->
       <div style="padding:14px 14px 90px;display:flex;flex-direction:column;gap:12px;">
 
+        <!-- 系統狀態：儲存空間 + 備份提醒 -->
+        <div id="home-system-status"></div>
+
         <!-- KPI 橫列 (同分析頁) -->
         <div class="dashboard-grid" id="home-kpi-row"></div>
 
@@ -2248,6 +2251,8 @@ body {
         <select id="ai-email-scene">
           <option value="exhibition">展覽/會議拜訪後續聯繫 (Follow-up)</option>
           <option value="proposal">商務合作提案發送 (Proposal)</option>
+          <option value="followup">跟進催單/進度詢問 (Chase-up)</option>
+          <option value="quote">報價確認/詢價回覆 (Quotation)</option>
           <option value="thankyou">感謝撥冗會面/簡報問候 (Thank you)</option>
           <option value="holiday">年節或佳節問候 (Holiday Greetings)</option>
         </select>
@@ -3858,7 +3863,10 @@ async function exportFullJsonBackup() {
     a.href = url;
     a.download = `名片系統完整備份_${new Date().toISOString().slice(0, 10)}.json`;
     a.click();
+    // 記錄備份時間與當下名片數
+    localStorage.setItem('bizcard_last_backup', JSON.stringify({ ts: Date.now(), count: cardsList.length }));
     showToast('✓ 完整備份導出成功！');
+    renderHomeScreen(); // 更新總覽的備份狀態
   } catch(e) {
     alert('備份導出失敗：' + e.message);
   }
@@ -3956,6 +3964,8 @@ async function generateAiFollowUpEmail() {
   
   let sceneName = '展覽會議拜訪後續聯繫';
   if (scene === 'proposal') sceneName = '商務合作提案發送';
+  if (scene === 'followup') sceneName = '跟進催單與專案進度詢問（語氣需積極但不失禮，委婉詢問對方目前評估進度或下一步安排）';
+  if (scene === 'quote') sceneName = '報價確認與詢價回覆（需禮貌說明已附上報價、歡迎洽談細節，並表達樂意提供進一步協助）';
   if (scene === 'thankyou') sceneName = '感謝撥冗會面/簡報問候';
   if (scene === 'holiday') sceneName = '節日問候';
   
@@ -4049,12 +4059,91 @@ function renderDashboard() {
 /**
  * 首頁畫面渲染
  */
+// 系統狀態：儲存空間用量 + 備份提醒
+async function renderSystemStatus() {
+  const el = document.getElementById('home-system-status');
+  if (!el) return;
+
+  // 1. 備份狀態
+  let backupInfo = null;
+  try { backupInfo = JSON.parse(localStorage.getItem('bizcard_last_backup') || 'null'); } catch(e) {}
+  const total = cardsList.length;
+
+  let backupHtml = '';
+  if (total === 0) {
+    backupHtml = ''; // 沒名片不提醒
+  } else if (!backupInfo) {
+    backupHtml = `<div onclick="exportFullJsonBackup()" style="cursor:pointer;display:flex;align-items:center;gap:10px;padding:12px 14px;background:rgba(245,158,11,0.12);border:1px solid rgba(245,158,11,0.3);border-radius:12px;">
+      <i class="ti ti-alert-triangle" style="color:var(--color-amber);font-size:20px;flex-shrink:0;"></i>
+      <div style="flex:1;min-width:0;">
+        <div style="font-size:13.5px;font-weight:600;color:var(--text-primary);">尚未備份過資料</div>
+        <div style="font-size:12px;color:var(--text-tertiary);margin-top:1px;">資料只存在本機，點此立即備份保護</div>
+      </div>
+      <i class="ti ti-download" style="color:var(--color-amber);font-size:18px;flex-shrink:0;"></i>
+    </div>`;
+  } else {
+    const days = Math.floor((Date.now() - backupInfo.ts) / 86400000);
+    const newCards = total - (backupInfo.count || 0);
+    const overdue = days >= 7 || newCards >= 10;
+    const d = new Date(backupInfo.ts);
+    const dateStr = `${d.getMonth()+1}/${d.getDate()}`;
+    if (overdue) {
+      backupHtml = `<div onclick="exportFullJsonBackup()" style="cursor:pointer;display:flex;align-items:center;gap:10px;padding:12px 14px;background:rgba(245,158,11,0.12);border:1px solid rgba(245,158,11,0.3);border-radius:12px;">
+        <i class="ti ti-clock-exclamation" style="color:var(--color-amber);font-size:20px;flex-shrink:0;"></i>
+        <div style="flex:1;min-width:0;">
+          <div style="font-size:13.5px;font-weight:600;color:var(--text-primary);">建議重新備份</div>
+          <div style="font-size:12px;color:var(--text-tertiary);margin-top:1px;">上次備份 ${dateStr}（${days} 天前）${newCards>0?`，新增 ${newCards} 張`:''}</div>
+        </div>
+        <i class="ti ti-download" style="color:var(--color-amber);font-size:18px;flex-shrink:0;"></i>
+      </div>`;
+    } else {
+      backupHtml = `<div style="display:flex;align-items:center;gap:10px;padding:12px 14px;background:var(--bg-secondary);border:1px solid var(--border-color);border-radius:12px;">
+        <i class="ti ti-shield-check" style="color:var(--color-green);font-size:20px;flex-shrink:0;"></i>
+        <div style="flex:1;min-width:0;">
+          <div style="font-size:13.5px;font-weight:600;color:var(--text-primary);">資料已備份</div>
+          <div style="font-size:12px;color:var(--text-tertiary);margin-top:1px;">上次備份 ${dateStr}（${days===0?'今天':days+' 天前'}）</div>
+        </div>
+        <button class="btn" style="padding:5px 10px;font-size:12px;flex-shrink:0;" onclick="exportFullJsonBackup()"><i class="ti ti-download"></i></button>
+      </div>`;
+    }
+  }
+
+  // 2. 儲存空間
+  let storageHtml = '';
+  if (navigator.storage && navigator.storage.estimate) {
+    try {
+      const est = await navigator.storage.estimate();
+      const usedMB = (est.usage / 1048576);
+      const usedStr = usedMB < 1 ? (est.usage/1024).toFixed(0)+' KB' : usedMB.toFixed(1)+' MB';
+      const avgPerCard = total > 0 ? usedMB / total : 0;
+      const estimate = avgPerCard > 0 ? `，平均每張約 ${(avgPerCard*1024).toFixed(0)} KB` : '';
+      storageHtml = `<div style="display:flex;align-items:center;gap:10px;padding:12px 14px;background:var(--bg-secondary);border:1px solid var(--border-color);border-radius:12px;">
+        <i class="ti ti-database" style="color:var(--accent);font-size:20px;flex-shrink:0;"></i>
+        <div style="flex:1;min-width:0;">
+          <div style="font-size:13.5px;font-weight:600;color:var(--text-primary);">已用儲存空間 ${usedStr}</div>
+          <div style="font-size:12px;color:var(--text-tertiary);margin-top:1px;">${total} 張名片${estimate}</div>
+        </div>
+      </div>`;
+    } catch(e) {}
+  }
+
+  el.innerHTML = (backupHtml || storageHtml)
+    ? `<div style="display:flex;flex-direction:column;gap:10px;">${backupHtml}${storageHtml}</div>`
+    : '';
+}
+
+/**
+ * 首頁畫面渲染（含系統狀態）
+ */
 function renderHomeScreen() {
   const customGroups = getCustomGroups();
   const customTags = getCustomTags();
   const total = cardsList.length;
   const processed = cardsList.filter(c => c.processed).length;
   const rate = total ? Math.round((processed / total) * 100) : 0;
+
+  // 系統狀態（儲存空間 + 備份提醒）
+  renderSystemStatus();
 
   // KPI 橫列
   const kpiRow = document.getElementById('home-kpi-row');
@@ -4718,10 +4807,19 @@ function detectAllDuplicateIds() {
   return ids;
 }
 
+// 判斷一組重複名片屬於「完全重複」還是「換工作」
+function classifyDupGroup(g) {
+  // 取得組內所有不同的公司名（排除空白）
+  const orgs = new Set(g.map(c => normField(c.org)).filter(Boolean));
+  // 若同名同電話/Email 但公司不只一家 → 疑似換工作
+  if (orgs.size > 1) return 'jobchange';
+  return 'duplicate';
+}
+
 function renderDupsTab() {
   const groups = detectAllDuplicateGroups();
   const content = document.getElementById('dup-content');
-  
+
   if (groups.length === 0) {
     content.innerHTML = `<div class="empty-state">
       <i class="ti ti-circle-check" style="color:var(--color-green);"></i>
@@ -4729,23 +4827,84 @@ function renderDupsTab() {
     </div>`;
     return;
   }
-  
-  content.innerHTML = groups.map((g, index) => `
-    <div class="dup-group">
-      <div class="dup-group-title"><i class="ti ti-copy"></i> 第 ${index + 1} 組：疑似重複聯絡人 (${g[0].name})</div>
-      ${g.map(c => `
-        <div class="dup-card-item">
-          <div style="min-width:0; flex:1;">
-            <div style="font-size:15px; font-weight:600;">${c.name || '—'}</div>
-            <div style="font-size:15px; color:var(--text-secondary); margin-top:2px;">
-              ${c.org || '無公司'} · ${c.title || '無職稱'} | 手機: ${c.mobile || '無'} | Email: ${c.email || '無'}
-            </div>
+
+  // 分類
+  const dupGroups = [], jobGroups = [];
+  groups.forEach(g => (classifyDupGroup(g) === 'jobchange' ? jobGroups : dupGroups).push(g));
+
+  const renderCardItem = (c, type) => {
+    // 找出組內最新一張（換工作時用來標示「最新公司」）
+    return `
+      <div class="dup-card-item">
+        <div style="min-width:0; flex:1;">
+          <div style="font-size:15px; font-weight:600;">${c.name || '—'}</div>
+          <div style="font-size:14px; color:var(--text-secondary); margin-top:2px;">
+            <i class="ti ti-building" style="font-size:13px;"></i> ${c.org || '無公司'} · ${c.title || '無職稱'}
           </div>
-          <button class="btn btn-red" style="padding:4px 8px; font-size:15px;" onclick="deleteDupCard('${c.id}')">刪除此張</button>
+          <div style="font-size:13px; color:var(--text-tertiary); margin-top:1px;">
+            手機 ${c.mobile || '—'} ｜ ${c.email || '無 Email'}
+          </div>
         </div>
-      `).join('')}
+        <div style="display:flex;flex-direction:column;gap:5px;flex-shrink:0;">
+          <button class="btn" style="padding:5px 10px; font-size:13px;" onclick="selectCard('${c.id}');switchTab('cards');">查看</button>
+          <button class="btn btn-red" style="padding:5px 10px; font-size:13px;" onclick="deleteDupCard('${c.id}')">刪除</button>
+        </div>
+      </div>`;
+  };
+
+  let html = '';
+
+  // 完全重複區
+  if (dupGroups.length > 0) {
+    html += `<div style="font-size:14px;font-weight:700;color:var(--color-red);margin:4px 0 12px;display:flex;align-items:center;gap:6px;">
+      <i class="ti ti-copy"></i> 完全重複（同公司同人，建議只留一張）· ${dupGroups.length} 組
+    </div>`;
+    html += dupGroups.map((g, i) => `
+      <div class="dup-group">
+        <div class="dup-group-title"><i class="ti ti-copy"></i> 第 ${i + 1} 組：${g[0].name}（${g.length} 張）</div>
+        ${g.map(c => renderCardItem(c, 'dup')).join('')}
+      </div>`).join('');
+  }
+
+  // 換工作區
+  if (jobGroups.length > 0) {
+    html += `<div style="font-size:14px;font-weight:700;color:var(--color-amber);margin:${dupGroups.length?'22px':'4px'} 0 8px;display:flex;align-items:center;gap:6px;">
+      <i class="ti ti-briefcase"></i> 疑似換工作（同一人、不同公司）· ${jobGroups.length} 組
     </div>
-  `).join('');
+    <div style="font-size:12.5px;color:var(--text-tertiary);margin-bottom:12px;line-height:1.5;">
+      💡 這些是同一個人但公司不同，可能是換了工作。建議<strong>保留兩張</strong>當作職涯歷程，或刪除舊的那張。
+    </div>`;
+    html += jobGroups.map((g, i) => {
+      // 依建立時間排序，最新的標記
+      const sorted = [...g].sort((a,b) => (b.createdAtTs||0) - (a.createdAtTs||0));
+      return `
+        <div class="dup-group" style="border-color:var(--color-amber);">
+          <div class="dup-group-title" style="color:var(--color-amber);"><i class="ti ti-briefcase"></i> ${g[0].name}（${g.length} 個公司）</div>
+          ${sorted.map((c, idx) => `
+            <div class="dup-card-item">
+              <div style="min-width:0; flex:1;">
+                <div style="font-size:15px; font-weight:600;">
+                  ${c.name || '—'}
+                  ${idx === 0 ? '<span style="font-size:11px;background:var(--color-green-bg);color:var(--color-green);padding:2px 7px;border-radius:6px;margin-left:6px;font-weight:600;">最新</span>' : '<span style="font-size:11px;background:var(--bg-tertiary);color:var(--text-tertiary);padding:2px 7px;border-radius:6px;margin-left:6px;">舊</span>'}
+                </div>
+                <div style="font-size:14px; color:var(--text-secondary); margin-top:2px;">
+                  <i class="ti ti-building" style="font-size:13px;"></i> ${c.org || '無公司'} · ${c.title || '無職稱'}
+                </div>
+                <div style="font-size:13px; color:var(--text-tertiary); margin-top:1px;">
+                  手機 ${c.mobile || '—'} ｜ ${c.email || '無 Email'}
+                </div>
+              </div>
+              <div style="display:flex;flex-direction:column;gap:5px;flex-shrink:0;">
+                <button class="btn" style="padding:5px 10px; font-size:13px;" onclick="selectCard('${c.id}');switchTab('cards');">查看</button>
+                <button class="btn btn-red" style="padding:5px 10px; font-size:13px;" onclick="deleteDupCard('${c.id}')">刪除</button>
+              </div>
+            </div>
+          `).join('')}
+        </div>`;
+    }).join('');
+  }
+
+  content.innerHTML = html;
 }
 
 async function deleteDupCard(id) {
