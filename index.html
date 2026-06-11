@@ -2471,7 +2471,9 @@ let currentSingleScanImageBase64 = null;
 
 // Google Drive 連接狀態
 let gdriveToken = null;
-let driveFolderCache = { root: null, unparsed: null, parsed: null };
+let driveFolderCache = { root: null, unparsed: null, parsed: null, failed: null };
+const DRIVE_BATCH_SIZE = 100;   // 每批最多匯入張數（同 Drive 單頁上限），掃完再抓下一批
+let driveHasMore = false;       // 上次匯入時雲端「未辨識」是否還有下一批
 
 // Google Drive Client ID
 const GDRIVE_CLIENT_ID = '222322177485-dj77l1ut4qcs76l8hn861frpp6es7v4b.apps.googleusercontent.com';
@@ -2792,15 +2794,22 @@ async function findOrCreateFolder(name, parentId = null) {
   return folder.id;
 }
 
+// 確保雲端三個工作資料夾都已備妥（未辨識 / 已辨識 / 辨識失敗）
+async function ensureDriveFolders() {
+  if (driveFolderCache.unparsed && driveFolderCache.parsed && driveFolderCache.failed) return;
+  const rootId = await findOrCreateFolder('名片管理系統_雲端同步');
+  driveFolderCache.root = rootId;
+  driveFolderCache.unparsed = await findOrCreateFolder('名片管理系統_未辨識', rootId);
+  driveFolderCache.parsed = await findOrCreateFolder('名片管理系統_已辨識', rootId);
+  driveFolderCache.failed = await findOrCreateFolder('名片管理系統_辨識失敗', rootId);
+}
+
 async function initSyncFolders() {
   try {
     await ensureGoogleAuth();
     showToast('正在建立 Google 雲端硬碟同步目錄...');
-    const rootId = await findOrCreateFolder('名片管理系統_雲端同步');
-    driveFolderCache.root = rootId;
-    driveFolderCache.unparsed = await findOrCreateFolder('名片管理系統_未辨識', rootId);
-    driveFolderCache.parsed = await findOrCreateFolder('名片管理系統_已辨識', rootId);
-    alert(`✓ Google 雲端同步初始化成功！\n\n您可以在您的 Google Drive 中看見「名片管理系統_雲端同步」資料夾。\n未來只要將名片拍照丟入其子資料夾「名片管理系統_未辨識」中，即可在本系統使用一鍵同步導入！`);
+    await ensureDriveFolders();
+    alert(`✓ Google 雲端同步初始化成功！\n\n您的 Google Drive 已建立「名片管理系統_雲端同步」資料夾，內含：\n・未辨識（把名片照片丟這裡）\n・已辨識（掃完自動歸檔）\n・辨識失敗（無法辨識的會移到這裡）\n\n之後把名片拍照丟入「未辨識」，再按「從雲端匯入名片」即可。`);
   } catch(e) {
     alert('雲端同步初始化失敗：' + e.message);
   }
@@ -2809,49 +2818,59 @@ async function initSyncFolders() {
 async function importDriveImages() {
   try {
     await ensureGoogleAuth();
-    if (!driveFolderCache.unparsed) {
-      const rootId = await findOrCreateFolder('名片管理系統_雲端同步');
-      driveFolderCache.root = rootId;
-      driveFolderCache.unparsed = await findOrCreateFolder('名片管理系統_未辨識', rootId);
-      driveFolderCache.parsed = await findOrCreateFolder('名片管理系統_已辨識', rootId);
-    }
-    
+    await ensureDriveFolders();
+
     showToast('正在讀取雲端「未辨識」照片清單...');
     const q = `'${driveFolderCache.unparsed}' in parents and trashed=false`;
-    const res = await fetchDrive(`https://www.googleapis.com/drive/v3/files?q=${encodeURIComponent(q)}&fields=files(id,name,mimeType)`);
+    // 一次只抓一批（最多 DRIVE_BATCH_SIZE 張）；nextPageToken 用來判斷雲端是否還有下一批
+    const res = await fetchDrive(`https://www.googleapis.com/drive/v3/files?q=${encodeURIComponent(q)}&pageSize=${DRIVE_BATCH_SIZE}&fields=nextPageToken,files(id,name,mimeType)`);
     const data = await res.json();
-    
+
     const files = data.files || [];
     const imgFiles = files.filter(f => f.mimeType && f.mimeType.startsWith('image/'));
-    
+    driveHasMore = !!data.nextPageToken;
+
     if (imgFiles.length === 0) {
-      alert('您的 Google 雲端「名片管理系統_未辨識」資料夾目前空空如也喔，請先丟入名片拍照檔案。');
+      alert('您的 Google 雲端「名片管理系統_未辨識」資料夾目前是空的，請先把名片照片丟進去。');
       return;
     }
-    
-    let importedCount = 0;
+
+    // 已在佇列中的 driveId，O(1) 去重，避免重複匯入
+    const queued = new Set(scanQueue.map(x => x.driveId).filter(Boolean));
+
+    let importedCount = 0, skippedCount = 0;
     for (const file of imgFiles) {
-      if (scanQueue.some(x => x.driveId === file.id)) continue;
-      
-      const imgRes = await fetchDrive(`https://www.googleapis.com/drive/v3/files/${file.id}?alt=media`);
-      const blob = await imgRes.blob();
-      blob.name = file.name;
-      
-      const queueItem = {
-        id: 'queue_' + crypto.randomUUID(),
-        file: blob,
-        status: 'wait',
-        driveId: file.id
-      };
-      scanQueue.push(queueItem);
-      await dbSaveQueueItem(queueItem);
-      importedCount++;
+      if (queued.has(file.id)) continue;
+      try {
+        const imgRes = await fetchDrive(`https://www.googleapis.com/drive/v3/files/${file.id}?alt=media`);
+        const blob = await imgRes.blob();
+        blob.name = file.name;
+
+        const queueItem = {
+          id: 'queue_' + crypto.randomUUID(),
+          file: blob,
+          status: 'wait',
+          driveId: file.id
+        };
+        scanQueue.push(queueItem);
+        queued.add(file.id);
+        await dbSaveQueueItem(queueItem);
+        importedCount++;
+        showToast(`匯入中… 已 ${importedCount} 張`);
+      } catch(err) {
+        // 單張失敗就略過、繼續下一張，不再整批中斷
+        console.error(`[Google Drive] 匯入失敗，略過：${file.name || file.id}`, err);
+        skippedCount++;
+      }
     }
-    
+
     renderBatchQueueList();
-    showToast(`✓ 成功從雲端導入 ${importedCount} 張新照片至等待佇列！`);
+    let msg = `✓ 本批已從雲端匯入 ${importedCount} 張到等待佇列`;
+    if (skippedCount) msg += `\n（略過 ${skippedCount} 張：下載失敗）`;
+    if (driveHasMore) msg += `\n\n雲端「未辨識」還有更多名片。請先按「開始 AI 批次辨識」掃完這批，掃完會詢問是否續抓下一批。`;
+    alert(msg);
   } catch(e) {
-    alert('智慧同步失敗：' + e.message);
+    alert('雲端匯入失敗：' + e.message);
   }
 }
 
@@ -5274,12 +5293,9 @@ async function startBatchProcessing() {
   
   // 1. 自動修復解析：如果有雲端硬碟匯入的檔案且 cache 為空，重新載入 ID
   const hasDriveItems = waiting.some(item => item.driveId);
-  if (hasDriveItems && gdriveToken && !driveFolderCache.parsed) {
+  if (hasDriveItems && gdriveToken) {
     try {
-      const rootId = await findOrCreateFolder('名片管理系統_雲端同步');
-      driveFolderCache.root = rootId;
-      driveFolderCache.unparsed = await findOrCreateFolder('名片管理系統_未辨識', rootId);
-      driveFolderCache.parsed = await findOrCreateFolder('名片管理系統_已辨識', rootId);
+      await ensureDriveFolders();
     } catch(err) {
       console.error('[Google Drive] 自動載入雲端資料夾快取失敗：', err);
     }
@@ -5353,6 +5369,12 @@ async function startBatchProcessing() {
           item.status = 'error';
           item.errInfo = err.message === 'API_KEY_EMPTY' ? '請先填入 API Key' : err.message;
           await dbSaveQueueItem(item); // 儲存失敗狀態與錯誤訊息
+          // 真正「這張辨識不出來」才搬到「辨識失敗」資料夾，避免下批又被抓回反覆卡住；
+          // 金鑰未填或配額耗盡屬全域問題、照片本身沒問題，保留在「未辨識」待之後重試。
+          const isGlobalIssue = err.message === 'API_KEY_EMPTY' || err.isRateLimit;
+          if (!isGlobalIssue && item.driveId && gdriveToken && driveFolderCache.failed) {
+            await moveDriveFile(item.driveId, driveFolderCache.unparsed, driveFolderCache.failed);
+          }
           break; // 跳出重試迴圈
         }
       }
@@ -5390,6 +5412,18 @@ async function startBatchProcessing() {
   pf.style.width = '0%';
   ps.textContent = `✓ 批次完成：成功 ${doneCount} 張${failCount ? `，失敗 ${failCount} 張（請查看佇列詳情）` : ''}`;
   showToast(`批次名片處理完成！成功 ${doneCount} 張${failCount ? `，失敗 ${failCount} 張` : ''}`);
+
+  // 雲端批次：本批成功的已自動搬到「已辨識」。若雲端還有下一批，詢問是否續抓並繼續辨識。
+  const hadDriveItems = waiting.some(it => it.driveId);
+  if (hadDriveItems && gdriveToken && driveHasMore) {
+    const ok = confirm(`本批完成：成功 ${doneCount} 張${failCount ? `、失敗 ${failCount} 張` : ''}。\n\n雲端「未辨識」還有下一批，要現在續抓 ${DRIVE_BATCH_SIZE} 張並繼續辨識嗎？`);
+    if (ok) {
+      await importDriveImages();
+      if (scanQueue.some(q => q.status === 'wait')) {
+        startBatchProcessing(); // 不 await，避免遞迴堆疊
+      }
+    }
+  }
 }
 
 async function clearBatchQueue() {
