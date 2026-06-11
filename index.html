@@ -1843,7 +1843,8 @@ input, select, textarea, button { font-size: 16px; }
         <div style="display:flex;gap:8px;margin-top:1.25rem;flex-wrap:wrap;margin-bottom:1.5rem;">
           <button class="btn btn-primary" id="btn-start-batch" onclick="startBatchProcessing()"><i class="ti ti-robot"></i> 開始 AI 批次辨識</button>
           <button class="btn btn-red" onclick="clearBatchQueue()"><i class="ti ti-trash"></i> 清空佇列</button>
-          <button class="btn btn-blue" onclick="initSyncFolders()" style="margin-left:auto;"><i class="ti ti-brand-google-drive"></i> Google Drive 同步</button>
+          <button class="btn btn-blue" onclick="initSyncFolders()" style="margin-left:auto;"><i class="ti ti-folder-plus"></i> 建立雲端資料夾</button>
+          <button class="btn btn-green" onclick="importDriveImages()"><i class="ti ti-cloud-download"></i> 從雲端匯入名片</button>
         </div>
       </div>
 
@@ -6287,13 +6288,61 @@ window.addEventListener('DOMContentLoaded', () => {
     showToast('系統載入資料庫出錯，請刷新重試。');
   });
   
-  // 註冊 Service Worker 以支援 PWA 手機安裝與離線運作
+  // 註冊 Service Worker 以支援 PWA 手機安裝與離線運作，並處理版本更新
   if ('serviceWorker' in navigator) {
+    let isReloading = false;
+    // 新版 SW 接管後自動重新整理一次（首次安裝時無 controller，不會觸發）
+    navigator.serviceWorker.addEventListener('controllerchange', () => {
+      if (isReloading) return;
+      isReloading = true;
+      window.location.reload();
+    });
+
     navigator.serviceWorker.register('./sw.js')
-      .then(reg => console.log('[PWA] Service Worker 註冊成功！'))
+      .then(reg => {
+        console.log('[PWA] Service Worker 註冊成功！');
+
+        // 主動檢查更新：載入時、每小時、以及每次切回 App（iOS PWA 關鍵）
+        const checkUpdate = () => reg.update().catch(() => {});
+        checkUpdate();
+        setInterval(checkUpdate, 60 * 60 * 1000);
+        document.addEventListener('visibilitychange', () => {
+          if (document.visibilityState === 'visible') checkUpdate();
+        });
+
+        // 若已有等待中的新版，直接提示
+        if (reg.waiting && navigator.serviceWorker.controller) {
+          showUpdateBanner(reg.waiting);
+        }
+        // 偵測到新版安裝完成（且目前已有舊版在控制 → 是更新而非首裝）
+        reg.addEventListener('updatefound', () => {
+          const nw = reg.installing;
+          if (!nw) return;
+          nw.addEventListener('statechange', () => {
+            if (nw.state === 'installed' && navigator.serviceWorker.controller) {
+              showUpdateBanner(nw);
+            }
+          });
+        });
+      })
       .catch(err => console.error('[PWA] Service Worker 註冊失敗：', err));
   }
 });
+
+// [PWA] 顯示「有新版本」提示橫幅，點擊後通知新版 SW 接管並自動重載
+function showUpdateBanner(worker) {
+  if (document.getElementById('pwa-update-banner')) return;
+  const bar = document.createElement('div');
+  bar.id = 'pwa-update-banner';
+  bar.style.cssText = 'position:fixed;left:50%;bottom:calc(84px + env(safe-area-inset-bottom));transform:translateX(-50%);z-index:99999;display:flex;align-items:center;gap:12px;padding:12px 16px;border-radius:14px;background:#2563eb;color:#fff;box-shadow:0 8px 28px rgba(0,0,0,.32);font-size:15px;max-width:92vw;';
+  bar.innerHTML = '<span style="white-space:nowrap;"><i class="ti ti-sparkles"></i> 有新版本可用</span>'
+    + '<button id="pwa-update-btn" style="border:0;border-radius:9px;padding:8px 14px;background:#fff;color:#2563eb;font-weight:700;font-size:15px;cursor:pointer;white-space:nowrap;">立即更新</button>';
+  document.body.appendChild(bar);
+  document.getElementById('pwa-update-btn').addEventListener('click', () => {
+    document.getElementById('pwa-update-btn').textContent = '更新中…';
+    worker.postMessage('SKIP_WAITING');
+  });
+}
 </script>
 </body>
 </html>

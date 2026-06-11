@@ -1,4 +1,4 @@
-const CACHE_NAME = 'bizcard-pwa-v10';
+const CACHE_NAME = 'bizcard-pwa-v11';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
@@ -18,8 +18,15 @@ self.addEventListener('install', (event) => {
         console.log('[PWA SW] 正在快取靜態資源...');
         return cache.addAll(ASSETS_TO_CACHE);
       })
-      .then(() => self.skipWaiting())
+      // 不在此 skipWaiting：新版先進入 waiting，等使用者在畫面點「立即更新」再接管
   );
+});
+
+// [PWA sw.js] 接收頁面指令：使用者按下「立即更新」時才讓新版 SW 立刻接管
+self.addEventListener('message', (event) => {
+  if (event.data === 'SKIP_WAITING') {
+    self.skipWaiting();
+  }
 });
 
 // [PWA sw.js] 啟用階段：清理舊版本的快取資料
