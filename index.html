@@ -2818,6 +2818,14 @@ async function importDriveImages() {
     await ensureGoogleAuth();
     await ensureDriveFolders();
 
+    // 把佇列裡尚未辨識的殘留也算進單批上限，避免「殘留 + 新匯入」加總破百撐爆記憶體
+    const currentWaiting = scanQueue.filter(q => q.status === 'wait').length;
+    const slots = DRIVE_BATCH_SIZE - currentWaiting;
+    if (slots <= 0) {
+      alert(`佇列裡已有 ${currentWaiting} 張等待辨識（已達單批上限 ${DRIVE_BATCH_SIZE} 張）。\n\n請先按「開始 AI 批次辨識」把這批掃完，再匯入下一批。`);
+      return;
+    }
+
     showToast('正在讀取雲端「未辨識」照片清單...');
     const q = `'${driveFolderCache.unparsed}' in parents and trashed=false`;
     // 一次只抓一批（最多 DRIVE_BATCH_SIZE 張）；nextPageToken 用來判斷雲端是否還有下一批
@@ -2826,9 +2834,9 @@ async function importDriveImages() {
 
     const files = data.files || [];
     const imgFiles = files.filter(f => f.mimeType && f.mimeType.startsWith('image/'));
-    driveHasMore = !!data.nextPageToken;
 
     if (imgFiles.length === 0) {
+      driveHasMore = false;
       alert('您的 Google 雲端「名片管理系統_未辨識」資料夾目前是空的，請先把名片照片丟進去。');
       return;
     }
@@ -2836,8 +2844,9 @@ async function importDriveImages() {
     // 已在佇列中的 driveId，O(1) 去重，避免重複匯入
     const queued = new Set(scanQueue.map(x => x.driveId).filter(Boolean));
 
-    let importedCount = 0, skippedCount = 0;
+    let importedCount = 0, skippedCount = 0, brokeEarly = false;
     for (const file of imgFiles) {
+      if (importedCount >= slots) { brokeEarly = true; break; }  // 補滿這批就停
       if (queued.has(file.id)) continue;
       try {
         const imgRes = await fetchDrive(`https://www.googleapis.com/drive/v3/files/${file.id}?alt=media`);
@@ -2861,6 +2870,9 @@ async function importDriveImages() {
         skippedCount++;
       }
     }
+
+    // 雲端是否還有下一批：超過一頁(nextPageToken)、或這頁因補滿上限而提早中止
+    driveHasMore = !!data.nextPageToken || brokeEarly;
 
     renderBatchQueueList();
     let msg = `✓ 本批已從雲端匯入 ${importedCount} 張到等待佇列`;
@@ -5262,7 +5274,7 @@ function renderBatchQueueList() {
     return `
       <div class="queue-item">
         <div class="qi-title-row">
-          <div class="qi-name">${q.file.name || '雲端硬碟圖片'}</div>
+          <div class="qi-name">${(q.file && q.file.name) || '雲端硬碟圖片'}</div>
           <div class="qi-status-text" style="${statusClass}">
             <i class="${statusIcon}"></i> ${statusText}
           </div>
@@ -5341,10 +5353,16 @@ async function startBatchProcessing() {
         item.status = 'done';
         success = true;
         await dbDeleteQueueItem(item.id); // 辨識成功，從佇列資料表移除以省容量
-        
+
         if (item.driveId && gdriveToken && driveFolderCache.parsed) {
           await moveDriveFile(item.driveId, driveFolderCache.unparsed, driveFolderCache.parsed);
         }
+
+        // 釋放記憶體：成功後從記憶體佇列移除並丟棄圖片 blob，
+        // 讓佇列邊掃邊縮短、記憶體維持平穩，大量名片也不會撐爆。
+        const qi = scanQueue.indexOf(item);
+        if (qi !== -1) scanQueue.splice(qi, 1);
+        item.file = null;
       } catch(err) {
         if (err.isRateLimit && retryCount < maxRetries) {
           retryCount++;
