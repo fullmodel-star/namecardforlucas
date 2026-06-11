@@ -1840,13 +1840,11 @@ input, select, textarea, button { font-size: 16px; }
         <div id="batch-progress-stats" style="display:none;font-size:16px;color:var(--text-secondary);margin:6px 0 0;text-align:center;min-height:18px;"></div>
         <div class="queue-list" id="batch-queue-list"></div>
 
-        <div style="display:flex;gap:8px;margin-top:1.25rem;flex-wrap:wrap;">
-          <button class="btn btn-primary" id="btn-start-batch" onclick="startBatchProcessing()" style="flex:1;min-width:160px;"><i class="ti ti-robot"></i> 開始 AI 批次辨識</button>
-          <button class="btn btn-red" onclick="clearBatchQueue()"><i class="ti ti-trash"></i> 清空佇列</button>
-        </div>
-        <div style="display:flex;gap:8px;margin-top:8px;margin-bottom:1.5rem;">
-          <button class="btn btn-blue" onclick="initSyncFolders()" style="flex:1;min-width:0;"><i class="ti ti-folder-plus"></i> 建立雲端資料夾</button>
-          <button class="btn btn-green" onclick="importDriveImages()" style="flex:1;min-width:0;"><i class="ti ti-cloud-download"></i> 從雲端匯入名片</button>
+        <div style="display:flex;gap:8px;margin:1.25rem 0 1.5rem;flex-wrap:wrap;">
+          <button class="btn btn-primary" id="btn-start-batch" onclick="startBatchProcessing()" style="flex:1 1 150px;"><i class="ti ti-robot"></i> 開始 AI 批次辨識</button>
+          <button class="btn btn-red" onclick="clearBatchQueue()" style="flex:1 1 150px;"><i class="ti ti-trash"></i> 清空佇列</button>
+          <button class="btn btn-blue" onclick="initSyncFolders()" style="flex:1 1 150px;"><i class="ti ti-folder-plus"></i> 建立雲端資料夾</button>
+          <button class="btn btn-green" onclick="importDriveImages()" style="flex:1 1 150px;"><i class="ti ti-cloud-download"></i> 從雲端匯入名片</button>
         </div>
       </div>
 
