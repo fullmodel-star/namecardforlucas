@@ -16,7 +16,15 @@
 
 <!-- Tabler Icons 向量圖標庫 -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css">
-<!-- QR Code：使用 qrserver.com API，不需額外函式庫 -->
+<!-- QR Code：內嵌 qrcode-generator (MIT)，離線可用、聯絡資料不外傳第三方 -->
+<script>
+var qrcode=function(){function i(t,r){function a(t,r){g=function(t){for(var r=new Array(t),e=0;e<t;e+=1){r[e]=new Array(t);for(var n=0;n<t;n+=1)r[e][n]=null}return r}(l=4*u+17),e(0,0),e(l-7,0),e(0,l-7),i(),o(),v(t,r),7<=u&&h(t),null==n&&(n=w(u,f,c)),d(n,r)}var u=t,f=y[r],g=null,l=0,n=null,c=[],s={},e=function(t,r){for(var e=-1;e<=7;e+=1)if(!(t+e<=-1||l<=t+e))for(var n=-1;n<=7;n+=1)r+n<=-1||l<=r+n||(g[t+e][r+n]=0<=e&&e<=6&&(0==n||6==n)||0<=n&&n<=6&&(0==e||6==e)||2<=e&&e<=4&&2<=n&&n<=4)},o=function(){for(var t=8;t<l-8;t+=1)null==g[t][6]&&(g[t][6]=t%2==0);for(var r=8;r<l-8;r+=1)null==g[6][r]&&(g[6][r]=r%2==0)},i=function(){for(var t=B.getPatternPosition(u),r=0;r<t.length;r+=1)for(var e=0;e<t.length;e+=1){var n=t[r],o=t[e];if(null==g[n][o])for(var i=-2;i<=2;i+=1)for(var a=-2;a<=2;a+=1)g[n+i][o+a]=-2==i||2==i||-2==a||2==a||0==i&&0==a}},h=function(t){for(var r=B.getBCHTypeNumber(u),e=0;e<18;e+=1){var n=!t&&1==(r>>e&1);g[Math.floor(e/3)][e%3+l-8-3]=n}for(e=0;e<18;e+=1){n=!t&&1==(r>>e&1);g[e%3+l-8-3][Math.floor(e/3)]=n}},v=function(t,r){for(var e=f<<3|r,n=B.getBCHTypeInfo(e),o=0;o<15;o+=1){var i=!t&&1==(n>>o&1);o<6?g[o][8]=i:o<8?g[o+1][8]=i:g[l-15+o][8]=i}for(o=0;o<15;o+=1){i=!t&&1==(n>>o&1);o<8?g[8][l-o-1]=i:o<9?g[8][15-o-1+1]=i:g[8][15-o-1]=i}g[l-8][8]=!t},d=function(t,r){for(var e=-1,n=l-1,o=7,i=0,a=B.getMaskFunction(r),u=l-1;0<u;u-=2)for(6==u&&(u-=1);;){for(var f=0;f<2;f+=1)if(null==g[n][u-f]){var c=!1;i<t.length&&(c=1==(t[i]>>>o&1)),a(n,u-f)&&(c=!c),g[n][u-f]=c,-1==(o-=1)&&(i+=1,o=7)}if((n+=e)<0||l<=n){n-=e,e=-e;break}}},w=function(t,r,e){for(var n=b.getRSBlocks(t,r),o=M(),i=0;i<e.length;i+=1){var a=e[i];o.put(a.getMode(),4),o.put(a.getLength(),B.getLengthInBits(a.getMode(),t)),a.write(o)}var u=0;for(i=0;i<n.length;i+=1)u+=n[i].dataCount;if(o.getLengthInBits()>8*u)throw"code length overflow. ("+o.getLengthInBits()+">"+8*u+")";for(o.getLengthInBits()+4<=8*u&&o.put(0,4);o.getLengthInBits()%8!=0;)o.putBit(!1);for(;!(o.getLengthInBits()>=8*u||(o.put(236,8),o.getLengthInBits()>=8*u));)o.put(17,8);return function(t,r){for(var e=0,n=0,o=0,i=new Array(r.length),a=new Array(r.length),u=0;u<r.length;u+=1){var f=r[u].dataCount,c=r[u].totalCount-f;n=Math.max(n,f),o=Math.max(o,c),i[u]=new Array(f);for(var g=0;g<i[u].length;g+=1)i[u][g]=255&t.getBuffer()[g+e];e+=f;var l=B.getErrorCorrectPolynomial(c),h=C(i[u],l.getLength()-1).mod(l);a[u]=new Array(l.getLength()-1);for(g=0;g<a[u].length;g+=1){var s=g+h.getLength()-a[u].length;a[u][g]=0<=s?h.getAt(s):0}}var v=0;for(g=0;g<r.length;g+=1)v+=r[g].totalCount;var d=new Array(v),w=0;for(g=0;g<n;g+=1)for(u=0;u<r.length;u+=1)g<i[u].length&&(d[w]=i[u][g],w+=1);for(g=0;g<o;g+=1)for(u=0;u<r.length;u+=1)g<a[u].length&&(d[w]=a[u][g],w+=1);return d}(o,n)};s.addData=function(t,r){var e=null;switch(r=r||"Byte"){case"Numeric":e=x(t);break;case"Alphanumeric":e=m(t);break;case"Byte":e=L(t);break;case"Kanji":e=D(t);break;default:throw"mode:"+r}c.push(e),n=null},s.isDark=function(t,r){if(t<0||l<=t||r<0||l<=r)throw t+","+r;return g[t][r]},s.getModuleCount=function(){return l},s.make=function(){if(u<1){for(var t=1;t<40;t++){for(var r=b.getRSBlocks(t,f),e=M(),n=0;n<c.length;n++){var o=c[n];e.put(o.getMode(),4),e.put(o.getLength(),B.getLengthInBits(o.getMode(),t)),o.write(e)}var i=0;for(n=0;n<r.length;n++)i+=r[n].dataCount;if(e.getLengthInBits()<=8*i)break}u=t}a(!1,function(){for(var t=0,r=0,e=0;e<8;e+=1){a(!0,e);var n=B.getLostPoint(s);(0==e||n<t)&&(t=n,r=e)}return r}())},s.createTableTag=function(t,r){t=t||2;var e="";e+='<table style="',e+=" border-width: 0px; border-style: none;",e+=" border-collapse: collapse;",e+=" padding: 0px; margin: "+(r=void 0===r?4*t:r)+"px;",e+='">',e+="<tbody>";for(var n=0;n<s.getModuleCount();n+=1){e+="<tr>";for(var o=0;o<s.getModuleCount();o+=1)e+='<td style="',e+=" border-width: 0px; border-style: none;",e+=" border-collapse: collapse;",e+=" padding: 0px; margin: 0px;",e+=" width: "+t+"px;",e+=" height: "+t+"px;",e+=" background-color: ",e+=s.isDark(n,o)?"#000000":"#ffffff",e+=";",e+='"/>';e+="</tr>"}return e+="</tbody>",e+="</table>"},s.createSvgTag=function(t,r,e,n){var o={};"object"==typeof t&&(t=(o=t).cellSize,r=o.margin,e=o.alt,n=o.title),t=t||2,r=void 0===r?4*t:r,(e="string"==typeof e?{text:e}:e||{}).text=e.text||null,e.id=e.text?e.id||"qrcode-description":null,(n="string"==typeof n?{text:n}:n||{}).text=n.text||null,n.id=n.text?n.id||"qrcode-title":null;var i,a,u,f,c=s.getModuleCount()*t+2*r,g="";for(f="l"+t+",0 0,"+t+" -"+t+",0 0,-"+t+"z ",g+='<svg version="1.1" xmlns="http://www.w3.org/2000/svg"',g+=o.scalable?"":' width="'+c+'px" height="'+c+'px"',g+=' viewBox="0 0 '+c+" "+c+'" ',g+=' preserveAspectRatio="xMinYMin meet"',g+=n.text||e.text?' role="img" aria-labelledby="'+p([n.id,e.id].join(" ").trim())+'"':"",g+=">",g+=n.text?'<title id="'+p(n.id)+'">'+p(n.text)+"</title>":"",g+=e.text?'<description id="'+p(e.id)+'">'+p(e.text)+"</description>":"",g+='<rect width="100%" height="100%" fill="white" cx="0" cy="0"/>',g+='<path d="',a=0;a<s.getModuleCount();a+=1)for(u=a*t+r,i=0;i<s.getModuleCount();i+=1)s.isDark(a,i)&&(g+="M"+(i*t+r)+","+u+f);return g+='" stroke="transparent" fill="black"/>',g+="</svg>"},s.createDataURL=function(o,t){o=o||2,t=void 0===t?4*o:t;var r=s.getModuleCount()*o+2*t,i=t,a=r-t;return I(r,r,function(t,r){if(i<=t&&t<a&&i<=r&&r<a){var e=Math.floor((t-i)/o),n=Math.floor((r-i)/o);return s.isDark(n,e)?0:1}return 1})},s.createImgTag=function(t,r,e){t=t||2,r=void 0===r?4*t:r;var n=s.getModuleCount()*t+2*r,o="";return o+="<img",o+=' src="',o+=s.createDataURL(t,r),o+='"',o+=' width="',o+=n,o+='"',o+=' height="',o+=n,o+='"',e&&(o+=' alt="',o+=p(e),o+='"'),o+="/>"};var p=function(t){for(var r="",e=0;e<t.length;e+=1){var n=t.charAt(e);switch(n){case"<":r+="&lt;";break;case">":r+="&gt;";break;case"&":r+="&amp;";break;case'"':r+="&quot;";break;default:r+=n}}return r};return s.createASCII=function(t,r){if((t=t||1)<2)return function(t){t=void 0===t?2:t;var r,e,n,o,i,a=1*s.getModuleCount()+2*t,u=t,f=a-t,c={"██":"█","█ ":"▀"," █":"▄","  ":" "},g={"██":"▀","█ ":"▀"," █":" ","  ":" "},l="";for(r=0;r<a;r+=2){for(n=Math.floor((r-u)/1),o=Math.floor((r+1-u)/1),e=0;e<a;e+=1)i="█",u<=e&&e<f&&u<=r&&r<f&&s.isDark(n,Math.floor((e-u)/1))&&(i=" "),u<=e&&e<f&&u<=r+1&&r+1<f&&s.isDark(o,Math.floor((e-u)/1))?i+=" ":i+="█",l+=t<1&&f<=r+1?g[i]:c[i];l+="\n"}return a%2&&0<t?l.substring(0,l.length-a-1)+Array(1+a).join("▀"):l.substring(0,l.length-1)}(r);t-=1,r=void 0===r?2*t:r;var e,n,o,i,a=s.getModuleCount()*t+2*r,u=r,f=a-r,c=Array(t+1).join("██"),g=Array(t+1).join("  "),l="",h="";for(e=0;e<a;e+=1){for(o=Math.floor((e-u)/t),h="",n=0;n<a;n+=1)i=1,u<=n&&n<f&&u<=e&&e<f&&s.isDark(o,Math.floor((n-u)/t))&&(i=0),h+=i?c:g;for(o=0;o<t;o+=1)l+=h+"\n"}return l.substring(0,l.length-1)},s.renderTo2dContext=function(t,r){r=r||2;for(var e=s.getModuleCount(),n=0;n<e;n++)for(var o=0;o<e;o++)t.fillStyle=s.isDark(n,o)?"black":"white",t.fillRect(n*r,o*r,r,r)},s}i.stringToBytes=(i.stringToBytesFuncs={default:function(t){for(var r=[],e=0;e<t.length;e+=1){var n=t.charCodeAt(e);r.push(255&n)}return r}}).default,i.createStringToBytes=function(u,f){var i=function(){function t(){var t=r.read();if(-1==t)throw"eof";return t}for(var r=S(u),e=0,n={};;){var o=r.read();if(-1==o)break;var i=t(),a=t()<<8|t();n[String.fromCharCode(o<<8|i)]=a,e+=1}if(e!=f)throw e+" != "+f;return n}(),a="?".charCodeAt(0);return function(t){for(var r=[],e=0;e<t.length;e+=1){var n=t.charCodeAt(e);if(n<128)r.push(n);else{var o=i[t.charAt(e)];"number"==typeof o?(255&o)==o?r.push(o):(r.push(o>>>8),r.push(255&o)):r.push(a)}}return r}};var r,t,a=1,u=2,o=4,f=8,y={L:1,M:0,Q:3,H:2},e=0,n=1,c=2,g=3,l=4,h=5,s=6,v=7,B=(r=[[],[6,18],[6,22],[6,26],[6,30],[6,34],[6,22,38],[6,24,42],[6,26,46],[6,28,50],[6,30,54],[6,32,58],[6,34,62],[6,26,46,66],[6,26,48,70],[6,26,50,74],[6,30,54,78],[6,30,56,82],[6,30,58,86],[6,34,62,90],[6,28,50,72,94],[6,26,50,74,98],[6,30,54,78,102],[6,28,54,80,106],[6,32,58,84,110],[6,30,58,86,114],[6,34,62,90,118],[6,26,50,74,98,122],[6,30,54,78,102,126],[6,26,52,78,104,130],[6,30,56,82,108,134],[6,34,60,86,112,138],[6,30,58,86,114,142],[6,34,62,90,118,146],[6,30,54,78,102,126,150],[6,24,50,76,102,128,154],[6,28,54,80,106,132,158],[6,32,58,84,110,136,162],[6,26,54,82,110,138,166],[6,30,58,86,114,142,170]],(t={}).getBCHTypeInfo=function(t){for(var r=t<<10;0<=d(r)-d(1335);)r^=1335<<d(r)-d(1335);return 21522^(t<<10|r)},t.getBCHTypeNumber=function(t){for(var r=t<<12;0<=d(r)-d(7973);)r^=7973<<d(r)-d(7973);return t<<12|r},t.getPatternPosition=function(t){return r[t-1]},t.getMaskFunction=function(t){switch(t){case e:return function(t,r){return(t+r)%2==0};case n:return function(t,r){return t%2==0};case c:return function(t,r){return r%3==0};case g:return function(t,r){return(t+r)%3==0};case l:return function(t,r){return(Math.floor(t/2)+Math.floor(r/3))%2==0};case h:return function(t,r){return t*r%2+t*r%3==0};case s:return function(t,r){return(t*r%2+t*r%3)%2==0};case v:return function(t,r){return(t*r%3+(t+r)%2)%2==0};default:throw"bad maskPattern:"+t}},t.getErrorCorrectPolynomial=function(t){for(var r=C([1],0),e=0;e<t;e+=1)r=r.multiply(C([1,w.gexp(e)],0));return r},t.getLengthInBits=function(t,r){if(1<=r&&r<10)switch(t){case a:return 10;case u:return 9;case o:case f:return 8;default:throw"mode:"+t}else if(r<27)switch(t){case a:return 12;case u:return 11;case o:return 16;case f:return 10;default:throw"mode:"+t}else{if(!(r<41))throw"type:"+r;switch(t){case a:return 14;case u:return 13;case o:return 16;case f:return 12;default:throw"mode:"+t}}},t.getLostPoint=function(t){for(var r=t.getModuleCount(),e=0,n=0;n<r;n+=1)for(var o=0;o<r;o+=1){for(var i=0,a=t.isDark(n,o),u=-1;u<=1;u+=1)if(!(n+u<0||r<=n+u))for(var f=-1;f<=1;f+=1)o+f<0||r<=o+f||0==u&&0==f||a==t.isDark(n+u,o+f)&&(i+=1);5<i&&(e+=3+i-5)}for(n=0;n<r-1;n+=1)for(o=0;o<r-1;o+=1){var c=0;t.isDark(n,o)&&(c+=1),t.isDark(n+1,o)&&(c+=1),t.isDark(n,o+1)&&(c+=1),t.isDark(n+1,o+1)&&(c+=1),0!=c&&4!=c||(e+=3)}for(n=0;n<r;n+=1)for(o=0;o<r-6;o+=1)t.isDark(n,o)&&!t.isDark(n,o+1)&&t.isDark(n,o+2)&&t.isDark(n,o+3)&&t.isDark(n,o+4)&&!t.isDark(n,o+5)&&t.isDark(n,o+6)&&(e+=40);for(o=0;o<r;o+=1)for(n=0;n<r-6;n+=1)t.isDark(n,o)&&!t.isDark(n+1,o)&&t.isDark(n+2,o)&&t.isDark(n+3,o)&&t.isDark(n+4,o)&&!t.isDark(n+5,o)&&t.isDark(n+6,o)&&(e+=40);var g=0;for(o=0;o<r;o+=1)for(n=0;n<r;n+=1)t.isDark(n,o)&&(g+=1);return e+=Math.abs(100*g/r/r-50)/5*10},t);function d(t){for(var r=0;0!=t;)r+=1,t>>>=1;return r}var w=function(){for(var r=new Array(256),e=new Array(256),t=0;t<8;t+=1)r[t]=1<<t;for(t=8;t<256;t+=1)r[t]=r[t-4]^r[t-5]^r[t-6]^r[t-8];for(t=0;t<255;t+=1)e[r[t]]=t;var n={glog:function(t){if(t<1)throw"glog("+t+")";return e[t]},gexp:function(t){for(;t<0;)t+=255;for(;256<=t;)t-=255;return r[t]}};return n}();function C(n,o){if(void 0===n.length)throw n.length+"/"+o;var r=function(){for(var t=0;t<n.length&&0==n[t];)t+=1;for(var r=new Array(n.length-t+o),e=0;e<n.length-t;e+=1)r[e]=n[e+t];return r}(),i={getAt:function(t){return r[t]},getLength:function(){return r.length},multiply:function(t){for(var r=new Array(i.getLength()+t.getLength()-1),e=0;e<i.getLength();e+=1)for(var n=0;n<t.getLength();n+=1)r[e+n]^=w.gexp(w.glog(i.getAt(e))+w.glog(t.getAt(n)));return C(r,0)},mod:function(t){if(i.getLength()-t.getLength()<0)return i;for(var r=w.glog(i.getAt(0))-w.glog(t.getAt(0)),e=new Array(i.getLength()),n=0;n<i.getLength();n+=1)e[n]=i.getAt(n);for(n=0;n<t.getLength();n+=1)e[n]^=w.gexp(w.glog(t.getAt(n))+r);return C(e,0).mod(t)}};return i}function p(){var e=[],o={writeByte:function(t){e.push(255&t)},writeShort:function(t){o.writeByte(t),o.writeByte(t>>>8)},writeBytes:function(t,r,e){r=r||0,e=e||t.length;for(var n=0;n<e;n+=1)o.writeByte(t[n+r])},writeString:function(t){for(var r=0;r<t.length;r+=1)o.writeByte(t.charCodeAt(r))},toByteArray:function(){return e},toString:function(){var t="";t+="[";for(var r=0;r<e.length;r+=1)0<r&&(t+=","),t+=e[r];return t+="]"}};return o}var k,A,b=(k=[[1,26,19],[1,26,16],[1,26,13],[1,26,9],[1,44,34],[1,44,28],[1,44,22],[1,44,16],[1,70,55],[1,70,44],[2,35,17],[2,35,13],[1,100,80],[2,50,32],[2,50,24],[4,25,9],[1,134,108],[2,67,43],[2,33,15,2,34,16],[2,33,11,2,34,12],[2,86,68],[4,43,27],[4,43,19],[4,43,15],[2,98,78],[4,49,31],[2,32,14,4,33,15],[4,39,13,1,40,14],[2,121,97],[2,60,38,2,61,39],[4,40,18,2,41,19],[4,40,14,2,41,15],[2,146,116],[3,58,36,2,59,37],[4,36,16,4,37,17],[4,36,12,4,37,13],[2,86,68,2,87,69],[4,69,43,1,70,44],[6,43,19,2,44,20],[6,43,15,2,44,16],[4,101,81],[1,80,50,4,81,51],[4,50,22,4,51,23],[3,36,12,8,37,13],[2,116,92,2,117,93],[6,58,36,2,59,37],[4,46,20,6,47,21],[7,42,14,4,43,15],[4,133,107],[8,59,37,1,60,38],[8,44,20,4,45,21],[12,33,11,4,34,12],[3,145,115,1,146,116],[4,64,40,5,65,41],[11,36,16,5,37,17],[11,36,12,5,37,13],[5,109,87,1,110,88],[5,65,41,5,66,42],[5,54,24,7,55,25],[11,36,12,7,37,13],[5,122,98,1,123,99],[7,73,45,3,74,46],[15,43,19,2,44,20],[3,45,15,13,46,16],[1,135,107,5,136,108],[10,74,46,1,75,47],[1,50,22,15,51,23],[2,42,14,17,43,15],[5,150,120,1,151,121],[9,69,43,4,70,44],[17,50,22,1,51,23],[2,42,14,19,43,15],[3,141,113,4,142,114],[3,70,44,11,71,45],[17,47,21,4,48,22],[9,39,13,16,40,14],[3,135,107,5,136,108],[3,67,41,13,68,42],[15,54,24,5,55,25],[15,43,15,10,44,16],[4,144,116,4,145,117],[17,68,42],[17,50,22,6,51,23],[19,46,16,6,47,17],[2,139,111,7,140,112],[17,74,46],[7,54,24,16,55,25],[34,37,13],[4,151,121,5,152,122],[4,75,47,14,76,48],[11,54,24,14,55,25],[16,45,15,14,46,16],[6,147,117,4,148,118],[6,73,45,14,74,46],[11,54,24,16,55,25],[30,46,16,2,47,17],[8,132,106,4,133,107],[8,75,47,13,76,48],[7,54,24,22,55,25],[22,45,15,13,46,16],[10,142,114,2,143,115],[19,74,46,4,75,47],[28,50,22,6,51,23],[33,46,16,4,47,17],[8,152,122,4,153,123],[22,73,45,3,74,46],[8,53,23,26,54,24],[12,45,15,28,46,16],[3,147,117,10,148,118],[3,73,45,23,74,46],[4,54,24,31,55,25],[11,45,15,31,46,16],[7,146,116,7,147,117],[21,73,45,7,74,46],[1,53,23,37,54,24],[19,45,15,26,46,16],[5,145,115,10,146,116],[19,75,47,10,76,48],[15,54,24,25,55,25],[23,45,15,25,46,16],[13,145,115,3,146,116],[2,74,46,29,75,47],[42,54,24,1,55,25],[23,45,15,28,46,16],[17,145,115],[10,74,46,23,75,47],[10,54,24,35,55,25],[19,45,15,35,46,16],[17,145,115,1,146,116],[14,74,46,21,75,47],[29,54,24,19,55,25],[11,45,15,46,46,16],[13,145,115,6,146,116],[14,74,46,23,75,47],[44,54,24,7,55,25],[59,46,16,1,47,17],[12,151,121,7,152,122],[12,75,47,26,76,48],[39,54,24,14,55,25],[22,45,15,41,46,16],[6,151,121,14,152,122],[6,75,47,34,76,48],[46,54,24,10,55,25],[2,45,15,64,46,16],[17,152,122,4,153,123],[29,74,46,14,75,47],[49,54,24,10,55,25],[24,45,15,46,46,16],[4,152,122,18,153,123],[13,74,46,32,75,47],[48,54,24,14,55,25],[42,45,15,32,46,16],[20,147,117,4,148,118],[40,75,47,7,76,48],[43,54,24,22,55,25],[10,45,15,67,46,16],[19,148,118,6,149,119],[18,75,47,31,76,48],[34,54,24,34,55,25],[20,45,15,61,46,16]],(A={}).getRSBlocks=function(t,r){var e=function(t,r){switch(r){case y.L:return k[4*(t-1)+0];case y.M:return k[4*(t-1)+1];case y.Q:return k[4*(t-1)+2];case y.H:return k[4*(t-1)+3];default:return}}(t,r);if(void 0===e)throw"bad rs block @ typeNumber:"+t+"/errorCorrectionLevel:"+r;for(var n,o,i=e.length/3,a=[],u=0;u<i;u+=1)for(var f=e[3*u+0],c=e[3*u+1],g=e[3*u+2],l=0;l<f;l+=1)a.push((n=g,o=void 0,(o={}).totalCount=c,o.dataCount=n,o));return a},A),M=function(){var e=[],n=0,o={getBuffer:function(){return e},getAt:function(t){var r=Math.floor(t/8);return 1==(e[r]>>>7-t%8&1)},put:function(t,r){for(var e=0;e<r;e+=1)o.putBit(1==(t>>>r-e-1&1))},getLengthInBits:function(){return n},putBit:function(t){var r=Math.floor(n/8);e.length<=r&&e.push(0),t&&(e[r]|=128>>>n%8),n+=1}};return o},x=function(t){var r=a,n=t,e={getMode:function(){return r},getLength:function(t){return n.length},write:function(t){for(var r=n,e=0;e+2<r.length;)t.put(o(r.substring(e,e+3)),10),e+=3;e<r.length&&(r.length-e==1?t.put(o(r.substring(e,e+1)),4):r.length-e==2&&t.put(o(r.substring(e,e+2)),7))}},o=function(t){for(var r=0,e=0;e<t.length;e+=1)r=10*r+i(t.charAt(e));return r},i=function(t){if("0"<=t&&t<="9")return t.charCodeAt(0)-"0".charCodeAt(0);throw"illegal char :"+t};return e},m=function(t){var r=u,n=t,e={getMode:function(){return r},getLength:function(t){return n.length},write:function(t){for(var r=n,e=0;e+1<r.length;)t.put(45*o(r.charAt(e))+o(r.charAt(e+1)),11),e+=2;e<r.length&&t.put(o(r.charAt(e)),6)}},o=function(t){if("0"<=t&&t<="9")return t.charCodeAt(0)-"0".charCodeAt(0);if("A"<=t&&t<="Z")return t.charCodeAt(0)-"A".charCodeAt(0)+10;switch(t){case" ":return 36;case"$":return 37;case"%":return 38;case"*":return 39;case"+":return 40;case"-":return 41;case".":return 42;case"/":return 43;case":":return 44;default:throw"illegal char :"+t}};return e},L=function(t){var r=o,e=i.stringToBytes(t),n={getMode:function(){return r},getLength:function(t){return e.length},write:function(t){for(var r=0;r<e.length;r+=1)t.put(e[r],8)}};return n},D=function(t){var r=f,e=i.stringToBytesFuncs.SJIS;if(!e)throw"sjis not supported.";!function(){var t=e("友");if(2!=t.length||38726!=(t[0]<<8|t[1]))throw"sjis not supported."}();var o=e(t),n={getMode:function(){return r},getLength:function(t){return~~(o.length/2)},write:function(t){for(var r=o,e=0;e+1<r.length;){var n=(255&r[e])<<8|255&r[e+1];if(33088<=n&&n<=40956)n-=33088;else{if(!(57408<=n&&n<=60351))throw"illegal char at "+(e+1)+"/"+n;n-=49472}n=192*(n>>>8&255)+(255&n),t.put(n,13),e+=2}if(e<r.length)throw"illegal char at "+(e+1)}};return n},S=function(t){var e=t,n=0,o=0,i=0,r={read:function(){for(;i<8;){if(n>=e.length){if(0==i)return-1;throw"unexpected end of file./"+i}var t=e.charAt(n);if(n+=1,"="==t)return i=0,-1;t.match(/^\s$/)||(o=o<<6|a(t.charCodeAt(0)),i+=6)}var r=o>>>i-8&255;return i-=8,r}},a=function(t){if(65<=t&&t<=90)return t-65;if(97<=t&&t<=122)return t-97+26;if(48<=t&&t<=57)return t-48+52;if(43==t)return 62;if(47==t)return 63;throw"c:"+t};return r},I=function(t,r,e){for(var n=function(t,r){var n=t,o=r,l=new Array(t*r),e={setPixel:function(t,r,e){l[r*n+t]=e},write:function(t){t.writeString("GIF87a"),t.writeShort(n),t.writeShort(o),t.writeByte(128),t.writeByte(0),t.writeByte(0),t.writeByte(0),t.writeByte(0),t.writeByte(0),t.writeByte(255),t.writeByte(255),t.writeByte(255),t.writeString(","),t.writeShort(0),t.writeShort(0),t.writeShort(n),t.writeShort(o),t.writeByte(0);var r=i(2);t.writeByte(2);for(var e=0;255<r.length-e;)t.writeByte(255),t.writeBytes(r,e,255),e+=255;t.writeByte(r.length-e),t.writeBytes(r,e,r.length-e),t.writeByte(0),t.writeString(";")}},i=function(t){for(var r=1<<t,e=1+(1<<t),n=t+1,o=h(),i=0;i<r;i+=1)o.add(String.fromCharCode(i));o.add(String.fromCharCode(r)),o.add(String.fromCharCode(e));var a=p(),u=function(t){var e=t,n=0,o=0,r={write:function(t,r){if(t>>>r!=0)throw"length over";for(;8<=n+r;)e.writeByte(255&(t<<n|o)),r-=8-n,t>>>=8-n,n=o=0;o|=t<<n,n+=r},flush:function(){0<n&&e.writeByte(o)}};return r}(a);u.write(r,n);var f=0,c=String.fromCharCode(l[f]);for(f+=1;f<l.length;){var g=String.fromCharCode(l[f]);f+=1,o.contains(c+g)?c+=g:(u.write(o.indexOf(c),n),o.size()<4095&&(o.size()==1<<n&&(n+=1),o.add(c+g)),c=g)}return u.write(o.indexOf(c),n),u.write(e,n),u.flush(),a.toByteArray()},h=function(){var r={},e=0,n={add:function(t){if(n.contains(t))throw"dup key:"+t;r[t]=e,e+=1},size:function(){return e},indexOf:function(t){return r[t]},contains:function(t){return void 0!==r[t]}};return n};return e}(t,r),o=0;o<r;o+=1)for(var i=0;i<t;i+=1)n.setPixel(i,o,e(i,o));var a=p();n.write(a);for(var u=function(){function e(t){a+=String.fromCharCode(r(63&t))}var n=0,o=0,i=0,a="",t={},r=function(t){if(t<0);else{if(t<26)return 65+t;if(t<52)return t-26+97;if(t<62)return t-52+48;if(62==t)return 43;if(63==t)return 47}throw"n:"+t};return t.writeByte=function(t){for(n=n<<8|255&t,o+=8,i+=1;6<=o;)e(n>>>o-6),o-=6},t.flush=function(){if(0<o&&(e(n<<6-o),o=n=0),i%3!=0)for(var t=3-i%3,r=0;r<t;r+=1)a+="="},t.toString=function(){return a},t}(),f=a.toByteArray(),c=0;c<f.length;c+=1)u.writeByte(f[c]);return u.flush(),"data:image/gif;base64,"+u};return i}();qrcode.stringToBytesFuncs["UTF-8"]=function(t){return function(t){for(var r=[],e=0;e<t.length;e++){var n=t.charCodeAt(e);n<128?r.push(n):n<2048?r.push(192|n>>6,128|63&n):n<55296||57344<=n?r.push(224|n>>12,128|n>>6&63,128|63&n):(e++,n=65536+((1023&n)<<10|1023&t.charCodeAt(e)),r.push(240|n>>18,128|n>>12&63,128|n>>6&63,128|63&n))}return r}(t)},function(t){"function"==typeof define&&define.amd?define([],t):"object"==typeof exports&&(module.exports=t())}(function(){return qrcode});
+qrcode.stringToBytes = qrcode.stringToBytesFuncs['UTF-8'];
+function makeQrDataUrl(text, cell){
+  try { var q = qrcode(0,'L'); q.addData(text); q.make(); return q.createDataURL(cell||6); }
+  catch(e){ try { var q2 = qrcode(0,'M'); q2.addData(text); q2.make(); return q2.createDataURL(cell||6); } catch(e2){ console.warn('QR 產生失敗', e2); return null; } }
+}
+</script>
 <!-- html2canvas：名片截圖下載 -->
 <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 <!-- pdf-lib：純前端 PDF 簽名（離線可用） -->
@@ -901,8 +909,8 @@ input, select, textarea, button { font-size: 16px; }
   justify-content: flex-end;
 }
 .theme-dot {
-  width: 14px;
-  height: 14px;
+  width: 20px;
+  height: 20px;
   border-radius: 50%;
   cursor: pointer;
   border: 1.5px solid var(--bg-secondary);
@@ -973,8 +981,8 @@ input, select, textarea, button { font-size: 16px; }
   gap: 4px;
 }
 .btn-mini-social {
-  width: 22px;
-  height: 22px;
+  width: 32px;
+  height: 32px;
   border-radius: 50%;
   border: 1px solid var(--border-color);
   background: var(--bg-primary);
@@ -1510,8 +1518,14 @@ input, select, textarea, button { font-size: 16px; }
 .btab i { font-size:24px; color: var(--text-tertiary); display: block; }
 .btab.active .btab-pip { background: var(--accent-soft); }
 .btab.active i { color: var(--accent); }
-.btab span { font-size:13px; font-weight: 500; color: var(--text-tertiary); }
+.btab span { font-size:14px; font-weight: 500; color: var(--text-tertiary); }
 .btab.active span { color: var(--text-primary); font-weight: 700; }
+
+/* ── 無障礙修正：鍵盤焦點指示 + 最小觸控尺寸 ── */
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.btn:focus-visible, .btab:focus-visible, .tool-card:focus-visible, .seg-btn:focus-visible,
+.theme-dot:focus-visible, .btn-mini-social:focus-visible, a:focus-visible, select:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.btn { min-height: 42px; }
 
 /* ============================================================================
    Phase 2 — 名片庫新版面 & 工具箱補強
@@ -1583,8 +1597,14 @@ input, select, textarea, button { font-size: 16px; }
   <!-- ==========================================================================
        [HTML] 頂部標題與狀態導覽列
        ========================================================================== -->
-  <header class="app-header">
-    <div style="font-size:20px;font-weight:700;color:var(--text-primary);letter-spacing:0.2px;">名片管理</div>
+  <header class="app-header" style="display:flex;align-items:center;justify-content:space-between;gap:10px;">
+    <div style="display:flex;flex-direction:column;line-height:1.15;">
+      <div style="font-size:20px;font-weight:700;color:var(--text-primary);letter-spacing:0.2px;">名片管理</div>
+      <div style="font-size:12.5px;color:var(--text-tertiary);">拍照即存・AI 名片管家</div>
+    </div>
+    <button id="theme-toggle-btn" class="btn btn-icon" onclick="toggleTheme()" title="切換深色／淺色" aria-label="切換深色或淺色主題" style="width:40px;height:40px;flex-shrink:0;border-radius:50%;">
+      <i class="ti ti-sun"></i>
+    </button>
   </header>
 
   <!-- ==========================================================================
@@ -1595,6 +1615,9 @@ input, select, textarea, button { font-size: 16px; }
     <div id="view-home" style="display:none">
       <!-- 區塊列表 -->
       <div style="padding:14px 14px 90px;display:flex;flex-direction:column;gap:12px;">
+
+        <!-- 首次使用歡迎卡（點任一鈕後不再出現） -->
+        <div id="home-welcome" style="display:none;"></div>
 
         <!-- 系統狀態：儲存空間 + 備份提醒 -->
         <div id="home-system-status"></div>
@@ -1670,6 +1693,10 @@ input, select, textarea, button { font-size: 16px; }
           </div>
           <!-- 標籤篩選 -->
           <div id="tag-cloud" style="display:flex;flex-wrap:wrap;gap:8px;"></div>
+          <!-- 群組篩選 -->
+          <select id="group-filter-select" onchange="setGroupFilter(this.value||null)" aria-label="依群組篩選" style="width:100%;height:40px;border-radius:8px;border:1px solid var(--border-color);background:var(--bg-primary);color:var(--text-primary);font-size:15px;padding:0 10px;cursor:pointer;">
+            <option value="">全部群組</option>
+          </select>
           <!-- 狀態和排序 -->
           <div style="display:flex;gap:10px;align-items:center;justify-content:space-between;">
             <div class="status-segmented">
@@ -1692,6 +1719,9 @@ input, select, textarea, button { font-size: 16px; }
           <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 16px 0;">
             <h3 style="margin:0;"><i class="ti ti-id"></i> 名片列表 <span style="font-size:15px;color:var(--text-tertiary);font-weight:400;" id="cards-count-label"></span></h3>
             <div style="display:flex;gap:8px;">
+              <button class="btn" id="btn-select-mode" onclick="toggleSelectionMode()" style="border-radius:10px;font-size:15.5px;font-weight:600;padding:7px 14px;">
+                <i class="ti ti-checkbox" style="font-size:17px;"></i> 選取
+              </button>
               <button class="btn btn-primary" onclick="openFormModal()" style="border-radius:10px;font-size:15.5px;font-weight:600;padding:7px 14px;background:var(--accent);border:none;">
                 <i class="ti ti-plus" style="font-size:17px;"></i> 新增
               </button>
@@ -1702,6 +1732,21 @@ input, select, textarea, button { font-size: 16px; }
           </div>
           <div class="card-list-wrap" id="card-grid" style="border-radius:0;border:none;margin-top:10px;">
             <!-- JS 動態渲染 renderCardsGrid() -->
+          </div>
+        </div>
+
+        <!-- 多選批次動作列（選取模式且有勾選時顯示） -->
+        <div id="batch-action-bar" style="display:none;position:fixed;left:50%;transform:translateX(-50%);bottom:calc(74px + env(safe-area-inset-bottom));width:calc(100% - 28px);max-width:560px;z-index:210;background:var(--bg-secondary);border:1px solid var(--border-color);border-radius:14px;box-shadow:0 8px 28px rgba(0,0,0,0.28);padding:10px 12px;flex-direction:column;gap:8px;">
+          <div style="display:flex;align-items:center;gap:8px;">
+            <span style="font-weight:700;color:var(--text-primary);">已選 <span id="batch-bar-count">0</span> 張</span>
+            <button class="btn" style="margin-left:auto;padding:5px 10px;font-size:14px;min-height:auto;" onclick="selectAllVisible()"><i class="ti ti-list-check"></i> 全選/全不選</button>
+            <button class="btn" style="padding:5px 10px;font-size:14px;min-height:auto;" onclick="clearSelection()">清除</button>
+          </div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;">
+            <button class="btn btn-green" style="flex:1 1 120px;padding:8px;font-size:14px;min-height:auto;" onclick="batchExportVcf()"><i class="ti ti-address-book"></i> 匯出 VCF</button>
+            <button class="btn btn-blue" style="flex:1 1 120px;padding:8px;font-size:14px;min-height:auto;" onclick="batchExportCsv()"><i class="ti ti-table-export"></i> 匯出 Excel</button>
+            <button class="btn" style="flex:1 1 120px;padding:8px;font-size:14px;min-height:auto;" onclick="batchSetGroup()"><i class="ti ti-folder"></i> 改群組</button>
+            <button class="btn btn-red" style="flex:1 1 120px;padding:8px;font-size:14px;min-height:auto;" onclick="batchDelete()"><i class="ti ti-trash"></i> 刪除</button>
           </div>
         </div>
 
@@ -1820,9 +1865,9 @@ input, select, textarea, button { font-size: 16px; }
           <div style="flex:1;height:1px;background:var(--border-color);"></div>
         </div>
 
-        <div id="api-notice-batch-top" class="api-notice" style="display:none">
+        <div id="api-notice-batch-top" class="api-notice" style="display:none;cursor:pointer;" onclick="goSetApiKey()">
           <i class="ti ti-alert-triangle" style="flex-shrink:0;margin-top:1px"></i>
-          <span>需要 Gemini API 金鑰才能使用 AI 掃描。請先到「設定」頁面填入。</span>
+          <span>AI 辨識需先設定「AI 辨識金鑰」（Google 免費提供）。<u>點此前往設定 →</u></span>
         </div>
 
         <div class="batch-dropzone" id="drop-zone"
@@ -1830,9 +1875,9 @@ input, select, textarea, button { font-size: 16px; }
           ondragover="event.preventDefault();this.classList.add('drag')"
           ondragleave="this.classList.remove('drag')"
           ondrop="handleBatchDrop(event)">
-          <i class="ti ti-cloud-upload"></i>
-          <h3>選取或拖曳名片照片至此</h3>
-          <p>支援多張名片照片，一張照片內多張名片也可自動拆分。</p>
+          <i class="ti ti-camera"></i>
+          <h3>點此拍照或從相簿選取名片</h3>
+          <p>可一次選多張；一張照片內有多張名片也會自動拆分。</p>
           <input type="file" id="batch-file-input" accept="image/*" multiple style="display:none" onchange="handleBatchSelect(event)" />
         </div>
 
@@ -1896,8 +1941,18 @@ input, select, textarea, button { font-size: 16px; }
         <button class="tool-card" style="--tc:#6366f1;" onclick="switchTab('settings'); renderSettingsBadgeManager();">
           <div class="tool-card-icon"><i class="ti ti-settings"></i></div>
           <div class="tool-card-title">應用設定</div>
-          <div class="tool-card-desc">主題、同步設定、標籤管理</div>
+          <div class="tool-card-desc">金鑰、同步、群組標籤管理</div>
         </button>
+
+      </div>
+
+      <!-- 更多小工具（與名片管理無關，預設收合，保持工具箱聚焦） -->
+      <div style="padding:4px 14px 0;">
+        <button onclick="toggleMoreTools()" id="more-tools-toggle" style="width:100%;border:1px dashed var(--border-color);background:none;color:var(--text-secondary);font-size:15px;font-weight:600;padding:11px;border-radius:12px;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:8px;">
+          <i class="ti ti-tools"></i> 更多小工具（簽名 / 笑話 / 匯率 / 計時器）<i class="ti ti-chevron-down" id="more-tools-chevron"></i>
+        </button>
+      </div>
+      <div class="toolbox-grid" id="more-tools-grid" style="display:none;">
 
         <button class="tool-card" style="--tc:#e11d48;" onclick="openSignatureModal()">
           <div class="tool-card-icon"><i class="ti ti-signature"></i></div>
@@ -2457,6 +2512,8 @@ input, select, textarea, button { font-size: 16px; }
 // ============================================================================
 let cardsList = [];
 let selectedCardId = null;
+let selectionMode = false;        // 名片庫多選模式
+let selectedIds = new Set();       // 已勾選的名片 id
 let scanQueue = [];
 let isScanning = false;
 let graphSimulation = null;
@@ -3391,7 +3448,7 @@ async function handleSingleScan(event) {
   } catch(err) {
     console.error(err);
     if (err.message === 'API_KEY_EMPTY') {
-      alert('請先前往「設定」分頁配置您的 Gemini API Key！');
+      goSetApiKey();
     } else {
       alert('辨識失敗：' + err.message);
     }
@@ -3424,7 +3481,7 @@ async function handleMyCardScan(event) {
   } catch(err) {
     console.error(err);
     if (err.message === 'API_KEY_EMPTY') {
-      alert('請先前往「應用設定」分頁配置您的 Gemini API Key！');
+      goSetApiKey();
     } else {
       alert('個人名片辨識失敗：' + err.message);
     }
@@ -3480,8 +3537,8 @@ async function systemLoadAllData() {
   try { renderSettingsBadgeManager(); } catch(e) { console.warn('renderSettingsBadgeManager:', e); }
   try { renderCardsGrid(); } catch(e) { console.warn('renderCardsGrid:', e); }
   try { renderDashboard(); } catch(e) { console.warn('renderDashboard:', e); }
-  switchTab('myprofile');
-  setTimeout(() => renderMyProfile(), 50);
+  switchTab('home');
+  setTimeout(() => renderHomeScreen(), 50);
 }
 
 function renderSidebarFilters() {
@@ -3630,35 +3687,150 @@ function renderCardsGrid() {
   grid.innerHTML = filtered.map(c => {
     const isDup = dupList.has(c.id);
     const hue = nameToHue(c.name);
-    const subtitle = [c.title, c.dept].filter(x => x).join(' · ') || c.org || '無職稱';
+    const subtitle = [c.org, c.title].filter(x => x).join(' · ') || c.dept || '未填資料';
 
+    // 只標示「需要注意」的狀態（未處理／重複），已處理為常態不再貼標、減少視覺雜訊
     let badge = '';
-    if (c.processed) {
-      badge = '<div class="bcr-badge bcr-done"><i class="ti ti-check"></i> 已處理</div>';
+    if (!c.processed) {
+      badge = '<div class="bcr-badge" style="background:rgba(245,158,11,0.16);color:var(--color-amber);"><i class="ti ti-clock"></i> 未處理</div>';
     } else if (isDup) {
       badge = '<div class="bcr-badge bcr-dup"><i class="ti ti-copy"></i> 重複</div>';
     }
 
+    const isSel = selectedIds.has(c.id);
+    const checkbox = selectionMode
+      ? `<div style="width:24px;height:24px;border-radius:6px;flex-shrink:0;border:2px solid ${isSel ? 'var(--accent)' : 'var(--border-color)'};background:${isSel ? 'var(--accent)' : 'transparent'};color:#fff;display:flex;align-items:center;justify-content:center;">${isSel ? '<i class="ti ti-check" style="font-size:16px;"></i>' : ''}</div>`
+      : '';
+    const rowOnclick = selectionMode ? `toggleCardSelection('${c.id}')` : `selectCard('${c.id}')`;
+    const rowSelected = (!selectionMode && selectedCardId === c.id) || (selectionMode && isSel) ? 'selected' : '';
+
     return `
-      <div class="biz-card-row ${selectedCardId === c.id ? 'selected' : ''}" onclick="selectCard('${c.id}')">
+      <div class="biz-card-row ${rowSelected}" onclick="${rowOnclick}">
+        ${checkbox}
         <div class="bcr-avatar" style="background:hsl(${hue}, 50%, 48%);color:white;">${(c.name||'?').slice(0,1)}</div>
         <div style="flex:1;min-width:0;">
           <div class="bcr-name">${c.name || '—'}</div>
           <div class="bcr-sub">${subtitle}</div>
         </div>
-        ${badge}
+        ${selectionMode ? '' : badge}
       </div>
     `;
   }).join('');
 
+  updateBatchBar();
+
   // 更新名片數量標籤
-  const countLabel = document.querySelector('.cards-count-label');
+  const countLabel = document.getElementById('cards-count-label');
   if (countLabel) {
     countLabel.textContent = `${filtered.length} 張`;
   }
+
+  // 群組篩選下拉：依自訂群組填入選項並反映目前選取
+  const gsel = document.getElementById('group-filter-select');
+  if (gsel) {
+    const groups = getCustomGroups();
+    const sig = groups.join('|');
+    if (gsel.dataset.sig !== sig) {
+      gsel.innerHTML = '<option value="">全部群組</option>' + groups.map(g => `<option value="${g}">${g}</option>`).join('');
+      gsel.dataset.sig = sig;
+    }
+    gsel.value = activeGroupFilter || '';
+  }
+}
+
+// ── 名片庫多選 / 批次動作 ──────────────────────────────────────────────
+function toggleSelectionMode() {
+  selectionMode = !selectionMode;
+  selectedIds.clear();
+  const btn = document.getElementById('btn-select-mode');
+  if (btn) btn.innerHTML = selectionMode
+    ? '<i class="ti ti-x" style="font-size:17px;"></i> 取消選取'
+    : '<i class="ti ti-checkbox" style="font-size:17px;"></i> 選取';
+  renderCardsGrid();
+}
+
+function toggleCardSelection(id) {
+  if (selectedIds.has(id)) selectedIds.delete(id); else selectedIds.add(id);
+  renderCardsGrid();
+}
+
+function selectAllVisible() {
+  const ids = getFilteredAndSortedCards().map(c => c.id);
+  const allSelected = ids.length > 0 && ids.every(i => selectedIds.has(i));
+  if (allSelected) ids.forEach(i => selectedIds.delete(i));
+  else ids.forEach(i => selectedIds.add(i));
+  renderCardsGrid();
+}
+
+function clearSelection() {
+  selectedIds.clear();
+  renderCardsGrid();
+}
+
+function getSelectedCards() {
+  return cardsList.filter(c => selectedIds.has(c.id));
+}
+
+function updateBatchBar() {
+  const bar = document.getElementById('batch-action-bar');
+  if (!bar) return;
+  if (selectionMode && selectedIds.size > 0) {
+    bar.style.display = 'flex';
+    const n = document.getElementById('batch-bar-count');
+    if (n) n.textContent = selectedIds.size;
+  } else {
+    bar.style.display = 'none';
+  }
+}
+
+function batchExportVcf() {
+  const cs = getSelectedCards();
+  if (!cs.length) { showToast('尚未勾選名片'); return; }
+  const dateStr = new Date().toLocaleDateString('zh-TW').split('/').join('-');
+  _doVcfDownload(cs, `名片_選取${cs.length}張_${dateStr}.vcf`);
+  showToast(`✓ 已匯出 ${cs.length} 張 vCard`);
+}
+
+function batchExportCsv() {
+  const cs = getSelectedCards();
+  if (!cs.length) { showToast('尚未勾選名片'); return; }
+  exportToCsv('selected', cs);
+}
+
+async function batchSetGroup() {
+  const cs = getSelectedCards();
+  if (!cs.length) { showToast('尚未勾選名片'); return; }
+  const groups = getCustomGroups();
+  const g = prompt(`將勾選的 ${cs.length} 張名片改到哪個群組？\n現有群組：${groups.join('、')}`, groups[0] || '其他');
+  if (g === null) return;
+  const grp = g.trim();
+  if (!grp) return;
+  if (!groups.includes(grp) && !confirm(`「${grp}」不是現有群組，仍要套用嗎？`)) return;
+  for (const c of cs) { c.group = grp; await dbSaveCard(c); }
+  cardsList = await dbGetAllCards();
+  renderCardsGrid();
+  renderDashboard();
+  showToast(`✓ 已將 ${cs.length} 張改為「${grp}」`);
+}
+
+async function batchDelete() {
+  const cs = getSelectedCards();
+  if (!cs.length) { showToast('尚未勾選名片'); return; }
+  if (!confirm(`確定刪除勾選的 ${cs.length} 張名片嗎？此動作無法復原。`)) return;
+  for (const c of cs) {
+    await dbDeleteCard(c.id);
+    if (selectedCardId === c.id) closeDetailPanel();
+  }
+  cardsList = await dbGetAllCards();
+  selectedIds.clear();
+  updateBadgesOnly();
+  renderCardsGrid();
+  renderDashboard();
+  showToast(`✓ 已刪除 ${cs.length} 張名片`);
 }
 
 async function selectCard(id) {
+  if (selectionMode) { toggleCardSelection(id); return; }
   selectedCardId = id;
   renderCardsGrid();
   
@@ -3727,11 +3899,12 @@ async function selectCard(id) {
         <button class="btn" onclick="flipVirtualCard('${c.id}')" style="font-size:14px;padding:7px 14px;">
           <i class="ti ti-rotate-360"></i> 翻面
         </button>
-        <div class="vc-theme-selector" style="margin:0;">
-          <div class="theme-dot vc-theme-indigo" onclick="changeCardTheme('${c.id}', 'indigo')" title="皇家靛藍"></div>
-          <div class="theme-dot vc-theme-emerald" onclick="changeCardTheme('${c.id}', 'emerald')" title="森林翡翠"></div>
-          <div class="theme-dot vc-theme-charcoal" onclick="changeCardTheme('${c.id}', 'charcoal')" title="極致深曜"></div>
-          <div class="theme-dot vc-theme-sunset" onclick="changeCardTheme('${c.id}', 'sunset')" title="溫慢落日"></div>
+        <div class="vc-theme-selector" style="margin:0;" role="group" aria-label="名片配色">
+          <span style="font-size:12.5px;color:var(--text-tertiary);margin-right:2px;">配色</span>
+          <div class="theme-dot vc-theme-indigo" role="button" tabindex="0" onclick="changeCardTheme('${c.id}', 'indigo')" title="皇家靛藍" aria-label="配色：皇家靛藍"></div>
+          <div class="theme-dot vc-theme-emerald" role="button" tabindex="0" onclick="changeCardTheme('${c.id}', 'emerald')" title="森林翡翠" aria-label="配色：森林翡翠"></div>
+          <div class="theme-dot vc-theme-charcoal" role="button" tabindex="0" onclick="changeCardTheme('${c.id}', 'charcoal')" title="極致深曜" aria-label="配色：極致深曜"></div>
+          <div class="theme-dot vc-theme-sunset" role="button" tabindex="0" onclick="changeCardTheme('${c.id}', 'sunset')" title="溫慢落日" aria-label="配色：溫慢落日"></div>
         </div>
       </div>
     </div>
@@ -3747,8 +3920,8 @@ async function selectCard(id) {
         <div class="df-val">${c.mobile ? `<a href="tel:${cleanMobile}">${c.mobile}</a>` : '—'}</div>
         
         <div class="quick-social-btns">
-          ${c.mobile ? `<button class="btn-mini-social" onclick="window.open('https://wa.me/${cleanMobile}', '_blank')" title="WhatsApp 快速通訊"><i class="ti ti-brand-whatsapp"></i></button>` : ''}
-          ${c.mobile ? `<button class="btn-mini-social" onclick="copyToClipboard('${c.mobile}', '已複製電話，可在 LINE 搜尋')" title="複製號碼"><i class="ti ti-copy"></i></button>` : ''}
+          ${c.mobile ? `<button class="btn-mini-social" onclick="window.open('https://wa.me/${cleanMobile}', '_blank')" title="WhatsApp 快速通訊" aria-label="用 WhatsApp 聯絡"><i class="ti ti-brand-whatsapp"></i></button>` : ''}
+          ${c.mobile ? `<button class="btn-mini-social" onclick="copyToClipboard('${c.mobile}', '已複製電話，可在 LINE 搜尋')" title="複製號碼" aria-label="複製手機號碼"><i class="ti ti-copy"></i></button>` : ''}
         </div>
       </div>
       
@@ -3806,7 +3979,7 @@ async function selectCard(id) {
       <button class="btn btn-amber" onclick="openQrCodeModal('${c.id}')"><i class="ti ti-qrcode"></i> 分享二維碼</button>
       <button class="btn btn-primary" onclick="openAiEmailModal('${c.id}')"><i class="ti ti-robot"></i> AI 拜訪信</button>
       <button class="btn btn-blue" onclick="editCard('${c.id}')"><i class="ti ti-edit"></i> 修改</button>
-      <button class="btn btn-red" onclick="deleteCard('${c.id}')"><i class="ti ti-trash"></i></button>
+      <button class="btn btn-red" onclick="deleteCard('${c.id}')" aria-label="刪除名片" title="刪除名片"><i class="ti ti-trash"></i> 刪除</button>
     </div>
   `;
 }
@@ -3847,7 +4020,7 @@ function closeLightbox() {
 function switchTab(tabId) {
   // Header 只在首頁顯示
   const header = document.querySelector('.app-header');
-  if (header) header.style.display = tabId === 'home' ? '' : 'none';
+  if (header) header.style.display = 'flex';
 
   // Map tab IDs to view IDs
   const allViews = ['home','cards','dashboard','dups','batch','graph','settings','myprofile'];
@@ -3877,6 +4050,30 @@ function switchTab(tabId) {
 // ============================================================================
 // [5] 匯出、匯入與備份模組
 // ============================================================================
+// 尚未設定 AI 金鑰時的統一引導（取代散落各處、用詞不一的 alert）
+function goSetApiKey() {
+  if (confirm('尚未設定「AI 辨識金鑰」，無法使用 AI 辨識名片。\n是否前往「應用設定」填入？（Google 免費提供，約 1 分鐘申請）')) {
+    switchTab('settings');
+    try { renderSettingsBadgeManager(); } catch(e) {}
+    setTimeout(() => { const k = document.getElementById('settings-api-key'); if (k) k.focus(); }, 250);
+  }
+}
+
+function dismissWelcome() {
+  localStorage.setItem('bizcard_onboarded', '1');
+  const w = document.getElementById('home-welcome');
+  if (w) { w.style.display = 'none'; w.innerHTML = ''; }
+}
+
+function toggleMoreTools() {
+  const grid = document.getElementById('more-tools-grid');
+  const chev = document.getElementById('more-tools-chevron');
+  if (!grid) return;
+  const open = grid.style.display === 'none';
+  grid.style.display = open ? 'grid' : 'none';
+  if (chev) chev.style.transform = open ? 'rotate(180deg)' : '';
+}
+
 function cleanVcfVal(val) { return (val || '').trim().replace(/[,;\n]/g, ' '); }
 
 function cardToVcfString(c) {
@@ -3960,8 +4157,8 @@ function exportNewVcf() {
   return newCards.length;
 }
 
-function exportToCsv(mode = 'all') {
-  const list = mode === 'processed' ? cardsList.filter(c => c.processed) : [...cardsList];
+function exportToCsv(mode = 'all', explicitList = null) {
+  const list = explicitList ? explicitList : (mode === 'processed' ? cardsList.filter(c => c.processed) : [...cardsList]);
   if (list.length === 0) { showToast('沒有符合條件的名片可匯出！'); return; }
 
   const headers = ['姓名','公司','職稱','部門','手機','電話','分機','傳真','Email','網站','郵遞區號','地址','群組','標籤','備註','建立時間','已處理','已同步Google'];
@@ -3984,7 +4181,7 @@ function exportToCsv(mode = 'all') {
   const a = document.createElement('a');
   const dateStr = new Date().toLocaleDateString('zh-TW').split('/').join('-');
   a.href = url;
-  a.download = `名片清單_${mode === 'processed' ? '已處理_' : ''}${dateStr}.csv`;
+  a.download = explicitList ? `名片清單_選取${list.length}張_${dateStr}.csv` : `名片清單_${mode === 'processed' ? '已處理_' : ''}${dateStr}.csv`;
   a.click();
   URL.revokeObjectURL(url);
   showToast(`✓ 已匯出 ${list.length} 張名片至 Excel CSV！`);
@@ -3993,13 +4190,25 @@ function exportToCsv(mode = 'all') {
 async function exportFullJsonBackup() {
   showToast('正在準備資料庫完整備份檔案...');
   try {
-    const backupList = [];
+    const cards = [];
     for (const c of cardsList) {
       const imageBase64 = await dbGetCardImage(c.id);
-      backupList.push({ card: c, image: imageBase64 });
+      cards.push({ card: c, image: imageBase64 });
     }
-    
-    const blob = new Blob([JSON.stringify(backupList, null, 2)], { type: 'application/json' });
+    // 一併打包：個人名片、自訂群組、自訂標籤（這些原本只存在 localStorage、過去會漏備）
+    let myCard = null;
+    try { myCard = JSON.parse(localStorage.getItem('bizcard_user_mycard') || 'null'); } catch(e) {}
+    const backup = {
+      _format: 'bizcard-backup',
+      version: 2,
+      exportedAt: new Date().toISOString(),
+      cards: cards,
+      myCard: myCard,
+      groups: getCustomGroups(),
+      tags: getCustomTags()
+    };
+
+    const blob = new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
@@ -4007,7 +4216,7 @@ async function exportFullJsonBackup() {
     a.click();
     // 記錄備份時間與當下名片數
     localStorage.setItem('bizcard_last_backup', JSON.stringify({ ts: Date.now(), count: cardsList.length }));
-    showToast('✓ 完整備份導出成功！');
+    showToast(`✓ 完整備份成功（${cards.length} 張名片＋個人名片＋群組標籤）`);
     renderHomeScreen(); // 更新總覽的備份狀態
   } catch(e) {
     alert('備份導出失敗：' + e.message);
@@ -4022,23 +4231,39 @@ function importFullJsonBackup(event) {
   reader.onload = async function(evt) {
     try {
       const parsed = JSON.parse(evt.target.result);
-      if (!Array.isArray(parsed)) {
+      // 相容：舊版備份是純陣列；新版(v2)是物件 {cards, myCard, groups, tags}
+      const isNew = parsed && !Array.isArray(parsed) && Array.isArray(parsed.cards);
+      const cardEntries = isNew ? parsed.cards : (Array.isArray(parsed) ? parsed : null);
+      if (!cardEntries) {
         alert('還原失敗：此備份檔案格式無效。');
         return;
       }
-      
-      if (confirm(`確認還原此備份？這將會匯入 ${parsed.length} 筆名片，若 ID 重複將會覆蓋。`)) {
-        for (const item of parsed) {
+
+      const extras = [];
+      if (isNew && parsed.myCard) extras.push('個人名片');
+      if (isNew && Array.isArray(parsed.groups)) extras.push(`${parsed.groups.length} 個群組`);
+      if (isNew && Array.isArray(parsed.tags)) extras.push(`${parsed.tags.length} 個標籤`);
+      const extraTxt = extras.length ? `，以及 ${extras.join('、')}` : '';
+
+      if (confirm(`確認還原此備份？將匯入 ${cardEntries.length} 筆名片${extraTxt}。\n（ID 重複的名片會被覆蓋）`)) {
+        for (const item of cardEntries) {
           if (item.card && item.card.id) {
             await dbSaveCard(item.card, item.image);
           }
         }
-        showToast('✓ 資料還原備份成功！');
+        // 還原個人名片 / 自訂群組 / 自訂標籤
+        if (isNew) {
+          if (parsed.myCard) localStorage.setItem('bizcard_user_mycard', JSON.stringify(parsed.myCard));
+          if (Array.isArray(parsed.groups)) localStorage.setItem('bizcard_custom_groups', JSON.stringify(parsed.groups));
+          if (Array.isArray(parsed.tags)) localStorage.setItem('bizcard_custom_tags', JSON.stringify(parsed.tags));
+        }
         cardsList = await dbGetAllCards();
         renderSidebarFilters();
         renderCardsGrid();
         closeDetailPanel();
         renderDashboard();
+        try { renderMyProfile(); } catch(e) {}
+        showToast(`✓ 還原成功：${cardEntries.length} 張名片${extraTxt}`);
       }
     } catch(err) {
       alert('無效的備份 JSON 檔案：' + err.message);
@@ -4056,9 +4281,9 @@ function openQrCodeModal(id) {
   if (!c) return;
   
   const vcfText = cardToVcfString(c);
-  const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(vcfText)}`;
-  
-  document.getElementById('share-qrcode-img').src = qrUrl;
+  const qrUrl = makeQrDataUrl(vcfText, 6);
+
+  document.getElementById('share-qrcode-img').src = qrUrl || '';
   document.getElementById('qrcode-modal-bg').classList.add('open');
 }
 
@@ -4094,10 +4319,10 @@ function backToEmailSetup() {
 async function generateAiFollowUpEmail() {
   const key = getGeminiApiKey();
   if (!key) {
-    alert('請先在設定中填入您的 Gemini API Key！');
+    goSetApiKey();
     return;
   }
-  
+
   const c = cardsList.find(x => x.id === targetAiEmailCardId);
   if (!c) return;
   
@@ -4284,6 +4509,26 @@ function renderHomeScreen() {
   const processed = cardsList.filter(c => c.processed).length;
   const rate = total ? Math.round((processed / total) * 100) : 0;
 
+  // 首次使用歡迎卡（點按後不再出現）
+  const welcome = document.getElementById('home-welcome');
+  if (welcome) {
+    if (!localStorage.getItem('bizcard_onboarded')) {
+      welcome.innerHTML = `
+        <div class="db-section" style="background:var(--accent-light);border:1px solid var(--accent);">
+          <div style="font-size:17px;font-weight:700;color:var(--text-primary);margin-bottom:6px;"><i class="ti ti-sparkles" style="color:var(--accent);"></i> 歡迎使用名片管理</div>
+          <div style="font-size:14.5px;color:var(--text-secondary);line-height:1.6;margin-bottom:12px;">拍下紙本名片 → AI 自動辨識 → 一鍵存進手機通訊錄；也能做自己的電子名片 QR Code 分享給別人。</div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;">
+            <button class="btn btn-primary" style="flex:1 1 140px;" onclick="dismissWelcome();switchTab('batch');"><i class="ti ti-camera"></i> 開始掃名片</button>
+            <button class="btn" style="flex:1 1 100px;" onclick="dismissWelcome();">先逛逛</button>
+          </div>
+        </div>`;
+      welcome.style.display = 'block';
+    } else {
+      welcome.style.display = 'none';
+      welcome.innerHTML = '';
+    }
+  }
+
   // 系統狀態（儲存空間 + 備份提醒）
   renderSystemStatus();
 
@@ -4410,6 +4655,7 @@ function renderMyProfile() {
           <div style="font-size:18px;font-weight:600;color:var(--text-primary);margin-bottom:6px;">尚未設定個人名片</div>
           <div style="font-size:15px;color:var(--text-tertiary);margin-bottom:18px;">填寫後即可產生 QR Code 分享給他人</div>
           <button class="btn btn-primary" onclick="openMyCardModal();setTimeout(enterMyCardEditMode,100);"><i class="ti ti-edit"></i> 立即填寫</button>
+          <div style="margin-top:16px;font-size:14.5px;color:var(--text-tertiary);">想整理別人的名片？<span style="color:var(--accent);font-weight:600;cursor:pointer;" onclick="switchTab('batch')">去拍照掃名片 →</span></div>
         </div>`;
     } else {
       const photoHtml = c.image ? `
@@ -4451,6 +4697,7 @@ function renderMyProfile() {
       // 精簡 vCard（只放關鍵欄位，避免超過 QR Code 容量）
       let vcard = 'BEGIN:VCARD\nVERSION:3.0\n';
       vcard += `FN:${c.name}\n`;
+      vcard += `N:${c.name};;;;\n`;
       if (c.org) vcard += `ORG:${c.org}\n`;
       if (c.title) vcard += `TITLE:${c.title}\n`;
       if (c.mobile) vcard += `TEL;CELL:${c.mobile}\n`;
@@ -4458,16 +4705,13 @@ function renderMyProfile() {
       if (c.email) vcard += `EMAIL:${c.email}\n`;
       vcard += 'END:VCARD';
 
-      // 用 qrserver.com API 產生 QR Code 圖片（支援中文，不需函式庫）
-      const qrUrl = 'https://api.qrserver.com/v1/create-qr-code/?size=300x300&ecc=L&data=' + encodeURIComponent(vcard);
-      qrDiv.innerHTML = `
-        <img src="${qrUrl}"
-             style="width:100%;max-width:160px;height:auto;border-radius:10px;display:block;"
-             alt="vCard QR Code"
-             onerror="this.parentElement.innerHTML='<div style=color:var(--color-amber);font-size:15px;padding:20px;text-align:center;>離線狀態無法產生 QR Code</div>'"
-        />`;
-      // 儲存 QR URL 供下載使用
-      qrDiv.dataset.qrUrl = qrUrl;
+      // 內嵌函式庫於本機產生 QR（離線可用、聯絡資料不外傳第三方）
+      const qrUrl = makeQrDataUrl(vcard, 6);
+      qrDiv.innerHTML = qrUrl
+        ? `<img src="${qrUrl}" style="width:100%;max-width:170px;height:auto;border-radius:6px;display:block;background:#fff;padding:6px;box-sizing:border-box;" alt="vCard QR Code" />`
+        : `<div style="color:var(--color-amber);font-size:15px;padding:20px;text-align:center;">QR Code 產生失敗</div>`;
+      // 儲存 QR data URL 供下載使用
+      qrDiv.dataset.qrUrl = qrUrl || '';
     } else {
       qrDiv.innerHTML = `<div style="width:150px;height:150px;border:2px dashed var(--border-color);border-radius:12px;display:flex;align-items:center;justify-content:center;color:var(--text-tertiary);font-size:14px;text-align:center;">填寫名片<br>後顯示</div>`;
     }
@@ -4480,8 +4724,10 @@ function renderMyProfile() {
     const lineId = c.lineId || '';
     if (lineId) {
       const lineUrl = `https://line.me/ti/p/~${encodeURIComponent(lineId)}`;
-      const lineQrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&ecc=L&data=${encodeURIComponent(lineUrl)}`;
-      lineQrDiv.innerHTML = `<img src="${lineQrUrl}" style="width:100%;max-width:160px;height:auto;border-radius:10px;display:block;" alt="LINE QR Code"/>`;
+      const lineQrUrl = makeQrDataUrl(lineUrl, 6);
+      lineQrDiv.innerHTML = lineQrUrl
+        ? `<img src="${lineQrUrl}" style="width:100%;max-width:170px;height:auto;border-radius:6px;display:block;background:#fff;padding:6px;box-sizing:border-box;" alt="LINE QR Code"/>`
+        : `<div style="color:var(--color-amber);font-size:15px;padding:20px;text-align:center;">QR Code 產生失敗</div>`;
       if (lineLabel) lineLabel.textContent = `LINE ID：${lineId}`;
     } else {
       lineQrDiv.innerHTML = `<div style="width:150px;height:150px;border:2px dashed var(--border-color);border-radius:12px;display:flex;align-items:center;justify-content:center;color:var(--text-tertiary);font-size:14px;text-align:center;">填入 LINE ID<br>後顯示</div>`;
@@ -4521,10 +4767,13 @@ function renderMyProfile() {
 function downloadMyProfileQR() {
   const qrDiv = document.getElementById('myprofile-qrcode');
   const img = qrDiv?.querySelector('img');
-  if (img && img.src && !img.src.startsWith('data:')) {
-    // 開新分頁讓使用者長按存圖（跨域圖片無法直接下載）
-    window.open(img.src, '_blank');
-    showToast('長按圖片即可儲存 QR Code');
+  if (img && img.src && img.src.startsWith('data:')) {
+    // 本機產生的 data URL，可直接下載
+    const a = document.createElement('a');
+    a.href = img.src;
+    a.download = '我的名片QR.png';
+    a.click();
+    showToast('✓ 已儲存 QR Code 圖片');
   } else {
     showToast('請先填寫個人名片再下載 QR Code');
   }
@@ -4633,7 +4882,7 @@ function closeMyCardModalBg(e) {
 function renderMyCardModal(myCard, isEditMode) {
   const content = document.getElementById('mycard-modal-content');
   const vcfString = cardToVcfString(myCard);
-  const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(vcfString)}`;
+  const qrUrl = makeQrDataUrl(vcfString, 6) || '';
   
   if (isEditMode) {
     content.innerHTML = `
@@ -4970,6 +5219,8 @@ function renderDupsTab() {
   // 分類
   const dupGroups = [], jobGroups = [];
   groups.forEach(g => (classifyDupGroup(g) === 'jobchange' ? jobGroups : dupGroups).push(g));
+  // 供「合併保留一張」使用
+  window._dupGroups = { dup: dupGroups, job: jobGroups };
 
   const renderCardItem = (c, type) => {
     // 找出組內最新一張（換工作時用來標示「最新公司」）
@@ -5000,7 +5251,9 @@ function renderDupsTab() {
     </div>`;
     html += dupGroups.map((g, i) => `
       <div class="dup-group">
-        <div class="dup-group-title"><i class="ti ti-copy"></i> 第 ${i + 1} 組：${g[0].name}（${g.length} 張）</div>
+        <div class="dup-group-title" style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;"><i class="ti ti-copy"></i> 第 ${i + 1} 組：${g[0].name}（${g.length} 張）
+          <button class="btn btn-primary" style="margin-left:auto;padding:6px 12px;font-size:14px;min-height:auto;" onclick="mergeDupGroup('dup', ${i})"><i class="ti ti-arrows-join"></i> 合併保留一張</button>
+        </div>
         ${g.map(c => renderCardItem(c, 'dup')).join('')}
       </div>`).join('');
   }
@@ -5068,6 +5321,43 @@ async function deleteDupCard(id) {
     renderCardsGrid();
     renderDashboard();
   }
+}
+
+// 合併一組完全重複的名片為一張：自動補齊缺漏欄位、合併標籤、保留照片，刪除多餘者
+async function mergeDupGroup(type, index) {
+  const groups = (window._dupGroups && window._dupGroups[type]) || [];
+  const g = groups[index];
+  if (!g || g.length < 2) { showToast('此組無需合併'); return; }
+  if (!confirm(`將這 ${g.length} 張合併為 1 張？\n系統會自動補齊缺漏欄位（電話、Email、地址等）並合併標籤，再刪除多餘的 ${g.length - 1} 張。\n此動作無法復原。`)) return;
+
+  // 以建立時間最新的一張為主體
+  const sorted = [...g].sort((a, b) => (b.createdAtTs || 0) - (a.createdAtTs || 0));
+  const primary = { ...sorted[0] };
+  const fields = ['title','org','dept','phone','phoneExt','mobile','fax','email','website','zip','addr','note'];
+  const tagSet = new Set(primary.tags || []);
+  let primaryImg = await dbGetCardImage(primary.id);
+
+  for (let i = 1; i < sorted.length; i++) {
+    const o = sorted[i];
+    fields.forEach(f => { if (!primary[f] && o[f]) primary[f] = o[f]; });
+    (o.tags || []).forEach(t => tagSet.add(t));
+    if (!primaryImg) { const im = await dbGetCardImage(o.id); if (im) primaryImg = im; }
+    if (!primary.googleContactId && o.googleContactId) primary.googleContactId = o.googleContactId;
+  }
+  primary.tags = [...tagSet];
+
+  await dbSaveCard(primary, primaryImg || null);
+  for (let i = 1; i < sorted.length; i++) {
+    await dbDeleteCard(sorted[i].id);
+    if (selectedCardId === sorted[i].id) closeDetailPanel();
+  }
+
+  cardsList = await dbGetAllCards();
+  updateBadgesOnly();
+  renderDupsTab();
+  renderCardsGrid();
+  renderDashboard();
+  showToast('✓ 已合併為 1 張，未遺漏任何欄位');
 }
 
 function updateBadgesOnly() {
@@ -5286,6 +5576,7 @@ function renderBatchQueueList() {
 
 async function startBatchProcessing() {
   if (isScanning) return;
+  if (!getGeminiApiKey()) { goSetApiKey(); return; }
   const waiting = scanQueue.filter(q => q.status === 'wait');
   if (waiting.length === 0) {
     alert('佇列中沒有等待辨識的照片喔！');
