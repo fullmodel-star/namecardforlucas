@@ -2932,6 +2932,8 @@ async function importDriveImages() {
     driveHasMore = !!data.nextPageToken || brokeEarly;
 
     renderBatchQueueList();
+    showToast(`✓ 已匯入 ${importedCount} 張`);
+    await new Promise(r => setTimeout(r, 60)); // 讓最後的計數先畫出來，避免 alert 凍結畫面時殘留前一個數字
     let msg = `✓ 本批已從雲端匯入 ${importedCount} 張到等待佇列`;
     if (skippedCount) msg += `\n（略過 ${skippedCount} 張：下載失敗）`;
     if (driveHasMore) msg += `\n\n雲端「未辨識」還有更多名片。請先按「開始 AI 批次辨識」掃完這批，掃完會詢問是否續抓下一批。`;
@@ -5589,8 +5591,8 @@ async function startBatchProcessing() {
   const ps = document.getElementById('batch-progress-stats');
   pb.classList.add('show');
   ps.style.display = 'block';
-  ps.textContent = `準備開始，共 ${waiting.length} 張待處理...`;
-  let doneCount = 0, failCount = 0;
+  ps.textContent = `準備開始，共 ${waiting.length} 張照片待辨識...`;
+  let doneCount = 0, failCount = 0, cardCount = 0;
   
   // 1. 自動修復解析：如果有雲端硬碟匯入的檔案且 cache 為空，重新載入 ID
   const hasDriveItems = waiting.some(item => item.driveId);
@@ -5640,7 +5642,8 @@ async function startBatchProcessing() {
           batchNewCards.push(newCard);
         });
         checkScanDuplicate(batchNewCards);
-        
+        cardCount += batchNewCards.length;
+
         item.status = 'done';
         success = true;
         await dbDeleteQueueItem(item.id); // 辨識成功，從佇列資料表移除以省容量
@@ -5689,7 +5692,7 @@ async function startBatchProcessing() {
     
     if (success) doneCount++; else if (item.status === 'error') failCount++;
     pf.style.width = `${((i + 1) / waiting.length) * 100}%`;
-    ps.textContent = `處理中：${i + 1} / ${waiting.length} 張　完成 ${doneCount} 張${failCount ? `　失敗 ${failCount} 張` : ''}`;
+    ps.textContent = `已處理 ${doneCount + failCount} / ${waiting.length} 張照片　新增 ${cardCount} 張名片${failCount ? `　失敗 ${failCount} 張` : ''}`;
     renderBatchQueueList();
     renderSidebarFilters();
     renderCardsGrid();
@@ -5717,13 +5720,13 @@ async function startBatchProcessing() {
   isScanning = false;
   pb.classList.remove('show');
   pf.style.width = '0%';
-  ps.textContent = `✓ 批次完成：成功 ${doneCount} 張${failCount ? `，失敗 ${failCount} 張（請查看佇列詳情）` : ''}`;
-  showToast(`批次名片處理完成！成功 ${doneCount} 張${failCount ? `，失敗 ${failCount} 張` : ''}`);
+  ps.textContent = `✓ 批次完成：${doneCount} 張照片辨識成功，新增 ${cardCount} 張名片${failCount ? `，失敗 ${failCount} 張（請查看佇列詳情）` : ''}`;
+  showToast(`辨識完成！${doneCount} 張照片 → 新增 ${cardCount} 張名片${failCount ? `，失敗 ${failCount} 張` : ''}`);
 
   // 雲端批次：本批成功的已自動搬到「已辨識」。若雲端還有下一批，詢問是否續抓並繼續辨識。
   const hadDriveItems = waiting.some(it => it.driveId);
   if (hadDriveItems && gdriveToken && driveHasMore) {
-    const ok = confirm(`本批完成：成功 ${doneCount} 張${failCount ? `、失敗 ${failCount} 張` : ''}。\n\n雲端「未辨識」還有下一批，要現在續抓 ${DRIVE_BATCH_SIZE} 張並繼續辨識嗎？`);
+    const ok = confirm(`本批完成：辨識成功 ${doneCount} 張照片、新增 ${cardCount} 張名片${failCount ? `、失敗 ${failCount} 張` : ''}。\n\n雲端「未辨識」還有名片，要現在續抓下一批（最多 ${DRIVE_BATCH_SIZE} 張）並繼續辨識嗎？`);
     if (ok) {
       await importDriveImages();
       if (scanQueue.some(q => q.status === 'wait')) {
