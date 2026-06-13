@@ -1883,10 +1883,12 @@ input, select, textarea, button { font-size: 16px; }
 
         <div class="progress-bar" id="batch-progress-bar"><div class="progress-fill" id="batch-progress-fill"></div></div>
         <div id="batch-progress-stats" style="display:none;font-size:16px;color:var(--text-secondary);margin:6px 0 0;text-align:center;min-height:18px;"></div>
+        <div id="batch-queue-count" style="display:none;font-size:14px;color:var(--text-secondary);margin:6px 2px 0;"></div>
         <div class="queue-list" id="batch-queue-list"></div>
 
         <div style="display:flex;gap:8px;margin:1.25rem 0 1.5rem;flex-wrap:wrap;">
           <button class="btn btn-primary" id="btn-start-batch" onclick="startBatchProcessing()" style="flex:1 1 150px;"><i class="ti ti-robot"></i> 開始 AI 批次辨識</button>
+          <button class="btn btn-red" id="btn-stop-batch" onclick="stopBatchProcessing()" style="flex:1 1 150px;display:none;"><i class="ti ti-player-stop"></i> 停止辨識</button>
           <button class="btn btn-red" onclick="clearBatchQueue()" style="flex:1 1 150px;"><i class="ti ti-trash"></i> 清空佇列</button>
           <button class="btn btn-blue" onclick="initSyncFolders()" style="flex:1 1 150px;"><i class="ti ti-folder-plus"></i> 建立雲端資料夾</button>
           <button class="btn btn-green" onclick="importDriveImages()" style="flex:1 1 150px;"><i class="ti ti-cloud-download"></i> 從雲端匯入名片</button>
@@ -2529,6 +2531,9 @@ let gdriveToken = null;
 let driveFolderCache = { root: null, unparsed: null, parsed: null, failed: null };
 const DRIVE_BATCH_SIZE = 100;   // 每批最多匯入張數（同 Drive 單頁上限），掃完再抓下一批
 let driveHasMore = false;       // 上次匯入時雲端「未辨識」是否還有下一批
+// 跨批累計（整場雲端匯入），整輪掃完或放棄續抓後歸零
+let driveSessionDone = 0, driveSessionCards = 0, driveSessionFail = 0, driveSessionEmpty = 0;
+let driveSkippedThisRun = 0;    // 本次匯入「下載失敗、未進佇列」張數
 
 // Google Drive Client ID
 const GDRIVE_CLIENT_ID = '222322177485-dj77l1ut4qcs76l8hn861frpp6es7v4b.apps.googleusercontent.com';
@@ -2902,6 +2907,7 @@ async function importDriveImages() {
     const queued = new Set(scanQueue.map(x => x.driveId).filter(Boolean));
 
     let importedCount = 0, skippedCount = 0, brokeEarly = false;
+    driveSkippedThisRun = 0;
     for (const file of imgFiles) {
       if (importedCount >= slots) { brokeEarly = true; break; }  // 補滿這批就停
       if (queued.has(file.id)) continue;
@@ -2913,6 +2919,7 @@ async function importDriveImages() {
         const queueItem = {
           id: 'queue_' + crypto.randomUUID(),
           file: blob,
+          fileName: file.name,   // 正式欄位：IndexedDB 重整後仍保留得到（blob.name 會遺失）
           status: 'wait',
           driveId: file.id
         };
@@ -2924,7 +2931,7 @@ async function importDriveImages() {
       } catch(err) {
         // 單張失敗就略過、繼續下一張，不再整批中斷
         console.error(`[Google Drive] 匯入失敗，略過：${file.name || file.id}`, err);
-        skippedCount++;
+        skippedCount++; driveSkippedThisRun++;
       }
     }
 
@@ -2934,8 +2941,11 @@ async function importDriveImages() {
     renderBatchQueueList();
     showToast(`✓ 已匯入 ${importedCount} 張`);
     await new Promise(r => setTimeout(r, 60)); // 讓最後的計數先畫出來，避免 alert 凍結畫面時殘留前一個數字
-    let msg = `✓ 本批已從雲端匯入 ${importedCount} 張到等待佇列`;
-    if (skippedCount) msg += `\n（略過 ${skippedCount} 張：下載失敗）`;
+    const totalWaiting = scanQueue.filter(q => q.status === 'wait').length;
+    const prevWaiting = totalWaiting - importedCount;
+    let msg = `✓ 本批已從雲端匯入 ${importedCount} 張`;
+    if (prevWaiting > 0) msg += `\n（佇列現在共 ${totalWaiting} 張待辨識，含先前殘留 ${prevWaiting} 張）`;
+    if (skippedCount) msg += `\n（雲端下載失敗 ${skippedCount} 張，未進佇列，可稍後重試）`;
     if (driveHasMore) msg += `\n\n雲端「未辨識」還有更多名片。請先按「開始 AI 批次辨識」掃完這批，掃完會詢問是否續抓下一批。`;
     alert(msg);
   } catch(e) {
@@ -3530,6 +3540,11 @@ async function systemLoadAllData() {
       }
       return q;
     });
+    // 主動告知殘留，避免「我只匯入 N 張卻顯示 /更多」的困惑
+    const restored = scanQueue.filter(q => q.status === 'wait').length;
+    if (restored > 0) {
+      setTimeout(() => showToast(`已還原上次未辨識的 ${restored} 張名片，仍在佇列等待`), 800);
+    }
   } catch(e) {
     console.error('[IndexedDB] 載入暫存佇列失敗：', e);
   }
@@ -5549,11 +5564,22 @@ async function addFilesToBatchQueue(files) {
 
 function renderBatchQueueList() {
   const list = document.getElementById('batch-queue-list');
+  const countEl = document.getElementById('batch-queue-count');
   if (scanQueue.length === 0) {
     list.innerHTML = '';
+    if (countEl) countEl.style.display = 'none';
     return;
   }
-  
+
+  // 佇列總覽標題（讓清單筆數與進度分母對得起來）
+  if (countEl) {
+    const wait = scanQueue.filter(q => q.status === 'wait').length;
+    const done = scanQueue.filter(q => q.status === 'done').length;
+    const err = scanQueue.filter(q => q.status === 'error').length;
+    countEl.style.display = 'block';
+    countEl.textContent = `佇列共 ${scanQueue.length} 張（待辨識 ${wait}・完成 ${done}${err ? `・失敗 ${err}` : ''}）`;
+  }
+
   list.innerHTML = scanQueue.map(q => {
     let statusText = '等待辨識中';
     let statusClass = 'color:var(--text-tertiary)';
@@ -5561,12 +5587,13 @@ function renderBatchQueueList() {
     if (q.status === 'scanning') { statusText = '⚡ Gemini AI 智慧分析分割中...'; statusClass = 'color:var(--accent); font-weight:bold;'; }
     if (q.status === 'cooldown') { statusText = q.errInfo ? `${q.errInfo} (剩餘 ${q.cooldownSec || 0} 秒)` : `⏳ 頻率限制保護中，等待下一張 (剩餘 ${q.cooldownSec || 0} 秒)...`; statusClass = 'color:var(--color-amber); font-weight:bold;'; statusIcon = 'ti ti-clock'; }
     if (q.status === 'done') { statusText = '✓ 辨識完成並已匯入名片庫'; statusClass = 'color:var(--color-green);'; statusIcon = 'ti ti-circle-check'; }
+    if (q.status === 'empty') { statusText = '⚠ 未讀到名片（可能空白/模糊，請檢查）'; statusClass = 'color:var(--color-amber);'; statusIcon = 'ti ti-alert-triangle'; }
     if (q.status === 'error') { statusText = `✖ 辨識失敗 (${q.errInfo || '未知原因'})`; statusClass = 'color:var(--color-red);'; statusIcon = 'ti ti-circle-x'; }
-    
+
     return `
       <div class="queue-item">
         <div class="qi-title-row">
-          <div class="qi-name">${(q.file && q.file.name) || '雲端硬碟圖片'}</div>
+          <div class="qi-name">${q.fileName || (q.file && q.file.name) || '雲端硬碟圖片'}</div>
           <div class="qi-status-text" style="${statusClass}">
             <i class="${statusIcon}"></i> ${statusText}
           </div>
@@ -5586,13 +5613,15 @@ async function startBatchProcessing() {
   }
   
   isScanning = true;
+  { const sb = document.getElementById('btn-start-batch'), tb = document.getElementById('btn-stop-batch');
+    if (sb) sb.style.display = 'none'; if (tb) tb.style.display = ''; }
   const pb = document.getElementById('batch-progress-bar');
   const pf = document.getElementById('batch-progress-fill');
   const ps = document.getElementById('batch-progress-stats');
   pb.classList.add('show');
   ps.style.display = 'block';
   ps.textContent = `準備開始，共 ${waiting.length} 張照片待辨識...`;
-  let doneCount = 0, failCount = 0, cardCount = 0;
+  let doneCount = 0, failCount = 0, cardCount = 0, emptyCount = 0, multiPhotoCount = 0;
   
   // 1. 自動修復解析：如果有雲端硬碟匯入的檔案且 cache 為空，重新載入 ID
   const hasDriveItems = waiting.some(item => item.driveId);
@@ -5607,6 +5636,7 @@ async function startBatchProcessing() {
   const delaySec = getGeminiDelay();
   
   for (let i = 0; i < waiting.length; i++) {
+    if (!isScanning) break;   // 使用者按了「停止辨識」→ 處理完當前這張就停
     const item = waiting[i];
     item.status = 'scanning';
     await dbSaveQueueItem(item);
@@ -5643,13 +5673,17 @@ async function startBatchProcessing() {
         });
         checkScanDuplicate(batchNewCards);
         cardCount += batchNewCards.length;
+        const gotNothing = batchNewCards.length === 0;   // AI 讀不到任何名片（空白/模糊）
+        if (gotNothing) emptyCount++; else if (batchNewCards.length > 1) multiPhotoCount++;
 
-        item.status = 'done';
+        item.status = gotNothing ? 'empty' : 'done';
         success = true;
-        await dbDeleteQueueItem(item.id); // 辨識成功，從佇列資料表移除以省容量
+        await dbDeleteQueueItem(item.id); // 辨識完成，從佇列資料表移除以省容量
 
-        if (item.driveId && gdriveToken && driveFolderCache.parsed) {
-          await moveDriveFile(item.driveId, driveFolderCache.unparsed, driveFolderCache.parsed);
+        // 有產出 → 搬「已辨識」；讀不到名片 → 搬「辨識失敗」夾，讓使用者回頭檢查
+        const destFolder = gotNothing ? driveFolderCache.failed : driveFolderCache.parsed;
+        if (item.driveId && gdriveToken && destFolder) {
+          await moveDriveFile(item.driveId, driveFolderCache.unparsed, destFolder);
         }
 
         // 釋放記憶體：成功後從記憶體佇列移除並丟棄圖片 blob，
@@ -5685,14 +5719,24 @@ async function startBatchProcessing() {
           if (!isGlobalIssue && item.driveId && gdriveToken && driveFolderCache.failed) {
             await moveDriveFile(item.driveId, driveFolderCache.unparsed, driveFolderCache.failed);
           }
+          // 真正辨識不出來者：移出佇列，避免失敗列跨批、跨重開一直累積、汙染清單筆數與分母
+          // （金鑰未填/配額耗盡屬全域問題，保留在佇列待之後重試）
+          if (!isGlobalIssue) {
+            await dbDeleteQueueItem(item.id);
+            const ei = scanQueue.indexOf(item);
+            if (ei !== -1) scanQueue.splice(ei, 1);
+            item.file = null;
+          }
           break; // 跳出重試迴圈
         }
       }
     }
     
-    if (success) doneCount++; else if (item.status === 'error') failCount++;
+    if (success && item.status !== 'empty') doneCount++;
+    else if (item.status === 'error') failCount++;
+    // （empty 已在成功分支以 emptyCount 計入，不重複計）
     pf.style.width = `${((i + 1) / waiting.length) * 100}%`;
-    ps.textContent = `已處理 ${doneCount + failCount} / ${waiting.length} 張照片　新增 ${cardCount} 張名片${failCount ? `　失敗 ${failCount} 張` : ''}`;
+    ps.textContent = `已處理 ${doneCount + emptyCount + failCount} / ${waiting.length} 張照片　新增 ${cardCount} 張名片${emptyCount ? `　空白 ${emptyCount}` : ''}${failCount ? `　失敗 ${failCount}` : ''}`;
     renderBatchQueueList();
     renderSidebarFilters();
     renderCardsGrid();
@@ -5720,20 +5764,50 @@ async function startBatchProcessing() {
   isScanning = false;
   pb.classList.remove('show');
   pf.style.width = '0%';
-  ps.textContent = `✓ 批次完成：${doneCount} 張照片辨識成功，新增 ${cardCount} 張名片${failCount ? `，失敗 ${failCount} 張（請查看佇列詳情）` : ''}`;
-  showToast(`辨識完成！${doneCount} 張照片 → 新增 ${cardCount} 張名片${failCount ? `，失敗 ${failCount} 張` : ''}`);
+  // 還原「開始/停止」按鈕顯示
+  { const sb = document.getElementById('btn-start-batch'), tb = document.getElementById('btn-stop-batch');
+    if (sb) sb.style.display = ''; if (tb) tb.style.display = 'none'; }
 
-  // 雲端批次：本批成功的已自動搬到「已辨識」。若雲端還有下一批，詢問是否續抓並繼續辨識。
+  // 每張原始照片都有歸屬：成功(有名片) + 空白(0名片) + 失敗 + 下載失敗
+  const summary = `成功 ${doneCount} 張照片、新增 ${cardCount} 張名片` +
+    (multiPhotoCount ? `（含 ${multiPhotoCount} 張合照拆多張）` : '') +
+    (emptyCount ? `；未讀到名片 ${emptyCount} 張` : '') +
+    (failCount ? `；失敗 ${failCount} 張（請查看佇列詳情）` : '') +
+    (driveSkippedThisRun ? `；雲端下載失敗 ${driveSkippedThisRun} 張` : '');
+  ps.textContent = `✓ 批次完成：${summary}`;
+  showToast(`辨識完成！新增 ${cardCount} 張名片${emptyCount ? `，空白 ${emptyCount}` : ''}${failCount ? `，失敗 ${failCount}` : ''}`);
+
+  // 是否整批都跑完（用來區分「自然完成」與「使用者中途停止」）
+  const allProcessed = (doneCount + emptyCount + failCount) >= waiting.length;
   const hadDriveItems = waiting.some(it => it.driveId);
-  if (hadDriveItems && gdriveToken && driveHasMore) {
-    const ok = confirm(`本批完成：辨識成功 ${doneCount} 張照片、新增 ${cardCount} 張名片${failCount ? `、失敗 ${failCount} 張` : ''}。\n\n雲端「未辨識」還有名片，要現在續抓下一批（最多 ${DRIVE_BATCH_SIZE} 張）並繼續辨識嗎？`);
+  if (hadDriveItems) {
+    driveSessionDone += doneCount; driveSessionCards += cardCount;
+    driveSessionFail += failCount; driveSessionEmpty += emptyCount;
+  }
+
+  // 雲端還有下一批且本批已掃完 → 詢問續抓（同時顯示本場累計）
+  let continued = false;
+  if (hadDriveItems && gdriveToken && driveHasMore && allProcessed) {
+    const ok = confirm(`本批完成：${summary}\n\n（本場累計：成功 ${driveSessionDone} 張、新增 ${driveSessionCards} 張名片${driveSessionEmpty ? `、未讀到 ${driveSessionEmpty} 張` : ''}${driveSessionFail ? `、失敗 ${driveSessionFail} 張` : ''}）\n\n雲端「未辨識」還有名片，要現在續抓下一批（最多 ${DRIVE_BATCH_SIZE} 張）並繼續辨識嗎？`);
     if (ok) {
       await importDriveImages();
-      if (scanQueue.some(q => q.status === 'wait')) {
-        startBatchProcessing(); // 不 await，避免遞迴堆疊
-      }
+      if (scanQueue.some(q => q.status === 'wait')) { continued = true; startBatchProcessing(); } // 不 await，避免遞迴堆疊
     }
   }
+
+  // 整輪結束（沒有下一批、或放棄續抓，且非中途停止）→ 給整場總結並歸零累計
+  if (hadDriveItems && allProcessed && !continued) {
+    if (driveSessionDone + driveSessionFail + driveSessionEmpty > 0) {
+      alert(`雲端這一輪已處理完。\n\n本場累計：成功 ${driveSessionDone} 張照片、新增 ${driveSessionCards} 張名片${driveSessionEmpty ? `、未讀到 ${driveSessionEmpty} 張` : ''}${driveSessionFail ? `、失敗 ${driveSessionFail} 張（請查看佇列詳情）` : ''}。`);
+    }
+    driveSessionDone = driveSessionCards = driveSessionFail = driveSessionEmpty = 0;
+  }
+}
+
+function stopBatchProcessing() {
+  if (!isScanning) return;
+  isScanning = false;
+  showToast('已要求停止，這張處理完就停');
 }
 
 async function clearBatchQueue() {
