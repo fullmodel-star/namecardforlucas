@@ -1716,16 +1716,16 @@ input, select, textarea, button { font-size: 16px; }
 
         <!-- 名片列表區塊 -->
         <div class="db-section" style="padding:0;overflow:hidden;">
-          <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 16px 0;">
-            <h3 style="margin:0;"><i class="ti ti-id"></i> 名片列表 <span style="font-size:15px;color:var(--text-tertiary);font-weight:400;" id="cards-count-label"></span></h3>
-            <div style="display:flex;gap:8px;">
-              <button class="btn" id="btn-select-mode" onclick="toggleSelectionMode()" style="border-radius:10px;font-size:15.5px;font-weight:600;padding:7px 14px;">
+          <div style="padding:14px 16px 0;">
+            <h3 style="margin:0 0 10px;"><i class="ti ti-id"></i> 名片列表 <span style="font-size:15px;color:var(--text-tertiary);font-weight:400;" id="cards-count-label"></span></h3>
+            <div style="display:flex;gap:8px;max-width:520px;">
+              <button class="btn" id="btn-select-mode" onclick="toggleSelectionMode()" style="flex:1;white-space:nowrap;border-radius:10px;font-size:15px;font-weight:600;padding:8px 6px;">
                 <i class="ti ti-checkbox" style="font-size:17px;"></i> 選取
               </button>
-              <button class="btn btn-primary" onclick="openFormModal()" style="border-radius:10px;font-size:15.5px;font-weight:600;padding:7px 14px;background:var(--accent);border:none;">
+              <button class="btn btn-primary" onclick="openFormModal()" style="flex:1;white-space:nowrap;border-radius:10px;font-size:15px;font-weight:600;padding:8px 6px;background:var(--accent);border:none;">
                 <i class="ti ti-plus" style="font-size:17px;"></i> 新增
               </button>
-              <button class="btn" onclick="switchTab('batch')" style="border-radius:10px;font-size:15.5px;font-weight:600;padding:7px 14px;">
+              <button class="btn" onclick="switchTab('batch')" style="flex:1;white-space:nowrap;border-radius:10px;font-size:15px;font-weight:600;padding:8px 6px;">
                 <i class="ti ti-printer" style="font-size:17px;"></i> 批次工具
               </button>
             </div>
