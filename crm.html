@@ -515,7 +515,10 @@ async function saveLog(){
   const text=document.getElementById('logText').value.trim();
   const dateStr=document.getElementById('logDate').value;
   const at=dateStr?new Date(dateStr+'T12:00:00').getTime():Date.now();
-  const crm=await ensureCrm(); crm.logs=crm.logs||[]; crm.logs.push({at,type:logType,text}); crm.updatedAt=Date.now();
+  const crm=await ensureCrm(); crm.logs=crm.logs||[]; crm.logs.push({at,type:logType,text});
+  // 記了一筆＝已聯絡：若有「已到期」的提醒就自動清掉，清單才會隨完成收斂，不會隔天還掛紅字
+  if(crm.nextRemind){ const rt=new Date(crm.nextRemind+'T00:00:00').getTime(); const d0=new Date(); d0.setHours(0,0,0,0); if(rt<=d0.getTime()){ crm.nextRemind=null; crm.remindNote=''; } }
+  crm.updatedAt=Date.now();
   await putRec('crm',crm); closeSheets(); toast('已記錄 ✓'); await refresh(); openDetail(currentId);
 }
 

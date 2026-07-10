@@ -4321,9 +4321,15 @@ async function updateCrmBadge() {
 }
 function setCrmBadge(n) {
   const b = document.getElementById('crm-badge');
-  if (!b) return;
-  if (n > 0) { b.textContent = n > 99 ? '99+' : n; b.style.display = 'block'; }
-  else b.style.display = 'none';
+  if (b) {
+    if (n > 0) { b.textContent = n > 99 ? '99+' : n; b.style.display = 'block'; }
+    else b.style.display = 'none';
+  }
+  // 桌面 App 圖示紅點：安裝成 App 後，即使沒開也看得到待跟進數（被動變主動提醒）
+  try {
+    if (n > 0 && navigator.setAppBadge) navigator.setAppBadge(n);
+    else if (navigator.clearAppBadge) navigator.clearAppBadge();
+  } catch (e) {}
 }
 // crm.html 每次寫入後會 postMessage('crm-changed')，即時更新紅點
 window.addEventListener('message', e => { if (e && e.data === 'crm-changed') updateCrmBadge(); });
@@ -5825,6 +5831,11 @@ async function addFilesToBatchQueue(files) {
     await dbSaveQueueItem(item);
   }
   renderBatchQueueList();
+  // 選完照片直接自動開始辨識，不必再自己往下找「開始辨識」鈕（沒設金鑰則引導去設定）
+  if (!isScanning) {
+    if (getGeminiApiKey()) startBatchProcessing();
+    else goSetApiKey();
+  }
 }
 
 // ── 批次辨識「聚焦模式」渲染 ─────────────────────────────────
