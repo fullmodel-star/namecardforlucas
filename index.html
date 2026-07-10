@@ -4230,6 +4230,7 @@ async function selectCard(id) {
     
     <div class="detail-actions-row">
       ${(cleanMobile || cleanPhone) ? `<button class="btn btn-primary" style="flex:1 1 100%;font-size:16px;padding:12px;" onclick="location.href='tel:${cleanMobile || cleanPhone}'"><i class="ti ti-phone"></i> 撥打電話</button>` : ''}
+      ${!c.processed ? `<button class="btn btn-primary" style="flex:1 1 100%;font-size:16px;padding:12px;" onclick="recognizeCard('${c.id}')"><i class="ti ti-robot"></i> AI 辨識這張</button>` : ''}
       ${c.googleContactId
         ? `<button class="btn btn-blue" onclick="syncContactToGoogle('${c.id}')" title="同步更新至 Google 通訊錄"><i class="ti ti-brand-google"></i> 更新 Google</button>`
         : `<button class="btn" onclick="syncContactToGoogle('${c.id}')" title="同步至 Google 通訊錄"><i class="ti ti-brand-google"></i> 同步 Google</button>`}
@@ -5929,10 +5930,67 @@ async function addFilesToBatchQueue(files) {
     await dbSaveQueueItem(item);
   }
   renderBatchQueueList();
-  // 選完照片直接自動開始辨識，不必再自己往下找「開始辨識」鈕（沒設金鑰則引導去設定）
+  // 選完照片直接自動開始辨識；沒金鑰則給「免金鑰路徑」：先存照片，之後再補辨識
   if (!isScanning) {
     if (getGeminiApiKey()) startBatchProcessing();
-    else goSetApiKey();
+    else {
+      if (confirm('還沒設定 AI 辨識金鑰。\n\n要先把這些名片「照片」存起來嗎？之後可在名片庫補「AI 辨識」或手動填寫。\n\n（按「取消」＝先去設定金鑰，Google 免費申請）')) {
+        await saveUnrecognizedPhotos();
+      } else {
+        goSetApiKey();
+      }
+    }
+  }
+}
+
+// 免金鑰：把佇列中的待辨識照片存成「待辨識」名片（只有照片），之後可補辨識或手動編輯，不必第一步就卡在申請金鑰
+async function saveUnrecognizedPhotos() {
+  const items = scanQueue.filter(q => q.status === 'wait' && q.file);
+  if (!items.length) { showToast('沒有待存的照片'); return; }
+  let saved = 0;
+  for (const it of items) {
+    try {
+      const b64 = await processAndResizeImage(it.file);
+      const card = { id: 'card_' + crypto.randomUUID(), name: '(待辨識)', processed: false, createdAt: new Date().toLocaleDateString('zh-TW'), createdAtTs: Date.now(), group: '其他', tags: [], theme: 'indigo' };
+      await dbSaveCard(card, b64);
+      await dbDeleteQueueItem(it.id);
+      const qi = scanQueue.indexOf(it); if (qi !== -1) scanQueue.splice(qi, 1);
+      it.file = null;
+      saved++;
+    } catch (e) { /* 單張失敗略過 */ }
+  }
+  cardsList = await dbGetAllCards();
+  renderBatchQueueList();
+  renderCardsGrid();
+  renderDashboard();
+  showToast(`✓ 已存 ${saved} 張名片照片，可稍後在名片詳情按「AI 辨識這張」或手動填寫`);
+}
+
+// 對單一「待辨識」名片(只有照片)補做 AI 辨識，把欄位填回原卡（不新增、不重複）
+async function recognizeCard(id) {
+  if (!getGeminiApiKey()) { goSetApiKey(); return; }
+  const c = cardsList.find(x => x.id === id);
+  if (!c) return;
+  const img = await dbGetCardImage(id);
+  if (!img) { showToast('這張沒有照片可辨識，請改用「修改」手動填寫'); return; }
+  showToast('⚡ AI 辨識中…');
+  try {
+    const list = await callGeminiAI(img);
+    if (list && list.length) {
+      const p = list[0];
+      ['name','title','org','dept','phone','phoneExt','mobile','fax','email','website','zip','addr'].forEach(f => { if (p[f] != null && p[f] !== '') c[f] = p[f]; });
+      if (p.group) c.group = p.group;
+      c.processed = true;
+      await dbSaveCard(c, img);
+      cardsList = await dbGetAllCards();
+      renderCardsGrid();
+      selectCard(id);
+      showToast('✓ 辨識完成');
+    } else {
+      showToast('這張讀不到名片內容，可改用「修改」手動填寫');
+    }
+  } catch (e) {
+    showToast('辨識失敗：' + (e.message || '請稍後再試'));
   }
 }
 
