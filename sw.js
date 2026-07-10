@@ -1,4 +1,4 @@
-const CACHE_NAME = 'bizcard-pwa-v40';
+const CACHE_NAME = 'bizcard-pwa-v41';
 // 只預快取「同源」核心檔；跨網域資源(tabler/gsi)交給 runtime 快取，避免 addAll 單一失敗拖垮整個 install
 const ASSETS_TO_CACHE = [
   './',

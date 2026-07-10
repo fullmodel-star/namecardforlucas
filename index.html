@@ -2720,7 +2720,7 @@ async function dbSaveCard(card, imageBase64 = null) {
       transaction.objectStore('images').put({ id: card.id, image: imageBase64 });
     }
     
-    transaction.oncomplete = () => resolve();
+    transaction.oncomplete = () => { invalidateDupCache(); resolve(); };
     transaction.onerror = () => reject(transaction.error);
   });
 }
@@ -2733,7 +2733,7 @@ async function dbDeleteCard(id) {
     transaction.objectStore('cards').delete(id);
     transaction.objectStore('images').delete(id);
     
-    transaction.oncomplete = () => resolve();
+    transaction.oncomplete = () => { invalidateDupCache(); resolve(); };
     transaction.onerror = () => reject(transaction.error);
   });
 }
@@ -3899,9 +3899,21 @@ async function doInstallApp() {
   }
 }
 
+// 名片牆分批渲染：先出 _cardRenderLimit 列，捲到底再載更多，避免一次把上千列塞進 DOM 卡住
+let _cardRenderLimit = 100, _lastFilterSig = '', _cardObserver = null;
+function ensureCardObserver() {
+  if (_cardObserver) return _cardObserver;
+  _cardObserver = new IntersectionObserver(entries => {
+    if (entries.some(e => e.isIntersecting)) { _cardRenderLimit += 100; renderCardsGrid(); }
+  }, { rootMargin: '500px' });
+  return _cardObserver;
+}
 function renderCardsGrid() {
   const grid = document.getElementById('card-grid');
   const filtered = getFilteredAndSortedCards();
+  // 篩選/搜尋/排序改變才把載入視窗歸零；只變選取狀態則沿用目前視窗
+  const _sig = [activeProcessedFilter, activeGroupFilter, activeTagFilter, searchKeyword, (document.getElementById('sort-select')||{}).value].join('|');
+  if (_sig !== _lastFilterSig) { _cardRenderLimit = 100; _lastFilterSig = _sig; }
 
   if (filtered.length === 0) {
     grid.innerHTML = `<div style="text-align:center;padding:40px 20px;color:var(--text-tertiary);">
@@ -3913,7 +3925,8 @@ function renderCardsGrid() {
 
   const dupList = detectAllDuplicateIds();
 
-  grid.innerHTML = filtered.map(c => {
+  const pageCards = filtered.slice(0, _cardRenderLimit);
+  grid.innerHTML = pageCards.map(c => {
     const isDup = dupList.has(c.id);
     const hue = nameToHue(c.name);
     const subtitle = [c.org, c.title].filter(x => x).join(' · ') || c.dept || '未填資料';
@@ -3944,7 +3957,10 @@ function renderCardsGrid() {
         ${selectionMode ? '' : badge}
       </div>
     `;
-  }).join('');
+  }).join('') + (filtered.length > _cardRenderLimit
+    ? `<div id="cards-more-sentinel" style="padding:18px;text-align:center;color:var(--text-tertiary);font-size:14px;">↓ 向下捲動載入更多（${pageCards.length}/${filtered.length}）</div>` : '');
+  const _sen = document.getElementById('cards-more-sentinel');
+  if (_sen) ensureCardObserver().observe(_sen);
 
   updateBatchBar();
 
@@ -5533,27 +5549,28 @@ function checkScanDuplicate(newCards) {
   }
 }
 
+let _dupVersion = 0, _dupCache = null;
+function invalidateDupCache() { _dupCache = null; _dupVersion++; }
+
+// O(n) 重複偵測 + 快取：以「姓名或 Email 相同」做連通分組（原 mobile 子句其實被 name/email 涵蓋，等價）。
+// cardsList 未變動就直接回快取，取代原本每次 render 都跑的 O(n²)（1000 張＝上百萬次比對，卡頓主因）。
 function detectAllDuplicateGroups() {
-  const groups = [];
-  const handledIds = new Set();
-  
-  cardsList.forEach(c => {
-    if (handledIds.has(c.id)) return;
-    const matches = cardsList.filter(d => {
-      if (d.id === c.id) return false;
-      const sameName = normField(c.name) && normField(d.name) && normField(c.name) === normField(d.name);
-      const sameEmail = normField(c.email) && normField(d.email) && normField(c.email) === normField(d.email);
-      // 手機相同但姓名不同可能是不同人(共用總機)，需搭配姓名或Email才算重複
-      const sameMobile = normField(c.mobile) && normField(d.mobile) && normField(c.mobile) === normField(d.mobile);
-      return sameName || sameEmail || (sameMobile && (sameName || sameEmail));
-    });
-    
-    if (matches.length > 0) {
-      const g = [c, ...matches];
-      g.forEach(x => handledIds.add(x.id));
-      groups.push(g);
-    }
+  if (_dupCache && _dupCache.v === _dupVersion) return _dupCache.groups;
+  const list = cardsList;
+  const parent = list.map((_, i) => i);
+  const find = x => { while (parent[x] !== x) { parent[x] = parent[parent[x]]; x = parent[x]; } return x; };
+  const union = (a, b) => { const ra = find(a), rb = find(b); if (ra !== rb) parent[ra] = rb; };
+  const byName = Object.create(null), byEmail = Object.create(null);
+  list.forEach((c, i) => {
+    const nm = normField(c.name), em = normField(c.email);
+    if (nm) { if (byName[nm] !== undefined) union(byName[nm], i); else byName[nm] = i; }
+    if (em) { if (byEmail[em] !== undefined) union(byEmail[em], i); else byEmail[em] = i; }
   });
+  const comp = new Map();
+  list.forEach((c, i) => { const r = find(i); let a = comp.get(r); if (!a) { a = []; comp.set(r, a); } a.push(c); });
+  const groups = [];
+  comp.forEach(g => { if (g.length > 1) groups.push(g); });
+  _dupCache = { v: _dupVersion, groups };
   return groups;
 }
 
