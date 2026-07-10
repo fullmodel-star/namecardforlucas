@@ -1708,7 +1708,7 @@ input, select, textarea, button { font-size: 16px; }
           <!-- 搜尋欄 -->
           <div class="cards-search-bar" style="margin:0;">
             <i class="ti ti-search" style="color:var(--text-secondary);"></i>
-            <input type="text" id="search-input" placeholder="搜尋姓名、公司、電話..." oninput="filterCards()" style="flex:1;background:transparent;border:none;color:var(--text-primary);font-size:17px;outline:none;"/>
+            <input type="text" id="search-input" placeholder="搜尋姓名、公司、電話..." oninput="onSearchInput()" style="flex:1;background:transparent;border:none;color:var(--text-primary);font-size:17px;outline:none;"/>
           </div>
           <!-- 標籤篩選 -->
           <div id="tag-cloud" style="display:flex;flex-wrap:wrap;gap:8px;"></div>
@@ -3837,6 +3837,9 @@ function setProcessedFilter(filterVal) {
   renderCardsGrid();
 }
 
+// 搜尋去抖：打字停頓 180ms 才重繪，避免每按鍵都全庫重掃+全量重繪（數百張時明顯卡頓）
+let _searchDebounce = null;
+function onSearchInput() { clearTimeout(_searchDebounce); _searchDebounce = setTimeout(() => filterCards(), 180); }
 function filterCards() {
   searchKeyword = document.getElementById('search-input').value.toLowerCase().trim();
   renderCardsGrid();
@@ -4043,7 +4046,17 @@ async function batchDelete() {
   const cs = getSelectedCards();
   if (!cs.length) { showToast('尚未勾選名片'); return; }
   if (!confirm(`確定刪除勾選的 ${cs.length} 張名片嗎？此動作無法復原。`)) return;
+  // 與單張刪除一致：已同步 Google 者，統一問一次是否一併從 Google 通訊錄刪除，避免殘留孤兒聯絡人
+  const synced = cs.filter(c => c.googleContactId);
+  let alsoGoogle = false;
+  if (synced.length && gdriveToken) {
+    alsoGoogle = confirm(`其中 ${synced.length} 張已同步到 Google 通訊錄，要一併從 Google 刪除嗎？\n（取消＝只刪本機、保留 Google 聯絡人）`);
+  }
+  let gFail = 0;
   for (const c of cs) {
+    if (alsoGoogle && c.googleContactId) {
+      try { await apiDeleteGoogleContact(c.googleContactId); } catch (e) { gFail++; }
+    }
     await dbDeleteCard(c.id);
     if (selectedCardId === c.id) closeDetailPanel();
   }
@@ -4052,7 +4065,7 @@ async function batchDelete() {
   updateBadgesOnly();
   renderCardsGrid();
   renderDashboard();
-  showToast(`✓ 已刪除 ${cs.length} 張名片`);
+  showToast(gFail ? `✓ 已刪除 ${cs.length} 張（Google 有 ${gFail} 筆刪除失敗）` : `✓ 已刪除 ${cs.length} 張名片`);
 }
 
 async function selectCard(id) {
