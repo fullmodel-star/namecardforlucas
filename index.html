@@ -1521,6 +1521,10 @@ input, select, textarea, button { font-size: 16px; }
 .btab span { font-size:14px; font-weight: 500; color: var(--text-tertiary); }
 .btab.active span { color: var(--text-primary); font-weight: 700; }
 
+/* 客戶追蹤 CRM 分頁：同源 iframe 全屏承載，與名片主程式完全隔離 */
+#view-crm { position: fixed; top: 0; left: 0; right: 0; bottom: 64px; z-index: 150; display: none; background: var(--bg-secondary); padding-top: env(safe-area-inset-top); }
+#view-crm iframe { width: 100%; height: 100%; border: 0; display: block; }
+
 /* ── 無障礙修正：鍵盤焦點指示 + 最小觸控尺寸 ── */
 :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 .btn:focus-visible, .btab:focus-visible, .tool-card:focus-visible, .seg-btn:focus-visible,
@@ -1893,6 +1897,20 @@ input, select, textarea, button { font-size: 16px; }
           <button class="btn btn-blue" onclick="initSyncFolders()" style="flex:1 1 140px;font-size:14px;white-space:nowrap;padding:8px 8px;"><i class="ti ti-folder-plus"></i> 建立雲端資料夾</button>
           <button class="btn btn-green" onclick="importDriveImages()" style="flex:1 1 140px;font-size:14px;white-space:nowrap;padding:8px 8px;"><i class="ti ti-cloud-download"></i> 從雲端匯入名片</button>
         </div>
+
+        <!-- 雲端資料夾即時統計：一眼看出還有多少未辨識、已辨識、辨識失敗，避免重複上傳 -->
+        <div id="drive-folder-stats" style="margin-top:2px;padding:12px 14px;border:1px solid var(--border);border-radius:12px;background:var(--bg-soft, rgba(127,127,127,.06));">
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;margin-bottom:8px;">
+            <div style="font-size:14px;font-weight:600;color:var(--text-secondary);"><i class="ti ti-chart-bar"></i> 雲端資料夾狀態</div>
+            <div style="display:flex;gap:6px;flex-wrap:wrap;">
+              <button class="btn btn-ghost" onclick="refreshDriveFolderStats(true)" style="font-size:13px;padding:4px 10px;"><i class="ti ti-refresh"></i> 重新整理</button>
+              <button class="btn btn-ghost" onclick="tidyDriveFolders()" style="font-size:13px;padding:4px 10px;"><i class="ti ti-folders"></i> 整理雲端資料夾</button>
+            </div>
+          </div>
+          <div id="drive-folder-stats-body" style="display:flex;gap:8px;flex-wrap:wrap;font-size:13.5px;">
+            <span style="color:var(--text-tertiary);">按「重新整理」載入雲端各資料夾張數…</span>
+          </div>
+        </div>
       </div>
 
       <!-- 工具卡片網格 -->
@@ -2204,6 +2222,10 @@ input, select, textarea, button { font-size: 16px; }
       <div class="btab-pip"><i class="ti ti-id"></i></div>
       <span>名片</span>
     </button>
+    <button class="btab" id="btab-crm" onclick="switchTab('crm')">
+      <div class="btab-pip"><i class="ti ti-users"></i></div>
+      <span>客戶</span>
+    </button>
     <button class="btab" id="btab-dashboard" onclick="switchTab('dashboard')">
       <div class="btab-pip"><i class="ti ti-building"></i></div>
       <span>組織</span>
@@ -2217,6 +2239,13 @@ input, select, textarea, button { font-size: 16px; }
       <span>總覽</span>
     </button>
   </nav>
+</div>
+
+<!-- ==========================================================================
+     [HTML] 客戶追蹤 CRM 分頁（同源 iframe，與名片共用 BizCardDB，完全隔離）
+     ========================================================================== -->
+<div id="view-crm">
+  <iframe id="crm-frame" title="客戶追蹤 CRM"></iframe>
 </div>
 
 <!-- ==========================================================================
@@ -2534,6 +2563,28 @@ let driveHasMore = false;       // 上次匯入時雲端「未辨識」是否還
 // 跨批累計（整場雲端匯入），整輪掃完或放棄續抓後歸零
 let driveSessionDone = 0, driveSessionCards = 0, driveSessionFail = 0, driveSessionEmpty = 0;
 let driveSkippedThisRun = 0;    // 本次匯入「下載失敗、未進佇列」張數
+let driveArchiveFailThisRun = 0; // 本次「已產生名片，但雲端歸檔搬移失敗」張數
+
+// ── 永久「已處理雲端檔案」帳本 ──────────────────────────────────
+// 過去只靠「把檔案搬到已辨識夾」來避免重複匯入；只要搬移失敗一次（權限、
+// token 過期、網路中斷…）該照片就會永遠留在「未辨識」夾，下次又被抓回來重
+// 複辨識、產生重複名片。這裡改用一份存在本機、跨重開仍在的 driveId 帳本，
+// 只要某張雲端照片曾被辨識消化過（不論實體搬移成功與否），就永久不再匯入。
+const PROCESSED_IDS_KEY = 'bizcard_processed_drive_ids';
+const PROCESSED_IDS_MAX = 8000; // 上限，避免 localStorage 無限膨脹（FIFO 汰舊）
+function loadProcessedDriveIds() {
+  try { return new Set(JSON.parse(localStorage.getItem(PROCESSED_IDS_KEY) || '[]')); }
+  catch(e) { return new Set(); }
+}
+function markDriveIdProcessed(id) {
+  if (!id) return;
+  const set = loadProcessedDriveIds();
+  if (set.has(id)) return;
+  set.add(id);
+  let arr = [...set];
+  if (arr.length > PROCESSED_IDS_MAX) arr = arr.slice(arr.length - PROCESSED_IDS_MAX);
+  try { localStorage.setItem(PROCESSED_IDS_KEY, JSON.stringify(arr)); } catch(e) {}
+}
 
 // Google Drive Client ID
 const GDRIVE_CLIENT_ID = '222322177485-dj77l1ut4qcs76l8hn861frpp6es7v4b.apps.googleusercontent.com';
@@ -2905,12 +2956,15 @@ async function importDriveImages() {
 
     // 已在佇列中的 driveId，O(1) 去重，避免重複匯入
     const queued = new Set(scanQueue.map(x => x.driveId).filter(Boolean));
+    // 永久帳本：曾辨識消化過的雲端檔案，即使實體還留在「未辨識」夾也不再抓回
+    const processed = loadProcessedDriveIds();
 
-    let importedCount = 0, skippedCount = 0, brokeEarly = false;
+    let importedCount = 0, skippedCount = 0, alreadyDone = 0, brokeEarly = false;
     driveSkippedThisRun = 0;
     for (const file of imgFiles) {
       if (importedCount >= slots) { brokeEarly = true; break; }  // 補滿這批就停
       if (queued.has(file.id)) continue;
+      if (processed.has(file.id)) { alreadyDone++; continue; }  // 之前已處理過，跳過（防重複）
       try {
         const imgRes = await fetchDrive(`https://www.googleapis.com/drive/v3/files/${file.id}?alt=media`);
         const blob = await imgRes.blob();
@@ -2946,13 +3000,18 @@ async function importDriveImages() {
     let msg = `✓ 本批已從雲端匯入 ${importedCount} 張`;
     if (prevWaiting > 0) msg += `\n（佇列現在共 ${totalWaiting} 張待辨識，含先前殘留 ${prevWaiting} 張）`;
     if (skippedCount) msg += `\n（雲端下載失敗 ${skippedCount} 張，未進佇列，可稍後重試）`;
+    if (alreadyDone > 0) msg += `\n（略過 ${alreadyDone} 張先前已辨識過的照片，避免重複；這些照片其實還留在雲端「未辨識」夾，可用「整理雲端資料夾」把它們搬到已辨識）`;
     if (driveHasMore) msg += `\n\n雲端「未辨識」還有更多名片。請先按「開始 AI 批次辨識」掃完這批，掃完會詢問是否續抓下一批。`;
     alert(msg);
+    refreshDriveFolderStats();
   } catch(e) {
     alert('雲端匯入失敗：' + e.message);
   }
 }
 
+// 回傳 true=實體歸檔成功、false=搬移失敗（呼叫端據此累計並提示）。
+// 注意：即使這裡失敗，重複匯入的防線已由永久帳本 markDriveIdProcessed 擋住，
+// 只是該照片仍實體留在「未辨識」夾，需要提醒使用者。
 async function moveDriveFile(fileId, oldParent, newParent) {
   try {
     await fetchDrive(`https://www.googleapis.com/drive/v3/files/${fileId}?addParents=${newParent}&removeParents=${oldParent}`, {
@@ -2961,8 +3020,89 @@ async function moveDriveFile(fileId, oldParent, newParent) {
       body: '{}'
     });
     console.log(`[Google Drive] 檔案 ${fileId} 已成功移動歸檔`);
+    return true;
   } catch(e) {
     console.error('[Google Drive] 雲端已辨識照片移動歸檔失敗', e);
+    return false;
+  }
+}
+
+// 計算某個雲端資料夾內的檔案張數（分頁累加，最多 20 頁 / 2 萬張，足夠一般用量）
+async function countDriveFolder(folderId) {
+  let total = 0, pageToken = null, pages = 0;
+  do {
+    let url = `https://www.googleapis.com/drive/v3/files?q=${encodeURIComponent(`'${folderId}' in parents and trashed=false`)}&pageSize=1000&fields=nextPageToken,files(id)`;
+    if (pageToken) url += `&pageToken=${encodeURIComponent(pageToken)}`;
+    const res = await fetchDrive(url);
+    const data = await res.json();
+    total += (data.files || []).length;
+    pageToken = data.nextPageToken || null;
+  } while (pageToken && ++pages < 20);
+  return total;
+}
+
+// 更新「雲端資料夾狀態」面板：未辨識 / 已辨識 / 辨識失敗 各張數 + 本機名片數。
+// force=true 才會在未登入時主動彈出 Google 授權（供使用者按「重新整理」用）；
+// 匯入/辨識後的自動呼叫傳 false，已登入才順帶更新、不打擾。
+async function refreshDriveFolderStats(force = false) {
+  const body = document.getElementById('drive-folder-stats-body');
+  if (!body) return;
+  const localCount = (typeof cardsList !== 'undefined' && cardsList) ? cardsList.length : 0;
+  const chip = (bg, txt) => `<span style="padding:3px 11px;border-radius:999px;background:${bg};color:#fff;font-weight:600;">${txt}</span>`;
+  if (!gdriveToken && !force) {
+    body.innerHTML = chip('#6366f1', `📇 本機名片 ${localCount} 張`) +
+      `<span style="color:var(--text-tertiary);align-self:center;">（登入 Google 後按「重新整理」可顯示雲端各夾張數）</span>`;
+    return;
+  }
+  try {
+    body.innerHTML = `<span style="color:var(--text-tertiary);">讀取雲端各資料夾張數中…</span>`;
+    await ensureGoogleAuth();
+    await ensureDriveFolders();
+    const [un, done, fail] = await Promise.all([
+      countDriveFolder(driveFolderCache.unparsed),
+      countDriveFolder(driveFolderCache.parsed),
+      countDriveFolder(driveFolderCache.failed),
+    ]);
+    body.innerHTML =
+      chip('#f59e0b', `📥 未辨識（待處理）${un}`) +
+      chip('#10b981', `✅ 已辨識 ${done}`) +
+      chip('#ef4444', `⚠️ 辨識失敗 ${fail}`) +
+      chip('#6366f1', `📇 本機名片 ${localCount}`);
+  } catch(e) {
+    body.innerHTML = chip('#6366f1', `📇 本機名片 ${localCount} 張`) +
+      `<span style="color:var(--color-red);align-self:center;">雲端讀取失敗：${e.message}</span>`;
+  }
+}
+
+// 整理雲端資料夾：把「先前已辨識過、卻因搬移失敗仍卡在『未辨識』夾」的照片
+// 補搬到「已辨識」，讓未辨識夾只剩真正尚未處理的新名片，數字才對得上。
+async function tidyDriveFolders() {
+  try {
+    await ensureGoogleAuth();
+    await ensureDriveFolders();
+    showToast('正在整理雲端「未辨識」資料夾…');
+    const processed = loadProcessedDriveIds();
+    let pageToken = null, pages = 0, moved = 0, failed = 0, scanned = 0;
+    do {
+      let url = `https://www.googleapis.com/drive/v3/files?q=${encodeURIComponent(`'${driveFolderCache.unparsed}' in parents and trashed=false`)}&pageSize=1000&fields=nextPageToken,files(id,mimeType)`;
+      if (pageToken) url += `&pageToken=${encodeURIComponent(pageToken)}`;
+      const res = await fetchDrive(url);
+      const data = await res.json();
+      for (const f of (data.files || [])) {
+        scanned++;
+        if (!processed.has(f.id)) continue;   // 只搬曾辨識過卻卡住的，尚未辨識的新照片保留
+        const ok = await moveDriveFile(f.id, driveFolderCache.unparsed, driveFolderCache.parsed);
+        if (ok) moved++; else failed++;
+      }
+      pageToken = data.nextPageToken || null;
+    } while (pageToken && ++pages < 20);
+    const remainingNew = scanned - moved - failed;
+    alert(`整理完成：\n・已把 ${moved} 張「先前已辨識、卻仍留在未辨識夾」的照片歸檔到「已辨識」` +
+      (failed ? `\n・${failed} 張搬移失敗，稍後可再按一次` : '') +
+      `\n・未辨識夾其餘 ${remainingNew} 張為尚未辨識的新照片，可按「開始 AI 批次辨識」。`);
+    refreshDriveFolderStats(true);
+  } catch(e) {
+    alert('整理雲端資料夾失敗：' + e.message);
   }
 }
 
@@ -4035,12 +4175,12 @@ function closeLightbox() {
 }
 
 function switchTab(tabId) {
-  // Header 只在首頁顯示
+  // Header 只在首頁顯示；客戶分頁走全屏 iframe，隱藏名片主標頭
   const header = document.querySelector('.app-header');
-  if (header) header.style.display = 'flex';
+  if (header) header.style.display = (tabId === 'crm') ? 'none' : 'flex';
 
   // Map tab IDs to view IDs
-  const allViews = ['home','cards','dashboard','dups','batch','graph','settings','myprofile'];
+  const allViews = ['home','cards','dashboard','dups','batch','graph','settings','myprofile','crm'];
   allViews.forEach(v => {
     const el = document.getElementById('view-' + v);
     if (el) el.style.display = v === tabId ? 'block' : 'none';
@@ -4051,11 +4191,20 @@ function switchTab(tabId) {
     if (btn) btn.classList.toggle('active', t === tabId);
   });
   // Bottom tab bar
-  ['home','cards','dashboard','batch','myprofile'].forEach(t => {
+  ['home','cards','dashboard','batch','myprofile','crm'].forEach(t => {
     const btn = document.getElementById('btab-' + t);
     if (btn) btn.classList.toggle('active', t === tabId);
   });
+  // 客戶分頁：首次進入才載入 iframe（延遲載入），並讓承載層剛好貼齊底部導覽列上緣
+  if (tabId === 'crm') {
+    const f = document.getElementById('crm-frame');
+    if (f && !f.getAttribute('src')) f.setAttribute('src', 'crm.html');
+    const nav = document.querySelector('.bottom-tab-bar');
+    const vc = document.getElementById('view-crm');
+    if (nav && vc) vc.style.bottom = nav.offsetHeight + 'px';
+  }
   if (tabId === 'cards') renderCardsGrid();
+  if (tabId === 'batch') refreshDriveFolderStats();  // 進入同步分頁即顯示本機/雲端張數
   if (tabId === 'dups') renderDupsTab();
   if (tabId === 'dashboard') { renderDashboard(); renderGraphTab(); }
   if (tabId === 'home') renderHomeScreen();
@@ -5622,6 +5771,7 @@ async function startBatchProcessing() {
   ps.style.display = 'block';
   ps.textContent = `準備開始，共 ${waiting.length} 張照片待辨識...`;
   let doneCount = 0, failCount = 0, cardCount = 0, emptyCount = 0, multiPhotoCount = 0;
+  driveArchiveFailThisRun = 0;  // 本批「已辨識但雲端實體歸檔失敗」歸零重算
   
   // 1. 自動修復解析：如果有雲端硬碟匯入的檔案且 cache 為空，重新載入 ID
   const hasDriveItems = waiting.some(item => item.driveId);
@@ -5680,10 +5830,15 @@ async function startBatchProcessing() {
         success = true;
         await dbDeleteQueueItem(item.id); // 辨識完成，從佇列資料表移除以省容量
 
+        // 先記進永久帳本：只要辨識消化過就永不再匯入，不依賴實體搬移是否成功。
+        // 這是杜絕「雲端照片沒被搬走 → 下次又抓回來 → 重複名片」的根本防線。
+        markDriveIdProcessed(item.driveId);
+
         // 有產出 → 搬「已辨識」；讀不到名片 → 搬「辨識失敗」夾，讓使用者回頭檢查
         const destFolder = gotNothing ? driveFolderCache.failed : driveFolderCache.parsed;
         if (item.driveId && gdriveToken && destFolder) {
-          await moveDriveFile(item.driveId, driveFolderCache.unparsed, destFolder);
+          const moved = await moveDriveFile(item.driveId, driveFolderCache.unparsed, destFolder);
+          if (!moved) driveArchiveFailThisRun++;   // 帳本已擋重複，僅記數提醒使用者實體未歸檔
         }
 
         // 釋放記憶體：成功後從記憶體佇列移除並丟棄圖片 blob，
@@ -5716,8 +5871,12 @@ async function startBatchProcessing() {
           // 真正「這張辨識不出來」才搬到「辨識失敗」資料夾，避免下批又被抓回反覆卡住；
           // 金鑰未填或配額耗盡屬全域問題、照片本身沒問題，保留在「未辨識」待之後重試。
           const isGlobalIssue = err.message === 'API_KEY_EMPTY' || err.isRateLimit;
-          if (!isGlobalIssue && item.driveId && gdriveToken && driveFolderCache.failed) {
-            await moveDriveFile(item.driveId, driveFolderCache.unparsed, driveFolderCache.failed);
+          if (!isGlobalIssue && item.driveId) {
+            markDriveIdProcessed(item.driveId); // 真正辨識不出來也記帳，避免下批又抓回反覆卡住
+            if (gdriveToken && driveFolderCache.failed) {
+              const moved = await moveDriveFile(item.driveId, driveFolderCache.unparsed, driveFolderCache.failed);
+              if (!moved) driveArchiveFailThisRun++;
+            }
           }
           // 真正辨識不出來者：移出佇列，避免失敗列跨批、跨重開一直累積、汙染清單筆數與分母
           // （金鑰未填/配額耗盡屬全域問題，保留在佇列待之後重試）
@@ -5773,8 +5932,10 @@ async function startBatchProcessing() {
     (multiPhotoCount ? `（含 ${multiPhotoCount} 張合照拆多張）` : '') +
     (emptyCount ? `；未讀到名片 ${emptyCount} 張` : '') +
     (failCount ? `；失敗 ${failCount} 張（請查看佇列詳情）` : '') +
-    (driveSkippedThisRun ? `；雲端下載失敗 ${driveSkippedThisRun} 張` : '');
+    (driveSkippedThisRun ? `；雲端下載失敗 ${driveSkippedThisRun} 張` : '') +
+    (driveArchiveFailThisRun ? `；雲端歸檔搬移失敗 ${driveArchiveFailThisRun} 張（名片已存好、不會重複，但照片仍在「未辨識」夾，可按「整理雲端資料夾」重搬）` : '');
   ps.textContent = `✓ 批次完成：${summary}`;
+  refreshDriveFolderStats();
   showToast(`辨識完成！新增 ${cardCount} 張名片${emptyCount ? `，空白 ${emptyCount}` : ''}${failCount ? `，失敗 ${failCount}` : ''}`);
 
   // 是否整批都跑完（用來區分「自然完成」與「使用者中途停止」）
@@ -6764,5 +6925,13 @@ function showUpdateBanner(worker) {
   });
 }
 </script>
+<!--RIDGELINE_BIZ_FOOT-->
+<footer style="max-width:520px;margin:22px auto 0;padding:16px 22px calc(env(safe-area-inset-bottom,0px) + 22px);text-align:center;font-size:11.5px;line-height:1.85;color:#8a94a6;border-top:1px solid rgba(128,138,166,.18);">
+<div style="margin-bottom:11px;line-height:0;"><svg width="48" height="34" viewBox="0 0 210 150" aria-hidden="true" style="display:inline-block"><defs><linearGradient id="bizrdg" x1="0" y1="1" x2="1" y2="0"><stop offset="0" stop-color="#4F6DF5"/><stop offset="1" stop-color="#8B5CF6"/></linearGradient></defs><polyline points="16,124 66,32 100,74 126,54 152,76 196,46" fill="none" stroke="url(#bizrdg)" stroke-width="13" stroke-linecap="round" stroke-linejoin="round"/><path d="M68 5 C69.2 18.8 70.2 19.8 84 22 C70.2 24.2 69.2 25.2 68 39 C66.8 25.2 65.8 24.2 52 22 C65.8 19.8 66.8 18.8 68 5 Z" fill="#ffffff" stroke="#4F6DF5" stroke-width="2.5" stroke-linejoin="round"/></svg></div>
+<div style="font-style:italic;opacity:.9;">「人生走稜，高低都是風景。」</div>
+<div style="margin-top:6px;">⚠️ 名片辨識結果可能有誤，請自行核對；所有名片與聯絡資料僅存於本機裝置、不上傳雲端。</div>
+<div style="margin-top:8px;font-weight:600;">© 2026 稜線工作室 Ridgeline · Lucas 出品</div>
+<div style="margin-top:4px;opacity:.85;">本工具免費提供使用；程式與內容著作權皆屬作者，未經同意請勿重製、散布或作商業用途。</div>
+</footer>
 </body>
 </html>

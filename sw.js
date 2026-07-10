@@ -1,7 +1,8 @@
-const CACHE_NAME = 'bizcard-pwa-v16';
+const CACHE_NAME = 'bizcard-pwa-v18';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
+  './crm.html',
   './manifest.json',
   './icons/icon-192.png',
   './icons/icon-512.png',

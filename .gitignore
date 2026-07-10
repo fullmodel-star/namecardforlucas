@@ -1,0 +1,8 @@
+# 上架建置產物與簽章金鑰 — 絕不可推上公開 repo
+_上架素材/
+*.keystore
+*.aab
+*.apk
+
+# 本機工具暫存，不進 repo
+.claude/

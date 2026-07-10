@@ -1,0 +1,711 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#4f7cff">
+<title>客戶追蹤 CRM</title>
+<style>
+  :root{
+    --bg:#eef1f5; --card:#fff; --line:#eef1f5; --ink:#1c2430; --sub:#8a94a6;
+    --accent:#4f7cff; --red:#e5484d; --yellow:#d98a00; --green:#22a565; --grey:#aab2c0;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  body{font-family:-apple-system,"Segoe UI","Microsoft JhengHei",sans-serif;background:var(--bg);color:var(--ink);}
+  .wrap{max-width:480px;margin:0 auto;min-height:100vh;background:var(--bg);display:flex;flex-direction:column;position:relative;}
+
+  .top{padding:16px 20px 12px;background:var(--bg);position:sticky;top:0;z-index:5;}
+  .top h1{font-size:24px;font-weight:800;}
+  .top .sub{font-size:13px;color:var(--sub);margin-top:3px;}
+  .top-actions{position:absolute;right:16px;top:calc(env(safe-area-inset-top) + 18px);display:flex;gap:8px;}
+  .icon-btn{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:8px 11px;font-size:13px;font-weight:600;color:var(--ink);cursor:pointer;}
+
+  .body{flex:1;overflow-y:auto;padding:0 16px 90px;}
+  .search{display:flex;align-items:center;gap:8px;background:#f1f3f7;border-radius:12px;padding:11px 14px;margin:6px 0 16px;}
+  .search input{border:none;background:transparent;outline:none;font-size:15px;flex:1;color:var(--ink);}
+
+  .today{background:linear-gradient(135deg,#4f7cff,#6a5cff);color:#fff;border-radius:18px;padding:16px 18px;margin-bottom:18px;box-shadow:0 8px 20px rgba(80,100,255,.28);}
+  .today .t1{font-size:13px;opacity:.85;}
+  .today .t2{font-size:16px;font-weight:700;margin-top:5px;line-height:1.5;}
+
+  .lbl{font-size:12px;font-weight:700;color:var(--sub);letter-spacing:1px;margin:14px 4px 10px;}
+
+  .card{display:flex;align-items:center;gap:12px;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:13px 14px;margin-bottom:10px;cursor:pointer;transition:.12s;}
+  .card:active{transform:scale(.985);background:#fafbfc;}
+  .avatar{width:44px;height:44px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-weight:700;color:#fff;font-size:17px;overflow:hidden;background-size:cover;background-position:center;}
+  .c-main{flex:1;min-width:0;}
+  .c-name{font-size:16px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:flex;align-items:center;gap:6px;}
+  .c-org{font-size:13px;color:var(--sub);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .lv-tag{font-size:10px;font-weight:700;padding:1px 7px;border-radius:8px;color:#fff;flex-shrink:0;}
+  .status{font-size:12px;font-weight:600;padding:5px 10px;border-radius:20px;white-space:nowrap;display:flex;align-items:center;gap:5px;}
+  .dot{width:7px;height:7px;border-radius:50%;}
+  .s-red{background:#ffe9e9;color:var(--red);} .s-red .dot{background:var(--red);}
+  .s-yellow{background:#fff4e0;color:var(--yellow);} .s-yellow .dot{background:var(--yellow);}
+  .s-green{background:#e4f8ec;color:var(--green);} .s-green .dot{background:var(--green);}
+  .s-grey{background:#eef1f5;color:#66738a;} .s-grey .dot{background:var(--grey);}
+
+  .empty{text-align:center;color:var(--sub);padding:60px 24px;line-height:1.8;font-size:14px;}
+  .empty .big{font-size:40px;margin-bottom:12px;}
+  .empty button{margin-top:18px;background:var(--ink);color:#fff;border:none;border-radius:12px;padding:12px 20px;font-size:15px;font-weight:700;cursor:pointer;}
+
+  .source-tag{display:inline-block;font-size:11px;padding:3px 9px;border-radius:8px;font-weight:600;margin-left:6px;}
+  .src-live{background:#e4f8ec;color:var(--green);}
+  .src-json{background:#fff4e0;color:var(--yellow);}
+  .src-none{background:#ffe9e9;color:var(--red);}
+
+  .fab{position:fixed;right:calc(50% - 240px + 20px);bottom:24px;background:var(--ink);color:#fff;border:none;border-radius:16px;padding:14px 20px;font-size:15px;font-weight:700;box-shadow:0 10px 24px rgba(28,36,48,.35);cursor:pointer;z-index:6;}
+  @media(max-width:520px){.fab{right:20px;}}
+
+  .detail{position:fixed;inset:0;background:var(--bg);z-index:20;transform:translateX(100%);transition:transform .22s ease;display:flex;flex-direction:column;max-width:480px;margin:0 auto;}
+  .detail.open{transform:translateX(0);}
+  .d-back{padding:12px 20px 6px;color:var(--accent);font-weight:600;font-size:16px;cursor:pointer;}
+  .d-body{flex:1;overflow-y:auto;padding-bottom:110px;}
+  .d-head{padding:8px 22px 18px;}
+  .d-av{width:64px;height:64px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:26px;margin-bottom:12px;overflow:hidden;background-size:cover;background-position:center;}
+  .d-name{font-size:24px;font-weight:800;}
+  .d-role{font-size:14px;color:var(--sub);margin-top:3px;}
+  .contact{display:flex;gap:10px;margin-top:16px;}
+  .contact a{flex:1;text-align:center;background:#f1f3f7;border-radius:12px;padding:11px;font-size:14px;font-weight:600;color:#3a4658;text-decoration:none;}
+  .contact a.off{opacity:.35;pointer-events:none;}
+
+  .level-sec{padding:0 22px 4px;}
+  .level-sec .lv-chips{display:flex;gap:8px;flex-wrap:wrap;}
+  .lv-chip{padding:7px 13px;border-radius:20px;background:#f1f3f7;font-size:13px;font-weight:600;cursor:pointer;border:2px solid transparent;color:#3a4658;}
+  .lv-chip.on{color:#fff;}
+
+  /* 待收款 KPI 卡 */
+  .kpi{display:flex;gap:10px;margin-bottom:16px;}
+  .kpi .box{flex:1;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:13px 14px;}
+  .kpi .box.money{background:#fff5f5;border-color:#ffd9d9;}
+  .kpi .n{font-size:19px;font-weight:800;}
+  .kpi .box.money .n{color:var(--red);}
+  .kpi .l{font-size:11px;color:var(--sub);margin-top:3px;}
+
+  /* 案子（deals） */
+  .recv-badge{font-size:11px;font-weight:700;color:var(--red);background:#ffe9e9;border-radius:8px;padding:1px 7px;margin-top:4px;display:inline-block;}
+  .deal-sec{padding:6px 16px 4px;}
+  .deal-row{display:flex;justify-content:space-between;align-items:center;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 14px;margin-bottom:8px;cursor:pointer;}
+  .deal-row:active{background:#fafbfc;}
+  .deal-title{font-size:15px;font-weight:700;}
+  .deal-sub{font-size:12px;color:var(--sub);margin-top:2px;}
+  .deal-amt{font-size:16px;font-weight:800;}
+  .stage-badge{font-size:11px;font-weight:700;color:#fff;border-radius:8px;padding:2px 8px;margin-top:5px;display:inline-block;}
+  .add-deal{width:calc(100% - 32px);margin:2px 16px 8px;background:#eef1f7;color:#3a4658;border:none;border-radius:12px;padding:12px;font-weight:700;cursor:pointer;font-size:14px;}
+  .stage-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;}
+  .stage-chip{padding:8px 13px;border-radius:12px;background:#f1f3f7;font-size:13px;font-weight:600;cursor:pointer;border:2px solid transparent;}
+  .stage-chip.on{color:#fff;}
+
+  .remind-box{margin:12px 16px 16px;background:#fff8e8;border:1px solid #ffe4b0;border-radius:14px;padding:14px 16px;display:flex;justify-content:space-between;align-items:center;cursor:pointer;}
+  .remind-box .r1{font-size:12px;color:#c98a1a;font-weight:700;}
+  .remind-box .r2{font-size:15px;font-weight:700;margin-top:3px;color:#7a5a10;}
+  .remind-box.none{background:var(--card);border-color:var(--line);}
+  .remind-box.none .r1{color:var(--sub);} .remind-box.none .r2{color:var(--ink);font-weight:600;font-size:14px;}
+
+  .log{padding:0 22px;}
+  .log-item{display:flex;gap:12px;padding:14px 0;border-bottom:1px solid #f3f5f8;}
+  .log-date{font-size:12px;color:var(--sub);width:64px;flex-shrink:0;font-weight:600;padding-top:2px;}
+  .log-text{font-size:15px;line-height:1.5;}
+  .log-tag{display:inline-block;font-size:11px;padding:2px 8px;border-radius:8px;background:#eef1f7;color:#66738a;margin-right:6px;font-weight:600;}
+  .log-empty{padding:24px;text-align:center;color:var(--sub);font-size:14px;}
+
+  .actions{position:absolute;bottom:0;left:0;right:0;padding:14px 16px calc(env(safe-area-inset-bottom) + 16px);background:var(--card);border-top:1px solid var(--line);display:flex;gap:10px;max-width:480px;margin:0 auto;}
+  .btn{flex:1;text-align:center;padding:15px;border-radius:14px;font-size:15px;font-weight:700;cursor:pointer;border:none;}
+  .btn-primary{background:var(--ink);color:#fff;}
+  .btn-ghost{background:#f1f3f7;color:#3a4658;}
+
+  .sheet-mask{position:fixed;inset:0;background:rgba(20,28,40,.45);z-index:30;opacity:0;pointer-events:none;transition:.2s;}
+  .sheet-mask.open{opacity:1;pointer-events:auto;}
+  .sheet{position:fixed;left:0;right:0;bottom:0;background:var(--card);border-radius:24px 24px 0 0;z-index:31;transform:translateY(100%);transition:transform .24s ease;max-width:480px;margin:0 auto;padding:20px 20px calc(env(safe-area-inset-bottom) + 20px);max-height:88vh;overflow-y:auto;}
+  .sheet.open{transform:translateY(0);}
+  .sheet h3{font-size:18px;font-weight:800;margin-bottom:16px;}
+  .type-row{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;}
+  .type-chip{padding:9px 14px;border-radius:12px;background:#f1f3f7;font-size:14px;font-weight:600;cursor:pointer;border:2px solid transparent;}
+  .type-chip.on{border-color:var(--accent);background:#eaf0ff;color:var(--accent);}
+  .field{margin-bottom:12px;}
+  .field label{display:block;font-size:12px;font-weight:700;color:var(--sub);margin-bottom:6px;letter-spacing:.5px;}
+  .sheet textarea,.sheet input[type=text],.sheet input[type=date],.sheet input[type=number]{width:100%;border:1px solid var(--line);border-radius:12px;padding:13px;font-size:15px;font-family:inherit;outline:none;background:#fafbfc;}
+  .sheet textarea{min-height:80px;resize:none;}
+  .sheet .save{width:100%;background:var(--ink);color:#fff;border:none;border-radius:14px;padding:15px;font-size:16px;font-weight:700;cursor:pointer;margin-top:4px;}
+  .sheet .clear{width:100%;background:transparent;color:var(--red);border:none;padding:12px;font-size:14px;font-weight:600;cursor:pointer;margin-top:6px;}
+
+  /* settings level rows */
+  .lv-row{display:flex;gap:8px;align-items:center;margin-bottom:10px;}
+  .lv-row input.nm{flex:2;} .lv-row input.dy{flex:1;text-align:center;}
+  .lv-row .del{background:#ffe9e9;color:var(--red);border:none;border-radius:10px;padding:10px 12px;font-weight:700;cursor:pointer;flex-shrink:0;}
+  .lv-head{display:flex;gap:8px;font-size:11px;color:var(--sub);font-weight:700;margin-bottom:6px;padding:0 2px;}
+  .lv-head span:nth-child(1){flex:2;} .lv-head span:nth-child(2),.lv-head span:nth-child(3){flex:1;text-align:center;} .lv-head span:nth-child(4){width:44px;}
+  .add-lv{width:100%;background:#eef1f7;color:#3a4658;border:none;border-radius:12px;padding:11px;font-weight:700;cursor:pointer;margin:6px 0 16px;}
+
+  .toast{position:fixed;bottom:calc(env(safe-area-inset-bottom) + 24px);left:50%;transform:translateX(-50%) translateY(20px);background:var(--ink);color:#fff;padding:12px 20px;border-radius:14px;font-size:14px;font-weight:600;z-index:50;opacity:0;transition:.25s;pointer-events:none;}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <h1>我的客戶</h1>
+    <div class="sub" id="subline">載入中…</div>
+    <div class="top-actions">
+      <button class="icon-btn" onclick="openSettings()">⚙</button>
+    </div>
+  </div>
+  <div class="body">
+    <div class="search">🔍
+      <input id="q" placeholder="搜尋姓名 / 公司 / 分級 / 紀錄內容" oninput="render()">
+    </div>
+    <div id="today-wrap"></div>
+    <div id="list"></div>
+  </div>
+  <button class="fab" onclick="openNewCustomer()">＋ 新增客戶</button>
+</div>
+
+<!-- 詳情 -->
+<div class="detail" id="detail">
+  <div class="d-back" onclick="closeDetail()">‹ 返回</div>
+  <div class="d-body" id="d-body"></div>
+  <div class="actions">
+    <button class="btn btn-ghost" onclick="openLogSheet()">✎ 記一筆</button>
+    <button class="btn btn-primary" onclick="openRemindSheet()">⏰ 設提醒</button>
+  </div>
+</div>
+
+<div class="sheet-mask" id="mask" onclick="closeSheets()"></div>
+
+<!-- 記一筆 -->
+<div class="sheet" id="logSheet">
+  <h3>記一筆互動</h3>
+  <div class="type-row" id="typeRow"></div>
+  <div class="field"><label>日期（可補過去）</label><input type="date" id="logDate"></div>
+  <div class="field"><label>內容</label><textarea id="logText" placeholder="聊了什麼？例如：對方詢問報價，Q3 有預算"></textarea></div>
+  <button class="save" onclick="saveLog()">儲存</button>
+</div>
+
+<!-- 設提醒 -->
+<div class="sheet" id="remindSheet">
+  <h3>設定下次提醒</h3>
+  <div class="field"><label>提醒日期</label><input type="date" id="remindDate"></div>
+  <div class="field"><label>事由</label><textarea id="remindNote" placeholder="例如：追報價進度" style="min-height:60px;"></textarea></div>
+  <button class="save" onclick="saveRemind()">儲存提醒</button>
+  <button class="clear" onclick="clearRemind()">清除提醒</button>
+</div>
+
+<!-- 新增客戶 -->
+<div class="sheet" id="newSheet">
+  <h3>新增客戶</h3>
+  <div class="field"><label>姓名 *</label><input type="text" id="nc-name" placeholder="王小明"></div>
+  <div class="field"><label>公司</label><input type="text" id="nc-org" placeholder="某某公司"></div>
+  <div class="field"><label>職稱</label><input type="text" id="nc-title" placeholder="經理"></div>
+  <div class="field"><label>手機</label><input type="text" id="nc-mobile" placeholder="09xx-xxx-xxx"></div>
+  <div class="field"><label>Email</label><input type="text" id="nc-email" placeholder="name@example.com"></div>
+  <button class="save" onclick="saveNewCustomer()">建立</button>
+</div>
+
+<!-- 設定：分級門檻 -->
+<div class="sheet" id="settingsSheet">
+  <h3>分級與提醒門檻</h3>
+  <p style="font-size:13px;color:var(--sub);line-height:1.6;margin-bottom:14px;">
+    每個分級可設自己的「黃燈 / 紅燈」天數。<br>例：熱客 3/7、一般 30/60。數字＝距上次聯絡幾天後變色。</p>
+  <div class="lv-head"><span>分級名稱</span><span>黃燈(天)</span><span>紅燈(天)</span><span></span></div>
+  <div id="lvRows"></div>
+  <button class="add-lv" onclick="addLvRow()">＋ 新增分級</button>
+  <div class="lv-head"><span>未分級客戶</span><span>黃燈(天)</span><span>紅燈(天)</span><span></span></div>
+  <div class="lv-row">
+    <input class="nm" type="text" value="（預設）" disabled style="flex:2;">
+    <input class="dy" type="number" id="def-yellow" style="flex:1;">
+    <input class="dy" type="number" id="def-red" style="flex:1;">
+    <span style="width:44px;"></span>
+  </div>
+  <button class="save" onclick="saveSettings()">儲存設定</button>
+</div>
+
+<!-- 案子 / 報價 -->
+<div class="sheet" id="dealSheet">
+  <h3 id="dealSheetTitle">新增案子</h3>
+  <div class="field"><label>案名 *</label><input type="text" id="dl-title" placeholder="例如：品牌設計專案"></div>
+  <div class="field"><label>金額</label><input type="number" id="dl-amount" placeholder="40000" inputmode="numeric"></div>
+  <div class="field"><label>階段</label><div class="stage-row" id="stageRow"></div></div>
+  <div class="field"><label>備註</label><textarea id="dl-note" placeholder="例如：等對方採購簽核" style="min-height:56px;"></textarea></div>
+  <button class="save" onclick="saveDeal()">儲存</button>
+  <button class="clear" id="dl-delete" onclick="deleteDeal()" style="display:none;">刪除此案</button>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ============================================================
+   資料層 —— 遵循「資料契約 v1」
+   BizCardDB：名片程式擁有，CRM 只讀
+   CrmDB：CRM 擁有（crm 追蹤 / cards_snapshot 快照 / manual_cards 手動客戶 / settings 設定）
+   ============================================================ */
+const BIZ_DB='BizCardDB', CRM_DB='CrmDB', DEAL_DB='DealDB';
+let crmDb=null, dealDb=null, dataSource='none', cardsCache=[], mergedCache=[], currentId=null;
+let config=null, dealsByCard={};
+
+/* 案子階段 —— 與未來「報價請款」程式共用同一組定義 */
+const STAGES=[
+  {key:'lead',   name:'洽談中', color:'#8a94a6', open:true},
+  {key:'quote',  name:'已報價', color:'#d98a00', open:true},
+  {key:'won',    name:'已成交', color:'#4f7cff', open:true},
+  {key:'billed', name:'已請款', color:'#e5484d', open:true},
+  {key:'paid',   name:'已收款', color:'#22a565', open:false},
+  {key:'lost',   name:'未成交', color:'#b4bccb', open:false}
+];
+const stageOf=k=>STAGES.find(s=>s.key===k)||STAGES[0];
+
+const DEFAULT_CONFIG={
+  key:'config',
+  levels:[
+    {name:'重點', yellow:14, red:30, color:'#e5484d'},
+    {name:'一般', yellow:30, red:60, color:'#4f7cff'},
+    {name:'長期經營', yellow:60, red:120, color:'#22a565'}
+  ],
+  defYellow:30, defRed:60
+};
+
+function openBiz(){
+  return new Promise(resolve=>{
+    let req; try{ req=indexedDB.open(BIZ_DB); }catch(e){ return resolve(null); }
+    req.onsuccess=e=>resolve(e.target.result);
+    req.onerror=()=>resolve(null);
+  });
+}
+function openCrm(){
+  return new Promise((resolve,reject)=>{
+    const req=indexedDB.open(CRM_DB,2);
+    req.onupgradeneeded=e=>{
+      const db=e.target.result;
+      if(!db.objectStoreNames.contains('crm')) db.createObjectStore('crm',{keyPath:'cardId'});
+      if(!db.objectStoreNames.contains('cards_snapshot')) db.createObjectStore('cards_snapshot',{keyPath:'id'});
+      if(!db.objectStoreNames.contains('manual_cards')) db.createObjectStore('manual_cards',{keyPath:'id'});
+      if(!db.objectStoreNames.contains('settings')) db.createObjectStore('settings',{keyPath:'key'});
+    };
+    req.onsuccess=e=>resolve(e.target.result);
+    req.onerror=e=>reject(e.target.error);
+  });
+}
+/* DealDB —— 案子/報價，未來由「報價請款」程式共同擁有 */
+function openDeal(){
+  return new Promise((resolve,reject)=>{
+    const req=indexedDB.open(DEAL_DB,1);
+    req.onupgradeneeded=e=>{
+      const db=e.target.result;
+      if(!db.objectStoreNames.contains('deals')){
+        const st=db.createObjectStore('deals',{keyPath:'id'});
+        st.createIndex('cardId','cardId',{unique:false});
+      }
+    };
+    req.onsuccess=e=>resolve(e.target.result);
+    req.onerror=e=>reject(e.target.error);
+  });
+}
+function getAllDeals(){
+  return new Promise(resolve=>{
+    if(!dealDb) return resolve([]);
+    const r=dealDb.transaction(['deals'],'readonly').objectStore('deals').getAll();
+    r.onsuccess=()=>resolve(r.result||[]); r.onerror=()=>resolve([]);
+  });
+}
+function putDeal(rec){
+  return new Promise((resolve,reject)=>{
+    const tx=dealDb.transaction(['deals'],'readwrite'); tx.objectStore('deals').put(rec);
+    tx.oncomplete=()=>resolve(); tx.onerror=e=>reject(e.target.error);
+  });
+}
+function removeDeal(id){
+  return new Promise((resolve,reject)=>{
+    const tx=dealDb.transaction(['deals'],'readwrite'); tx.objectStore('deals').delete(id);
+    tx.oncomplete=()=>resolve(); tx.onerror=e=>reject(e.target.error);
+  });
+}
+async function loadDeals(){
+  const all=await getAllDeals();
+  dealsByCard={};
+  for(const d of all){ (dealsByCard[d.cardId]=dealsByCard[d.cardId]||[]).push(d); }
+}
+const fmtMoney=n=>'$'+(Number(n)||0).toLocaleString('en-US');
+function getAll(db,store){
+  return new Promise(resolve=>{
+    if(!db||!db.objectStoreNames.contains(store)) return resolve([]);
+    const r=db.transaction([store],'readonly').objectStore(store).getAll();
+    r.onsuccess=()=>resolve(r.result||[]); r.onerror=()=>resolve([]);
+  });
+}
+function putRec(store,rec){
+  return new Promise((resolve,reject)=>{
+    const tx=crmDb.transaction([store],'readwrite'); tx.objectStore(store).put(rec);
+    tx.oncomplete=()=>resolve(); tx.onerror=e=>reject(e.target.error);
+  });
+}
+function getOne(store,key){
+  return new Promise(resolve=>{
+    if(!crmDb.objectStoreNames.contains(store)) return resolve(null);
+    const r=crmDb.transaction([store],'readonly').objectStore(store).get(key);
+    r.onsuccess=()=>resolve(r.result||null); r.onerror=()=>resolve(null);
+  });
+}
+const getCrm=id=>getOne('crm',id);
+
+async function loadConfig(){
+  const r=await getOne('settings','config');
+  config = r || JSON.parse(JSON.stringify(DEFAULT_CONFIG));
+}
+
+/* 載入名片：直接讀名片 App 的 BizCardDB（同一支 App、同源即通），併入手動客戶 */
+async function loadCards(){
+  const biz=await openBiz();
+  const live=await getAll(biz,'cards');
+  const manual=await getAll(crmDb,'manual_cards');
+  const map=new Map();
+  live.forEach(c=>{ if(c&&c.id) map.set(c.id,c); });
+  manual.forEach(c=>{ if(c&&c.id) map.set(c.id,c); });
+  dataSource = live.length ? 'live' : (manual.length ? 'manual' : 'none');
+  cardsCache=[...map.values()];
+}
+
+/* ============================================================
+   狀態燈計算（依分級門檻）
+   ============================================================ */
+const DAY=86400000;
+function todayStart(){ const d=new Date(); d.setHours(0,0,0,0); return d.getTime(); }
+function levelOf(crm){
+  if(!crm||!crm.level) return null;
+  return config.levels.find(l=>l.name===crm.level)||null;
+}
+function thresholds(crm){
+  const lv=levelOf(crm);
+  return lv?{y:lv.yellow,r:lv.red}:{y:config.defYellow,r:config.defRed};
+}
+function computeStatus(crm){
+  if(!crm || !((crm.logs&&crm.logs.length)||crm.nextRemind))
+    return {key:'grey',label:'尚未追蹤',cls:'s-grey'};
+  if(crm.nextRemind){
+    const rt=new Date(crm.nextRemind+'T00:00:00').getTime();
+    if(rt<=todayStart()) return {key:'red',label:'提醒到期',cls:'s-red'};
+  }
+  if(crm.logs&&crm.logs.length){
+    const {y,r}=thresholds(crm);
+    const last=Math.max(...crm.logs.map(l=>l.at));
+    const days=Math.floor((todayStart()-last)/DAY);
+    if(days>=r) return {key:'red',label:days+'天沒聯絡',cls:'s-red'};
+    if(days>=y) return {key:'yellow',label:'該追蹤了',cls:'s-yellow'};
+    return {key:'green',label:days<=0?'今天聯絡':days+'天前',cls:'s-green'};
+  }
+  return {key:'yellow',label:'待處理',cls:'s-yellow'};
+}
+const STATUS_ORDER={red:0,yellow:1,grey:2,green:3};
+
+/* ============================================================
+   顯示輔助
+   ============================================================ */
+function initial(name){ return (name||'?').trim().charAt(0)||'?'; }
+function avatarColor(name){
+  const colors=['#e5484d','#d98a00','#22a565','#4f7cff','#6a5cff','#0ea5e9','#e0699a'];
+  let h=0; for(const ch of (name||'')) h=(h*31+ch.charCodeAt(0))>>>0;
+  return colors[h%colors.length];
+}
+function fmtDate(ts){ const d=new Date(ts); return (d.getMonth()+1)+'/'+d.getDate(); }
+function todayISO(){ const d=new Date(); d.setHours(12,0,0,0); return d.toISOString().slice(0,10); }
+const TYPE_LABEL={phone:'電話',visit:'拜訪',email:'Email',message:'訊息',note:'備註'};
+function esc(s){return (s==null?'':String(s)).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
+
+/* ============================================================
+   主渲染
+   ============================================================ */
+async function buildMerged(){
+  const merged=[];
+  for(const card of cardsCache){
+    const crm=await getCrm(card.id);
+    merged.push({card,crm,status:computeStatus(crm),deals:dealsByCard[card.id]||[]});
+  }
+  merged.sort((a,b)=>{
+    const s=STATUS_ORDER[a.status.key]-STATUS_ORDER[b.status.key];
+    if(s) return s;
+    return (a.card.name||'').localeCompare(b.card.name||'','zh-Hant');
+  });
+  mergedCache=merged;
+}
+function render(){
+  const q=(document.getElementById('q').value||'').trim().toLowerCase();
+  const list=document.getElementById('list'), sub=document.getElementById('subline');
+  const srcTag = dataSource==='live' ? '<span class="source-tag src-live">● 同步名片</span>'
+    : dataSource==='manual' ? '<span class="source-tag src-json">● 手動客戶</span>'
+    : '<span class="source-tag src-none">● 無資料</span>';
+  const needFollow=mergedCache.filter(m=>m.status.key==='red'||m.status.key==='yellow').length;
+  sub.innerHTML=`共 ${mergedCache.length} 位　·　${needFollow} 位待跟進 ${srcTag}`;
+
+  if(cardsCache.length===0){
+    document.getElementById('today-wrap').innerHTML='';
+    list.innerHTML=`<div class="empty"><div class="big">📇</div>
+      還沒有客戶。<br>去「名片」分頁拍照建立名片，<br>或點右下「＋ 新增客戶」手動加一位。</div>`;
+    return;
+  }
+  const dueToday=mergedCache.filter(m=>m.crm&&m.crm.nextRemind&&
+    new Date(m.crm.nextRemind+'T00:00:00').getTime()<=todayStart());
+  const allDeals=Object.values(dealsByCard).flat();
+  const receivable=allDeals.filter(d=>d.stage==='billed').reduce((s,d)=>s+(Number(d.amount)||0),0);
+  const openCount=allDeals.filter(d=>stageOf(d.stage).open).length;
+  const kpiHtml = allDeals.length
+    ? `<div class="kpi"><div class="box money"><div class="n">${fmtMoney(receivable)}</div><div class="l">待收款（已請款）</div></div>
+       <div class="box"><div class="n">${openCount}</div><div class="l">進行中案子</div></div></div>` : '';
+  document.getElementById('today-wrap').innerHTML=(dueToday.length
+    ? `<div class="today"><div class="t1">⏰ 今天要聯絡（${dueToday.length}）</div>
+       <div class="t2">${dueToday.map(m=>esc(m.card.name)+(m.crm.remindNote?'（'+esc(m.crm.remindNote)+'）':'')).join('<br>')}</div></div>`
+    : '')+kpiHtml;
+
+  const shown=mergedCache.filter(m=>{
+    if(!q) return true;
+    const logText=(m.crm&&m.crm.logs?m.crm.logs.map(l=>l.text).join(' '):'');
+    const dealText=(m.deals||[]).map(d=>d.title+' '+(d.note||'')).join(' ');
+    return ((m.card.name||'')+(m.card.org||'')+(m.crm&&m.crm.level||'')+logText+dealText).toLowerCase().includes(q);
+  });
+  const groups=[
+    {key:'待跟進',items:shown.filter(m=>m.status.key==='red'||m.status.key==='yellow')},
+    {key:'尚未追蹤',items:shown.filter(m=>m.status.key==='grey')},
+    {key:'最近聯絡',items:shown.filter(m=>m.status.key==='green')},
+  ];
+  list.innerHTML=groups.filter(g=>g.items.length).map(g=>
+    `<div class="lbl">${g.key}（${g.items.length}）</div>`+g.items.map(cardRow).join('')
+  ).join('')||`<div class="empty">找不到符合「${esc(q)}」的客戶</div>`;
+}
+function cardRow(m){
+  const c=m.card, col=avatarColor(c.name);
+  const role=[c.org,c.title].filter(Boolean).join(' · ')||'—';
+  const lv=levelOf(m.crm);
+  const lvTag=lv?`<span class="lv-tag" style="background:${lv.color||'#8a94a6'}">${esc(lv.name)}</span>`:'';
+  const recv=(m.deals||[]).filter(d=>d.stage==='billed').reduce((s,d)=>s+(Number(d.amount)||0),0);
+  const recvBadge=recv?`<div class="recv-badge">待收 ${fmtMoney(recv)}</div>`:'';
+  return `<div class="card" onclick="openDetail('${c.id}')">
+    <div class="avatar" style="background:${col}">${initial(c.name)}</div>
+    <div class="c-main"><div class="c-name">${esc(c.name)||'（無名）'}${lvTag}</div><div class="c-org">${esc(role)}</div>${recvBadge}</div>
+    <div class="status ${m.status.cls}"><span class="dot"></span>${m.status.label}</div>
+  </div>`;
+}
+
+/* ============================================================
+   詳情
+   ============================================================ */
+let imgCache={};
+async function getImage(id){
+  if(imgCache[id]!==undefined) return imgCache[id];
+  const biz=await openBiz();
+  const rec=await new Promise(r=>{
+    if(!biz||!biz.objectStoreNames.contains('images')) return r(null);
+    const q=biz.transaction(['images'],'readonly').objectStore('images').get(id);
+    q.onsuccess=()=>r(q.result||null); q.onerror=()=>r(null);
+  });
+  imgCache[id]=rec&&rec.image?rec.image:null; return imgCache[id];
+}
+async function openDetail(id){
+  currentId=id;
+  const m=mergedCache.find(x=>x.card.id===id); if(!m) return;
+  const c=m.card, crm=m.crm, col=avatarColor(c.name);
+  const role=[c.org,c.title,c.dept].filter(Boolean).join(' · ')||'—';
+  const tel=c.mobile||c.tel||c.phone||'';
+  const lvChips=config.levels.map(l=>{
+    const on=crm&&crm.level===l.name;
+    return `<div class="lv-chip ${on?'on':''}" style="${on?'background:'+(l.color||'#4f7cff'):''}" onclick="pickLevel('${esc(l.name)}')">${esc(l.name)}</div>`;
+  }).join('')+`<div class="lv-chip ${!crm||!crm.level?'on':''}" style="${!crm||!crm.level?'background:#8a94a6':''}" onclick="pickLevel('')">未分級</div>`;
+
+  const remindHtml=crm&&crm.nextRemind
+    ? `<div class="remind-box" onclick="openRemindSheet()"><div><div class="r1">⏰ 下次提醒</div>
+        <div class="r2">${crm.nextRemind.slice(5).replace('-','/')}　${esc(crm.remindNote||'')}</div></div><div style="font-size:22px">🔔</div></div>`
+    : `<div class="remind-box none" onclick="openRemindSheet()"><div><div class="r1">下次提醒</div>
+        <div class="r2">尚未設定，點此新增</div></div><div style="font-size:20px">＋</div></div>`;
+
+  const deals=(m.deals||[]).slice().sort((a,b)=>(b.updatedAt||0)-(a.updatedAt||0));
+  const dealRows=deals.map(d=>{ const st=stageOf(d.stage);
+    return `<div class="deal-row" onclick="openDealSheet('${d.id}')">
+      <div><div class="deal-title">${esc(d.title)}</div>${d.note?`<div class="deal-sub">${esc(d.note)}</div>`:''}</div>
+      <div style="text-align:right"><div class="deal-amt">${fmtMoney(d.amount)}</div>
+        <span class="stage-badge" style="background:${st.color}">${st.name}</span></div></div>`; }).join('');
+  const dealsHtml=`<div class="deal-sec"><div class="lbl" style="margin:8px 0 8px;">案子 / 報價${deals.length?'（'+deals.length+'）':''}</div>${dealRows}</div>
+    <button class="add-deal" onclick="openDealSheet(null)">＋ 新增案子</button>`;
+
+  const logs=(crm&&crm.logs?[...crm.logs]:[]).sort((a,b)=>b.at-a.at);
+  const logHtml=logs.length
+    ? `<div class="lbl" style="margin-left:22px">互動紀錄（${logs.length}）</div><div class="log">`+
+      logs.map(l=>`<div class="log-item"><div class="log-date">${fmtDate(l.at)}</div>
+        <div class="log-text"><span class="log-tag">${TYPE_LABEL[l.type]||'備註'}</span>${esc(l.text)}</div></div>`).join('')+`</div>`
+    : `<div class="lbl" style="margin-left:22px">互動紀錄</div><div class="log-empty">還沒有紀錄，點下方「記一筆」開始追蹤 👇</div>`;
+
+  document.getElementById('d-body').innerHTML=`
+    <div class="d-head">
+      <div class="d-av" id="d-av" style="background:${col}">${initial(c.name)}</div>
+      <div class="d-name">${esc(c.name)||'（無名）'}</div>
+      <div class="d-role">${esc(role)}</div>
+      <div class="contact">
+        <a class="${tel?'':'off'}" href="tel:${esc(tel)}">📞 撥打</a>
+        <a class="${c.email?'':'off'}" href="mailto:${esc(c.email||'')}">✉ Email</a>
+        <a class="${tel?'':'off'}" href="sms:${esc(tel)}">💬 訊息</a>
+      </div>
+    </div>
+    <div class="level-sec"><div class="lbl" style="margin:4px 0 8px;">客戶分級</div><div class="lv-chips">${lvChips}</div></div>
+    ${dealsHtml}
+    ${remindHtml}${logHtml}`;
+  getImage(id).then(img=>{ if(img){const el=document.getElementById('d-av'); if(el){el.style.backgroundImage=`url(${img})`;el.textContent='';}}});
+  document.getElementById('detail').classList.add('open');
+}
+function closeDetail(){ document.getElementById('detail').classList.remove('open'); currentId=null; }
+
+async function ensureCrm(){
+  return await getCrm(currentId) || {cardId:currentId,logs:[],nextRemind:null,remindNote:'',status:'',level:'',tags:[]};
+}
+async function pickLevel(name){
+  const crm=await ensureCrm(); crm.level=name; crm.updatedAt=Date.now();
+  await putRec('crm',crm); await refresh(); openDetail(currentId);
+  toast(name?('已標記：'+name):'已取消分級');
+}
+
+/* ============================================================
+   記一筆 / 設提醒 / 新增客戶 / 設定
+   ============================================================ */
+let logType='phone';
+function buildTypeChips(){
+  document.getElementById('typeRow').innerHTML=Object.entries(TYPE_LABEL)
+    .map(([k,v])=>`<div class="type-chip ${k===logType?'on':''}" onclick="pickType('${k}')">${v}</div>`).join('');
+}
+function pickType(t){ logType=t; buildTypeChips(); }
+function openLogSheet(){ logType='phone'; buildTypeChips(); document.getElementById('logText').value=''; document.getElementById('logDate').value=todayISO(); openSheet('logSheet'); }
+async function saveLog(){
+  const text=document.getElementById('logText').value.trim();
+  const dateStr=document.getElementById('logDate').value;
+  if(!text){ toast('請輸入內容'); return; }
+  const at=dateStr?new Date(dateStr+'T12:00:00').getTime():Date.now();
+  const crm=await ensureCrm(); crm.logs=crm.logs||[]; crm.logs.push({at,type:logType,text}); crm.updatedAt=Date.now();
+  await putRec('crm',crm); closeSheets(); toast('已記錄 ✓'); await refresh(); openDetail(currentId);
+}
+function openRemindSheet(){
+  getCrm(currentId).then(crm=>{
+    document.getElementById('remindDate').value=crm&&crm.nextRemind?crm.nextRemind:todayISO();
+    document.getElementById('remindNote').value=crm&&crm.remindNote?crm.remindNote:'';
+    openSheet('remindSheet');
+  });
+}
+async function saveRemind(){
+  const date=document.getElementById('remindDate').value;
+  const note=document.getElementById('remindNote').value.trim();
+  if(!date){ toast('請選日期'); return; }
+  const crm=await ensureCrm(); crm.nextRemind=date; crm.remindNote=note; crm.updatedAt=Date.now();
+  await putRec('crm',crm); closeSheets(); toast('提醒已設定 ✓'); await refresh(); openDetail(currentId);
+}
+async function clearRemind(){
+  const crm=await getCrm(currentId);
+  if(crm){ crm.nextRemind=null; crm.remindNote=''; crm.updatedAt=Date.now(); await putRec('crm',crm); }
+  closeSheets(); toast('提醒已清除'); await refresh(); openDetail(currentId);
+}
+
+function openNewCustomer(){
+  ['name','org','title','mobile','email'].forEach(f=>document.getElementById('nc-'+f).value='');
+  openSheet('newSheet');
+}
+async function saveNewCustomer(){
+  const name=document.getElementById('nc-name').value.trim();
+  if(!name){ toast('請輸入姓名'); return; }
+  const id='m'+Date.now()+Math.floor(Math.random()*1000);
+  const card={id,name,
+    org:document.getElementById('nc-org').value.trim(),
+    title:document.getElementById('nc-title').value.trim(),
+    mobile:document.getElementById('nc-mobile').value.trim(),
+    email:document.getElementById('nc-email').value.trim(),
+    createdAt:Date.now(), _manual:true};
+  await putRec('manual_cards',card);
+  closeSheets(); toast('客戶已建立 ✓'); await refresh(); openDetail(id);
+}
+
+/* 案子 / 報價 */
+let currentDealId=null, dealStage='lead';
+function buildStageChips(){
+  document.getElementById('stageRow').innerHTML=STAGES.map(s=>
+    `<div class="stage-chip ${s.key===dealStage?'on':''}" style="${s.key===dealStage?'background:'+s.color:''}" onclick="pickStage('${s.key}')">${s.name}</div>`).join('');
+}
+function pickStage(k){ dealStage=k; buildStageChips(); }
+function openDealSheet(dealId){
+  currentDealId=dealId;
+  const del=document.getElementById('dl-delete');
+  if(dealId){
+    const d=(dealsByCard[currentId]||[]).find(x=>x.id===dealId)||{};
+    document.getElementById('dealSheetTitle').textContent='編輯案子';
+    document.getElementById('dl-title').value=d.title||'';
+    document.getElementById('dl-amount').value=d.amount||'';
+    document.getElementById('dl-note').value=d.note||'';
+    dealStage=d.stage||'lead'; del.style.display='block';
+  }else{
+    document.getElementById('dealSheetTitle').textContent='新增案子';
+    document.getElementById('dl-title').value='';
+    document.getElementById('dl-amount').value='';
+    document.getElementById('dl-note').value='';
+    dealStage='lead'; del.style.display='none';
+  }
+  buildStageChips(); openSheet('dealSheet');
+}
+async function saveDeal(){
+  const title=document.getElementById('dl-title').value.trim();
+  if(!title){ toast('請輸入案名'); return; }
+  const amount=Number(document.getElementById('dl-amount').value)||0;
+  const note=document.getElementById('dl-note').value.trim();
+  let deal;
+  if(currentDealId){
+    deal=(dealsByCard[currentId]||[]).find(x=>x.id===currentDealId)||{id:currentDealId,cardId:currentId,createdAt:Date.now()};
+    Object.assign(deal,{title,amount,note,stage:dealStage,updatedAt:Date.now()});
+  }else{
+    deal={id:'d'+Date.now()+Math.floor(Math.random()*1000),cardId:currentId,title,amount,note,stage:dealStage,createdAt:Date.now(),updatedAt:Date.now()};
+  }
+  await putDeal(deal); closeSheets(); toast('案子已儲存 ✓'); await refresh(); openDetail(currentId);
+}
+async function deleteDeal(){
+  if(currentDealId){ await removeDeal(currentDealId); }
+  closeSheets(); toast('案子已刪除'); await refresh(); openDetail(currentId);
+}
+
+/* 設定：分級門檻 */
+let editLevels=[];
+function openSettings(){
+  editLevels=JSON.parse(JSON.stringify(config.levels));
+  document.getElementById('def-yellow').value=config.defYellow;
+  document.getElementById('def-red').value=config.defRed;
+  renderLvRows(); openSheet('settingsSheet');
+}
+function renderLvRows(){
+  document.getElementById('lvRows').innerHTML=editLevels.map((l,i)=>
+    `<div class="lv-row">
+      <input class="nm" type="text" value="${esc(l.name)}" oninput="editLevels[${i}].name=this.value">
+      <input class="dy" type="number" value="${l.yellow}" oninput="editLevels[${i}].yellow=+this.value">
+      <input class="dy" type="number" value="${l.red}" oninput="editLevels[${i}].red=+this.value">
+      <button class="del" onclick="delLvRow(${i})">✕</button>
+    </div>`).join('');
+}
+function addLvRow(){ editLevels.push({name:'新分級',yellow:14,red:30,color:'#6a5cff'}); renderLvRows(); }
+function delLvRow(i){ editLevels.splice(i,1); renderLvRows(); }
+async function saveSettings(){
+  config.levels=editLevels.filter(l=>l.name&&l.name.trim()).map(l=>({
+    name:l.name.trim(), yellow:+l.yellow||30, red:+l.red||60, color:l.color||'#6a5cff'
+  }));
+  config.defYellow=+document.getElementById('def-yellow').value||30;
+  config.defRed=+document.getElementById('def-red').value||60;
+  config.key='config';
+  await putRec('settings',config);
+  closeSheets(); toast('設定已儲存 ✓'); await refresh();
+}
+
+function openSheet(id){ document.getElementById('mask').classList.add('open'); document.getElementById(id).classList.add('open'); }
+function closeSheets(){ document.getElementById('mask').classList.remove('open'); document.querySelectorAll('.sheet').forEach(s=>s.classList.remove('open')); }
+
+let toastTimer=null;
+function toast(msg){
+  const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show');
+  clearTimeout(toastTimer); toastTimer=setTimeout(()=>t.classList.remove('show'),1800);
+}
+
+async function refresh(){ await loadCards(); await loadDeals(); await buildMerged(); render(); }
+async function init(){ crmDb=await openCrm(); dealDb=await openDeal(); await loadConfig(); await refresh(); }
+init();
+</script>
+<footer style="max-width:520px;margin:22px auto 0;padding:16px 22px calc(env(safe-area-inset-bottom,0px) + 22px);text-align:center;font-size:11.5px;line-height:1.85;color:#8a94a6;border-top:1px solid rgba(128,138,166,.18);">
+<div style="margin-bottom:11px;line-height:0;"><svg width="48" height="34" viewBox="0 0 210 150" aria-hidden="true" style="display:inline-block"><defs><linearGradient id="bizrdg" x1="0" y1="1" x2="1" y2="0"><stop offset="0" stop-color="#4F6DF5"/><stop offset="1" stop-color="#8B5CF6"/></linearGradient></defs><polyline points="16,124 66,32 100,74 126,54 152,76 196,46" fill="none" stroke="url(#bizrdg)" stroke-width="13" stroke-linecap="round" stroke-linejoin="round"/><path d="M68 5 C69.2 18.8 70.2 19.8 84 22 C70.2 24.2 69.2 25.2 68 39 C66.8 25.2 65.8 24.2 52 22 C65.8 19.8 66.8 18.8 68 5 Z" fill="#ffffff" stroke="#4F6DF5" stroke-width="2.5" stroke-linejoin="round"/></svg></div>
+<div style="font-style:italic;opacity:.9;">「人生走稜，高低都是風景。」</div>
+<div style="margin-top:6px;">⚠️ 客戶資料僅存於本機裝置（不上傳雲端），請自行備份；追蹤狀態與提醒僅供參考。</div>
+<div style="margin-top:8px;font-weight:600;">© 2026 稜線工作室 Ridgeline · Lucas 出品</div><div style="margin-top:4px;opacity:.85;">本工具免費提供使用；程式與內容著作權皆屬作者，未經同意請勿重製、散布或作商業用途。</div>
+</footer>
+</body>
+</html>
