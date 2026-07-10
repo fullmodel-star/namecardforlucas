@@ -2879,6 +2879,8 @@ function gdriveLogout() {
 async function fetchDrive(url, options = {}, _retried = false) {
   options.headers = options.headers || {};
   options.headers['Authorization'] = `Bearer ${gdriveToken}`;
+  // 一律不走 HTTP 快取，避免資料夾清單/張數讀到舊結果（統計「沒更新」的元凶之一）
+  if (!('cache' in options)) options.cache = 'no-store';
   const res = await fetch(url, options);
   if (!res.ok) {
     if (res.status === 401 && !_retried) {
@@ -3043,7 +3045,8 @@ async function moveDriveFile(fileId, oldParent, newParent) {
 async function countDriveFolder(folderId) {
   let total = 0, pageToken = null, pages = 0;
   do {
-    let url = `https://www.googleapis.com/drive/v3/files?q=${encodeURIComponent(`'${folderId}' in parents and trashed=false`)}&pageSize=1000&fields=nextPageToken,files(id)`;
+    // 加時間戳破快取，確保每次都拿到雲端當下的真實清單
+    let url = `https://www.googleapis.com/drive/v3/files?q=${encodeURIComponent(`'${folderId}' in parents and trashed=false`)}&pageSize=1000&fields=nextPageToken,files(id)&_=${Date.now()}`;
     if (pageToken) url += `&pageToken=${encodeURIComponent(pageToken)}`;
     const res = await fetchDrive(url);
     const data = await res.json();
@@ -3068,6 +3071,8 @@ async function refreshDriveFolderStats(force = false) {
   }
   try {
     body.innerHTML = `<span style="color:var(--text-tertiary);">讀取雲端各資料夾張數中…</span>`;
+    // 手動「重新整理」且非辨識中：清掉資料夾ID快取重新解析，避免資料夾曾被刪改導致讀到舊ID/空夾
+    if (force && !isScanning) driveFolderCache = { root: null, unparsed: null, parsed: null, failed: null };
     await ensureGoogleAuth();
     await ensureDriveFolders();
     const [un, done, fail] = await Promise.all([
@@ -3075,11 +3080,16 @@ async function refreshDriveFolderStats(force = false) {
       countDriveFolder(driveFolderCache.parsed),
       countDriveFolder(driveFolderCache.failed),
     ]);
+    // 診斷用：把實際使用的資料夾 ID 與張數印到 console，方便比對是否讀到正確資料夾
+    console.log('[雲端統計] 資料夾ID', driveFolderCache, '→ 未辨識', un, '已辨識', done, '辨識失敗', fail);
+    const t = new Date();
+    const hhmmss = [t.getHours(), t.getMinutes(), t.getSeconds()].map(n => String(n).padStart(2, '0')).join(':');
     body.innerHTML =
       chip('#f59e0b', `📥 未辨識（待處理）${un}`) +
       chip('#10b981', `✅ 已辨識 ${done}`) +
       chip('#ef4444', `⚠️ 辨識失敗 ${fail}`) +
-      chip('#6366f1', `📇 本機名片 ${localCount}`);
+      chip('#6366f1', `📇 本機名片 ${localCount}`) +
+      `<span style="color:var(--text-tertiary);align-self:center;font-size:12px;">最後更新 ${hhmmss}</span>`;
   } catch(e) {
     body.innerHTML = chip('#6366f1', `📇 本機名片 ${localCount} 張`) +
       `<span style="color:var(--color-red);align-self:center;">雲端讀取失敗：${e.message}</span>`;
