@@ -2,7 +2,7 @@
 <html lang="zh-TW" data-theme="graphite">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>智慧名片管理系統 (終極完全體)</title>
 
 <link rel="manifest" href="./manifest.json">
@@ -1856,6 +1856,7 @@ input, select, textarea, button { font-size: 16px; }
           <div style="display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-top:16px;">
             <button class="btn" onclick="copyMyCardInfo()" title="複製聯絡資訊"><i class="ti ti-clipboard-copy"></i> 複製</button>
             <button class="btn" onclick="downloadMyCardImage()" title="下載名片圖片"><i class="ti ti-photo-down"></i> 存圖</button>
+            <button class="btn" onclick="downloadMyProfileQR()" title="下載名片 QR Code 圖，可貼 LINE／放 email 簽名"><i class="ti ti-qrcode"></i> 存 QR</button>
             <button class="btn" onclick="shareMyCard()" title="手機原生分享"><i class="ti ti-share"></i> 分享</button>
             <button class="btn" onclick="writeNfcCard()" title="寫入 NFC 標籤（Android）"><i class="ti ti-access-point"></i> NFC</button>
             <button class="btn" onclick="openMyCardModal();setTimeout(enterMyCardEditMode,100);"><i class="ti ti-edit"></i> 編輯</button>
@@ -3739,7 +3740,8 @@ async function systemLoadAllData() {
   try { renderSettingsBadgeManager(); } catch(e) { console.warn('renderSettingsBadgeManager:', e); }
   try { renderCardsGrid(); } catch(e) { console.warn('renderCardsGrid:', e); }
   try { renderDashboard(); } catch(e) { console.warn('renderDashboard:', e); }
-  switchTab('myprofile');
+  // 新手（名片庫還是空的）直接落在「掃名片」開始建檔；已有名片者維持停在「我的」
+  switchTab(cardsList.length === 0 ? 'batch' : 'myprofile');
   setTimeout(() => renderHomeScreen(), 50);
 }
 
@@ -4051,6 +4053,8 @@ async function selectCard(id) {
   
   const imageBase64 = await dbGetCardImage(c.id);
   const cleanMobile = (c.mobile || '').replace(/[^\d+]/g, '');
+  // WhatsApp 需「國碼+去開頭0」：+開頭去+；0 開頭換台灣 886；其餘原樣
+  const waNumber = cleanMobile.startsWith('+') ? cleanMobile.slice(1) : cleanMobile.startsWith('0') ? '886' + cleanMobile.slice(1) : cleanMobile;
   const cleanPhone = (c.phone || '').replace(/[^\d+]/g, '');
   const mapUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(c.addr || '')}`;
   const themeClass = `vc-theme-${c.theme || 'indigo'}`;
@@ -4122,7 +4126,7 @@ async function selectCard(id) {
         <div class="df-val">${c.mobile ? `<a href="tel:${cleanMobile}">${c.mobile}</a>` : '—'}</div>
         
         <div class="quick-social-btns">
-          ${c.mobile ? `<button class="btn-mini-social" onclick="window.open('https://wa.me/${cleanMobile}', '_blank')" title="WhatsApp 快速通訊" aria-label="用 WhatsApp 聯絡"><i class="ti ti-brand-whatsapp"></i></button>` : ''}
+          ${c.mobile ? `<button class="btn-mini-social" onclick="window.open('https://wa.me/${waNumber}', '_blank')" title="WhatsApp 快速通訊" aria-label="用 WhatsApp 聯絡"><i class="ti ti-brand-whatsapp"></i></button>` : ''}
           ${c.mobile ? `<button class="btn-mini-social" onclick="copyToClipboard('${c.mobile}', '已複製電話，可在 LINE 搜尋')" title="複製號碼" aria-label="複製手機號碼"><i class="ti ti-copy"></i></button>` : ''}
         </div>
       </div>
@@ -4267,8 +4271,8 @@ function switchTab(tabId) {
 }
 
 // ============================================================================
-// 客戶分頁紅點：開 App 就算出「該聯絡的人數」，主動提醒（不必先開客戶分頁）
-// 只讀 CrmDB（不帶版本、用完即關，不干擾 crm.html 的 v2 升級）
+// 客戶分頁紅點：開 App 就算出「待跟進人數」（提醒到期 + 黃燈該追蹤 + 紅燈太久沒聯絡），
+// 與 CRM 首頁「待跟進」口徑一致。只讀 CrmDB（不帶版本、用完即關，不干擾 crm.html 的 v2 升級）
 // ============================================================================
 async function updateCrmBadge() {
   let cnt = 0;
@@ -4290,15 +4294,17 @@ async function updateCrmBadge() {
         if (hasSettings) { const gs = tx.objectStore('settings').get('config'); gs.onsuccess = () => cfg = gs.result || null; }
         tx.oncomplete = () => {
           try { db.close(); } catch (_) {}
-          const red = (cfg && (cfg.red ?? cfg.defRed)) || 60;
+          const yellow = (cfg && (cfg.yellow ?? cfg.defYellow)) || 30;
           const DAY = 86400000; const d = new Date(); d.setHours(0, 0, 0, 0); const t0 = d.getTime();
           let n = 0;
           for (const rec of recs) {
             if (!rec) continue;
+            // 提醒到期
             if (rec.nextRemind) { const rt = new Date(rec.nextRemind + 'T00:00:00').getTime(); if (rt <= t0) { n++; continue; } }
+            // 待跟進：距上次聯絡 >= 黃燈門檻（含紅燈），與 CRM「待跟進」一致
             if (rec.logs && rec.logs.length) {
               const last = Math.max(...rec.logs.map(l => l && l.at).filter(Number.isFinite));
-              if (Number.isFinite(last) && Math.floor((t0 - last) / DAY) >= red) n++;
+              if (Number.isFinite(last) && Math.floor((t0 - last) / DAY) >= yellow) n++;
             }
           }
           resolve(n);
@@ -7162,7 +7168,7 @@ function showUpdateBanner(worker) {
 <footer style="max-width:520px;margin:22px auto 0;padding:16px 22px calc(env(safe-area-inset-bottom,0px) + 100px);text-align:center;font-size:11.5px;line-height:1.85;color:#8a94a6;border-top:1px solid rgba(128,138,166,.18);">
 <div style="margin-bottom:11px;line-height:0;"><svg width="48" height="34" viewBox="0 0 210 150" aria-hidden="true" style="display:inline-block"><defs><linearGradient id="bizrdg" x1="0" y1="1" x2="1" y2="0"><stop offset="0" stop-color="#4F6DF5"/><stop offset="1" stop-color="#8B5CF6"/></linearGradient></defs><polyline points="16,124 66,32 100,74 126,54 152,76 196,46" fill="none" stroke="url(#bizrdg)" stroke-width="13" stroke-linecap="round" stroke-linejoin="round"/><path d="M68 5 C69.2 18.8 70.2 19.8 84 22 C70.2 24.2 69.2 25.2 68 39 C66.8 25.2 65.8 24.2 52 22 C65.8 19.8 66.8 18.8 68 5 Z" fill="#ffffff" stroke="#4F6DF5" stroke-width="2.5" stroke-linejoin="round"/></svg></div>
 <div style="font-style:italic;opacity:.9;">「人生走稜，高低都是風景。」</div>
-<div style="margin-top:6px;">⚠️ 名片辨識結果可能有誤，請自行核對；所有名片與聯絡資料僅存於本機裝置、不上傳雲端。</div>
+<div style="margin-top:6px;">⚠️ 名片辨識結果可能有誤，請自行核對。名片與客戶資料預設只存在本機裝置；使用 AI 辨識時該張照片會傳送到 Google Gemini 做文字辨識；使用 Google 通訊錄／雲端同步時才會上傳，皆為主動選用。</div>
 <div style="margin-top:8px;font-weight:600;">© 2026 Ridgeline · Lucas 出品</div>
 <div style="margin-top:4px;opacity:.85;">本工具免費提供使用；程式與內容著作權皆屬作者，未經同意請勿重製、散布或作商業用途。</div>
 </footer>
