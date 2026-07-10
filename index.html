@@ -1614,7 +1614,7 @@ input, select, textarea, button { font-size: 16px; }
        [HTML] 頂部標題與狀態導覽列
        ========================================================================== -->
   <header class="app-header" style="display:flex;align-items:center;justify-content:space-between;gap:10px;">
-    <div style="display:flex;flex-direction:column;line-height:1.15;">
+    <div style="display:flex;flex-direction:column;line-height:1.25;gap:4px;">
       <div style="font-size:20px;font-weight:700;color:var(--text-primary);letter-spacing:0.2px;">名片管理</div>
       <div style="font-size:12.5px;color:var(--text-tertiary);">拍照即存・AI 名片管家</div>
     </div>
@@ -3706,7 +3706,7 @@ async function systemLoadAllData() {
   try { renderSettingsBadgeManager(); } catch(e) { console.warn('renderSettingsBadgeManager:', e); }
   try { renderCardsGrid(); } catch(e) { console.warn('renderCardsGrid:', e); }
   try { renderDashboard(); } catch(e) { console.warn('renderDashboard:', e); }
-  switchTab('home');
+  switchTab('myprofile');
   setTimeout(() => renderHomeScreen(), 50);
 }
 
@@ -4211,8 +4211,12 @@ function switchTab(tabId) {
   // 客戶分頁：首次進入才載入 iframe（延遲載入），並讓承載層剛好貼齊底部導覽列上緣
   if (tabId === 'crm') {
     const f = document.getElementById('crm-frame');
-    if (f && !f.getAttribute('src')) f.setAttribute('src', 'crm.html');
-    else if (f && f.contentWindow) f.contentWindow.postMessage('crm-refresh', '*'); // 切回分頁時重整，才看得到剛掃的新名片
+    const dark = ['graphite','dark'].includes(document.documentElement.getAttribute('data-theme'));
+    if (f && !f.getAttribute('src')) f.setAttribute('src', 'crm.html?theme=' + (dark ? 'dark' : 'light'));
+    else if (f && f.contentWindow) {
+      f.contentWindow.postMessage('crm-refresh', '*'); // 切回分頁時重整，才看得到剛掃的新名片
+      f.contentWindow.postMessage({ type: 'crm-theme', dark }, '*'); // 同步深/淺色，客戶頁跟著 App 一致
+    }
     const nav = document.querySelector('.bottom-tab-bar');
     const vc = document.getElementById('view-crm');
     if (nav && vc) vc.style.bottom = nav.offsetHeight + 'px';

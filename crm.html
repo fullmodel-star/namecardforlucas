@@ -6,6 +6,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="theme-color" content="#4f7cff">
 <title>客戶追蹤 CRM</title>
+<script>/* 開場即依名片 App 傳來的主題上色，避免白閃 */document.documentElement.setAttribute('data-theme', new URLSearchParams(location.search).get('theme')==='light'?'light':'dark');</script>
 <style>
   :root{
     --bg:#eef1f5; --card:#fff; --line:#eef1f5; --ink:#1c2430; --sub:#8a94a6;
@@ -105,6 +106,43 @@
 
   .toast{position:fixed;bottom:calc(env(safe-area-inset-bottom) + 24px);left:50%;transform:translateX(-50%) translateY(20px);background:var(--ink);color:#fff;padding:12px 20px;border-radius:14px;font-size:14px;font-weight:600;z-index:50;opacity:0;transition:.25s;pointer-events:none;}
   .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+
+  /* ===== 深色模式：跟名片 App 主題同步 ===== */
+  html[data-theme="dark"]{
+    color-scheme:dark;
+    --bg:#141416; --card:#1e1e22; --line:#2c2c33; --ink:#f0f1f4; --sub:#9aa1ad;
+    --accent:#6a8bff; --red:#ff6b6f; --yellow:#e0a83a; --green:#35c07d; --grey:#5a6070;
+  }
+  html[data-theme="dark"] .search{background:#26262c;}
+  html[data-theme="dark"] .search input{color:var(--ink);}
+  html[data-theme="dark"] .icon-btn{background:#26262c;color:var(--ink);border-color:#2c2c33;}
+  html[data-theme="dark"] .card:active{background:#26262c;}
+  html[data-theme="dark"] .s-red{background:rgba(255,107,111,.16);}
+  html[data-theme="dark"] .s-yellow{background:rgba(224,168,58,.16);}
+  html[data-theme="dark"] .s-green{background:rgba(53,192,125,.16);}
+  html[data-theme="dark"] .s-grey{background:rgba(150,160,180,.14);color:#aab2c0;}
+  html[data-theme="dark"] .src-live{background:rgba(53,192,125,.18);}
+  html[data-theme="dark"] .src-json{background:rgba(224,168,58,.18);}
+  html[data-theme="dark"] .src-none{background:rgba(255,107,111,.18);}
+  html[data-theme="dark"] .contact a{background:#26262c;color:#cbd2de;}
+  html[data-theme="dark"] .remind-box{background:rgba(224,168,58,.12);border-color:rgba(224,168,58,.3);}
+  html[data-theme="dark"] .remind-box .r2{color:#f0d9a0;}
+  html[data-theme="dark"] .remind-box.none{background:#1e1e22;border-color:#2c2c33;}
+  html[data-theme="dark"] .remind-box.none .r2{color:var(--ink);}
+  html[data-theme="dark"] .log-item{border-color:#2c2c33;}
+  html[data-theme="dark"] .log-tag{background:#26262c;color:#9aa1ad;}
+  html[data-theme="dark"] .type-chip{background:#26262c;color:#cbd2de;}
+  html[data-theme="dark"] .type-chip.on{background:rgba(106,139,255,.24);color:#aebfff;border-color:var(--accent);}
+  html[data-theme="dark"] .sheet textarea,
+  html[data-theme="dark"] .sheet input[type=text],
+  html[data-theme="dark"] .sheet input[type=date],
+  html[data-theme="dark"] .sheet input[type=number]{background:#26262c;color:var(--ink);border-color:#2c2c33;}
+  html[data-theme="dark"] .btn-ghost{background:#26262c;color:#cbd2de;}
+  html[data-theme="dark"] .btn-primary,
+  html[data-theme="dark"] .sheet .save,
+  html[data-theme="dark"] .fab,
+  html[data-theme="dark"] .empty button{background:var(--accent);color:#fff;}
+  html[data-theme="dark"] .toast{background:#2c2c33;color:#fff;}
 </style>
 </head>
 <body>
@@ -618,7 +656,12 @@ async function importBackup(ev){
 
 /* 通知外層（名片 App）更新分頁紅點；並接收「切回分頁」重整訊號 */
 function notifyParent(){ try{ if(window.parent&&window.parent!==window) window.parent.postMessage('crm-changed','*'); }catch(e){} }
-window.addEventListener('message', e=>{ if(e&&e.data==='crm-refresh') refresh(); });
+function applyCrmTheme(dark){ document.documentElement.setAttribute('data-theme', dark?'dark':'light'); }
+window.addEventListener('message', e=>{
+  if(!e||e.data==null) return;
+  if(e.data==='crm-refresh') refresh();
+  else if(e.data.type==='crm-theme') applyCrmTheme(!!e.data.dark);
+});
 
 async function refresh(){ await loadCards(); await buildMerged(); render(); notifyParent(); }
 async function init(){
