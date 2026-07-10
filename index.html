@@ -3098,15 +3098,15 @@ async function refreshDriveFolderStats(force = false) {
 
 // 整理雲端資料夾：把「先前已辨識過、卻因搬移失敗仍卡在『未辨識』夾」的照片
 // 補搬到「已辨識」，讓未辨識夾只剩真正尚未處理的新名片，數字才對得上。
-async function tidyDriveFolders() {
+async function tidyDriveFolders(silent = false) {
   try {
     await ensureGoogleAuth();
     await ensureDriveFolders();
-    showToast('正在整理雲端「未辨識」資料夾…');
+    if (!silent) showToast('正在整理雲端「未辨識」資料夾…');
     const processed = loadProcessedDriveIds();
     let pageToken = null, pages = 0, moved = 0, failed = 0, scanned = 0;
     do {
-      let url = `https://www.googleapis.com/drive/v3/files?q=${encodeURIComponent(`'${driveFolderCache.unparsed}' in parents and trashed=false`)}&pageSize=1000&fields=nextPageToken,files(id,mimeType)`;
+      let url = `https://www.googleapis.com/drive/v3/files?q=${encodeURIComponent(`'${driveFolderCache.unparsed}' in parents and trashed=false`)}&pageSize=1000&fields=nextPageToken,files(id,mimeType)&_=${Date.now()}`;
       if (pageToken) url += `&pageToken=${encodeURIComponent(pageToken)}`;
       const res = await fetchDrive(url);
       const data = await res.json();
@@ -3119,12 +3119,17 @@ async function tidyDriveFolders() {
       pageToken = data.nextPageToken || null;
     } while (pageToken && ++pages < 20);
     const remainingNew = scanned - moved - failed;
-    alert(`整理完成：\n・已把 ${moved} 張「先前已辨識、卻仍留在未辨識夾」的照片歸檔到「已辨識」` +
-      (failed ? `\n・${failed} 張搬移失敗，稍後可再按一次` : '') +
-      `\n・未辨識夾其餘 ${remainingNew} 張為尚未辨識的新照片，可按「開始 AI 批次辨識」。`);
-    refreshDriveFolderStats(true);
+    if (!silent) {
+      alert(`整理完成：\n・已把 ${moved} 張「先前已辨識、卻仍留在未辨識夾」的照片歸檔到「已辨識」` +
+        (failed ? `\n・${failed} 張搬移失敗，稍後可再按一次` : '') +
+        `\n・未辨識夾其餘 ${remainingNew} 張為尚未辨識的新照片，可按「開始 AI 批次辨識」。`);
+      refreshDriveFolderStats(true);
+    }
+    return { moved, failed, remainingNew };
   } catch(e) {
-    alert('整理雲端資料夾失敗：' + e.message);
+    if (!silent) alert('整理雲端資料夾失敗：' + e.message);
+    else console.error('[Google Drive] 自動整理雲端資料夾失敗：', e);
+    return { moved: 0, failed: 0, remainingNew: 0, error: e.message };
   }
 }
 
@@ -6036,6 +6041,14 @@ async function startBatchProcessing() {
     (driveSkippedThisRun ? `；雲端下載失敗 ${driveSkippedThisRun} 張` : '') +
     (driveArchiveFailThisRun ? `；雲端歸檔搬移失敗 ${driveArchiveFailThisRun} 張（名片已存好、不會重複，但照片仍在「未辨識」夾，可按「整理雲端資料夾」重搬）` : '');
   ps.textContent = `✓ 批次完成：${summary}`;
+  // 若本批有照片「已辨識卻沒搬走」（歸檔搬移失敗），自動補搬一次，
+  // 讓「未辨識」張數確實下降、統計對得上，不必使用者手動按「整理雲端資料夾」。
+  if (driveArchiveFailThisRun > 0 && gdriveToken) {
+    try {
+      const r = await tidyDriveFolders(true);
+      if (r.moved) showToast(`已自動補搬 ${r.moved} 張到「已辨識」`);
+    } catch(e) { console.error('自動補搬失敗', e); }
+  }
   refreshDriveFolderStats();
   showToast(`辨識完成！新增 ${cardCount} 張名片${emptyCount ? `，空白 ${emptyCount}` : ''}${failCount ? `，失敗 ${failCount}` : ''}`);
 
