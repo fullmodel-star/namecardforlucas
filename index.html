@@ -1879,6 +1879,12 @@ input, select, textarea, button { font-size: 16px; }
         </div>
         <div class="toolbox-grid">
 
+          <button class="tool-card" style="--tc:#10b981;" onclick="doInstallApp()">
+            <div class="tool-card-icon"><i class="ti ti-device-mobile-down"></i></div>
+            <div class="tool-card-title">安裝到桌面</div>
+            <div class="tool-card-desc">變成手機 App，開啟更快、可離線</div>
+          </button>
+
           <button class="tool-card" style="--tc:#6366f1;" onclick="switchTab('settings'); renderSettingsBadgeManager();">
             <div class="tool-card-icon"><i class="ti ti-settings"></i></div>
             <div class="tool-card-title">應用設定</div>
@@ -3877,6 +3883,19 @@ function getFilteredAndSortedCards() {
 // HTML 跳脫：名片欄位來自 OCR／通訊錄屬不可信輸入，插入 innerHTML 前一律經此處理，避免儲存型 XSS
 function esc(s){ return (s==null?'':String(s)).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 
+// 安裝到桌面（PWA）：Android 會觸發 beforeinstallprompt；iOS 走說明引導
+let deferredInstallPrompt = null;
+window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); deferredInstallPrompt = e; });
+async function doInstallApp() {
+  if (deferredInstallPrompt) {
+    deferredInstallPrompt.prompt();
+    try { await deferredInstallPrompt.userChoice; } catch (e) {}
+    deferredInstallPrompt = null;
+  } else {
+    alert('把「名片管理」裝到桌面：\n• iPhone / iPad：用 Safari 開啟 →「分享」→「加入主畫面」\n• Android：用 Chrome 開啟 → 選單 →「安裝應用程式 / 加到主畫面」');
+  }
+}
+
 function renderCardsGrid() {
   const grid = document.getElementById('card-grid');
   const filtered = getFilteredAndSortedCards();
@@ -4181,7 +4200,8 @@ async function selectCard(id) {
     </div>
     
     <div class="detail-actions-row">
-      ${c.googleContactId 
+      ${(cleanMobile || cleanPhone) ? `<button class="btn btn-primary" style="flex:1 1 100%;font-size:16px;padding:12px;" onclick="location.href='tel:${cleanMobile || cleanPhone}'"><i class="ti ti-phone"></i> 撥打電話</button>` : ''}
+      ${c.googleContactId
         ? `<button class="btn btn-blue" onclick="syncContactToGoogle('${c.id}')" title="同步更新至 Google 通訊錄"><i class="ti ti-brand-google"></i> 更新 Google</button>`
         : `<button class="btn" onclick="syncContactToGoogle('${c.id}')" title="同步至 Google 通訊錄"><i class="ti ti-brand-google"></i> 同步 Google</button>`}
       <button class="btn btn-green" onclick="exportSingleVcf('${c.id}')"><i class="ti ti-download"></i> 導出 vCard</button>
@@ -5953,6 +5973,11 @@ function batchHeavyRenderThrottled(force) {
   renderDashboard();
 }
 
+let batchWakeLock = null;
+async function acquireWakeLock(){ try{ if('wakeLock' in navigator) batchWakeLock = await navigator.wakeLock.request('screen'); }catch(e){} }
+function releaseWakeLock(){ try{ if(batchWakeLock) batchWakeLock.release(); }catch(e){} batchWakeLock = null; }
+document.addEventListener('visibilitychange', () => { if(document.visibilityState==='visible' && isScanning && !batchWakeLock) acquireWakeLock(); });
+
 async function startBatchProcessing() {
   if (isScanning) return;
   if (!getGeminiApiKey()) { goSetApiKey(); return; }
@@ -5963,6 +5988,7 @@ async function startBatchProcessing() {
   }
   
   isScanning = true;
+  acquireWakeLock();   // 辨識中保持螢幕喚醒，避免鎖屏／休眠中斷（尤其 Android 大量掃描）
   { const sb = document.getElementById('btn-start-batch'), tb = document.getElementById('btn-stop-batch');
     if (sb) sb.style.display = 'none'; if (tb) tb.style.display = ''; }
   const pb = document.getElementById('batch-progress-bar');
@@ -5970,7 +5996,7 @@ async function startBatchProcessing() {
   const ps = document.getElementById('batch-progress-stats');
   pb.classList.add('show');
   ps.style.display = 'block';
-  ps.textContent = `準備開始，共 ${waiting.length} 張照片待辨識...`;
+  ps.textContent = `準備辨識 ${waiting.length} 張，請保持此頁在前景、勿鎖屏 📵`;
   let doneCount = 0, failCount = 0, cardCount = 0, emptyCount = 0, multiPhotoCount = 0;
   driveArchiveFailThisRun = 0;  // 本批「已辨識但雲端實體歸檔失敗」歸零重算
 
@@ -6159,6 +6185,7 @@ async function startBatchProcessing() {
   }
   
   isScanning = false;
+  releaseWakeLock();
   pb.classList.remove('show');
   pf.style.width = '0%';
   // 收掉聚焦模式的「膠囊 / 目前處理中」，改列出需檢查的（空白/失敗）
