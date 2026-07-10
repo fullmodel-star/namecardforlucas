@@ -2268,7 +2268,7 @@ input, select, textarea, button { font-size: 16px; }
      [HTML] 彈出式名片 QR Code 分享 Modal
      ========================================================================== -->
 <!-- PDF 簽名 Modal -->
-<div class="modal-overlay" id="sig-modal-bg" onclick="e => { if(e.target===this) closeSigModal(); }">
+<div class="modal-overlay" id="sig-modal-bg" onclick="if(event.target===this) closeSigModal()">
   <div class="modal" style="max-width:480px;max-height:90vh;overflow-y:auto;" onclick="event.stopPropagation()">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
       <h2 style="margin:0;"><i class="ti ti-signature" style="color:#e11d48;"></i> 手寫簽名 ＋ PDF</h2>
@@ -3467,10 +3467,10 @@ function processAndResizeImage(fileOrBlob) {
         ctx.drawImage(img, 0, 0, width, height);
         resolve(canvas.toDataURL('image/jpeg', 0.85).split(',')[1]);
       };
-      img.onerror = reject;
+      img.onerror = () => reject(new Error('圖片無法讀取或格式不支援（可能是 HEIC 或損壞檔）'));
       img.src = e.target.result;
     };
-    reader.onerror = reject;
+    reader.onerror = () => reject(new Error('檔案讀取失敗'));
     reader.readAsDataURL(fileOrBlob);
   });
 }
@@ -3528,9 +3528,30 @@ async function callGeminiAI(imageBase64) {
   }
   
   const apiData = await resp.json();
-  const rawText = apiData.candidates?.[0]?.content?.parts?.[0]?.text?.trim() || '[]';
-  const cleanJsonText = rawText.replace(/^```json\s*/i, '').replace(/```$/, '').trim();
-  return JSON.parse(cleanJsonText);
+  const finishReason = apiData.candidates?.[0]?.finishReason;
+  const rawText = apiData.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
+  if (!rawText) {
+    // 被截斷/安全阻擋等沒回文字：當暫時性錯誤，讓批次保留照片可重試，而非當「辨識不出」永久丟棄
+    if (finishReason && finishReason !== 'STOP') {
+      const e = new Error('AI 回應不完整（' + finishReason + '），稍後重試'); e.isTransient = true; throw e;
+    }
+    return []; // 真的沒讀到內容 → 視為空白名片
+  }
+  let cleanJsonText = rawText.replace(/^```json\s*/i, '').replace(/```$/, '').trim();
+  // 容錯：截取第一個 [ 或 { 到最後一個 ] 或 } 之間，去掉 AI 夾帶的說明文字
+  const starts = ['[', '{'].map(ch => cleanJsonText.indexOf(ch)).filter(i => i >= 0);
+  const first = starts.length ? Math.min(...starts) : -1;
+  const last = Math.max(cleanJsonText.lastIndexOf(']'), cleanJsonText.lastIndexOf('}'));
+  if (first >= 0 && last > first) cleanJsonText = cleanJsonText.slice(first, last + 1);
+  let parsed;
+  try {
+    parsed = JSON.parse(cleanJsonText);
+  } catch (e) {
+    // JSON 壞掉多半是暫時性抖動：標記可重試，保留照片、不當「辨識不出」丟棄
+    const err = new Error('AI 回應格式異常，稍後重試'); err.isTransient = true; throw err;
+  }
+  // 統一回傳陣列：Gemini 有時回單一物件 {...}
+  return Array.isArray(parsed) ? parsed : (parsed && typeof parsed === 'object' ? [parsed] : []);
 }
 
 async function testGeminiConnection() {
@@ -5972,22 +5993,26 @@ async function startBatchProcessing() {
         const parsedList = await callGeminiAI(b64);
         
         const batchNewCards = [];
-        parsedList.forEach(p => {
-          // 🎯 AI 自動預分類
-          const newCard = {
-            ...p,
-            id: 'card_' + crypto.randomUUID(),
-            processed: true,
-            createdAt: new Date().toLocaleDateString('zh-TW'),
-            createdAtTs: Date.now(),
-            group: p.group || '其他',
-            tags: parsedList.length > 1 ? ['多張合照導入'] : [],
-            theme: 'indigo'
-          };
-          dbSaveCard(newCard, b64);
-          cardsList.unshift(newCard);
-          batchNewCards.push(newCard);
-        });
+        try {
+          for (const p of parsedList) {
+            // 🎯 AI 自動預分類
+            const newCard = {
+              ...p,
+              id: 'card_' + crypto.randomUUID(),
+              processed: true,
+              createdAt: new Date().toLocaleDateString('zh-TW'),
+              createdAtTs: Date.now(),
+              group: p.group || '其他',
+              tags: parsedList.length > 1 ? ['多張合照導入'] : [],
+              theme: 'indigo'
+            };
+            await dbSaveCard(newCard, b64);   // 務必等寫入成功；失敗就往下丟，讓外層不刪佇列/不搬檔/不記帳，避免名片靜默遺失
+            cardsList.unshift(newCard);
+            batchNewCards.push(newCard);
+          }
+        } catch (saveErr) {
+          const e = new Error('儲存失敗，可能是裝置儲存空間不足'); e.isStorageError = true; throw e;
+        }
         checkScanDuplicate(batchNewCards);
         cardCount += batchNewCards.length;
         const gotNothing = batchNewCards.length === 0;   // AI 讀不到任何名片（空白/模糊）
@@ -6015,18 +6040,20 @@ async function startBatchProcessing() {
         if (qi !== -1) scanQueue.splice(qi, 1);
         item.file = null;
       } catch(err) {
-        if (err.isRateLimit && retryCount < maxRetries) {
+        if ((err.isRateLimit || err.isTransient) && retryCount < maxRetries) {
           retryCount++;
           item.status = 'cooldown';
-          // 顯示動態避讓倒數（只更新「目前處理中」小塊，不重畫整份清單）
-          for (let sec = backoffDelay; sec > 0; sec--) {
+          // 限流才指數退避；格式抖動只等 2 秒快速重試（只更新「目前處理中」小塊，不重畫整份清單）
+          const waitSec = (err.isTransient && !err.isRateLimit) ? 2 : backoffDelay;
+          const why = err.isRateLimit ? '頻率限制保護中' : 'AI 回應異常重試中';
+          for (let sec = waitSec; sec > 0; sec--) {
             if (!isScanning) break;
             item.cooldownSec = sec;
-            item.errInfo = `⚠️ 觸發頻率限制，第 ${retryCount} 次避讓重試中...`;
-            setBatchCurrent(curName, `⚠️ 頻率限制保護中，第 ${retryCount} 次避讓重試 ${sec} 秒…`);
+            item.errInfo = `⚠️ ${why}，第 ${retryCount} 次…`;
+            setBatchCurrent(curName, `⚠️ ${why}，第 ${retryCount} 次 ${sec} 秒…`);
             await new Promise(r => setTimeout(r, 1000));
           }
-          backoffDelay *= 2; // 指數級增加等待時間，例如 15s -> 30s -> 60s
+          if (err.isRateLimit) backoffDelay *= 2; // 15s -> 30s -> 60s
           item.status = 'scanning';
           delete item.cooldownSec;
           delete item.errInfo;
@@ -6034,28 +6061,45 @@ async function startBatchProcessing() {
           setBatchCurrent(curName, '⚡ Gemini 智慧分析中…');
           renderBatchQueueList();
         } else {
+          // 格式/回應異常重試用盡：保留照片為 wait 待下次再試，但不中斷整批、不記帳搬檔（避免一張抖動丟照片或停掉全部）
+          if (err.isTransient) {
+            item.status = 'wait'; delete item.errInfo; delete item.cooldownSec;
+            await dbSaveQueueItem(item);
+            batchRun.problems.push({ name: curName, kind: 'error', reason: 'AI 回應異常，已保留待重試' });
+            break;
+          }
+          // ===== 全域性問題：一律保留照片與佇列(status=wait)、不記帳、不搬檔、不刪除，避免名片遺失，並暫停批次 =====
+          if (err.isStorageError) {
+            item.status = 'wait'; delete item.errInfo; await dbSaveQueueItem(item); isScanning = false;
+            alert('⚠️ 裝置儲存空間不足，已停止辨識。\n已辨識的名片不受影響；剩餘照片仍保留在待辨識，請清理空間後再按「開始辨識」續掃。');
+            break;
+          }
+          if (err.isRateLimit) {
+            // 重試用盡仍被限流：還原 wait（不要卡成永久 error，否則下次不再辨識又擋住重匯），暫停批次
+            item.status = 'wait'; delete item.errInfo; delete item.cooldownSec; await dbSaveQueueItem(item); isScanning = false;
+            alert('⚠️ AI 辨識額度可能已用盡，已暫停。\n剩餘照片已保留，稍後或額度重置後再按「開始辨識」即可續掃。');
+            break;
+          }
+          if (err.message === 'API_KEY_EMPTY') {
+            item.status = 'wait'; item.errInfo = '請先設定 AI 辨識金鑰'; await dbSaveQueueItem(item); isScanning = false;
+            break;
+          }
+          // ===== 真正「這張辨識不出來」：記帳 + 搬到辨識失敗夾 + 移出佇列，避免下批又被抓回反覆卡住 =====
           item.status = 'error';
-          item.errInfo = err.message === 'API_KEY_EMPTY' ? '請先填入 API Key' : err.message;
-          await dbSaveQueueItem(item); // 儲存失敗狀態與錯誤訊息
-          // 真正「這張辨識不出來」才搬到「辨識失敗」資料夾，避免下批又被抓回反覆卡住；
-          // 金鑰未填或配額耗盡屬全域問題、照片本身沒問題，保留在「未辨識」待之後重試。
-          const isGlobalIssue = err.message === 'API_KEY_EMPTY' || err.isRateLimit;
-          if (!isGlobalIssue) batchRun.problems.push({ name: curName, kind: 'error', reason: item.errInfo });
-          if (!isGlobalIssue && item.driveId) {
-            markDriveIdProcessed(item.driveId); // 真正辨識不出來也記帳，避免下批又抓回反覆卡住
+          item.errInfo = err.message;
+          await dbSaveQueueItem(item);
+          batchRun.problems.push({ name: curName, kind: 'error', reason: item.errInfo });
+          if (item.driveId) {
+            markDriveIdProcessed(item.driveId);
             if (gdriveToken && driveFolderCache.failed) {
               const moved = await moveDriveFile(item.driveId, driveFolderCache.unparsed, driveFolderCache.failed);
               if (!moved) driveArchiveFailThisRun++;
             }
           }
-          // 真正辨識不出來者：移出佇列，避免失敗列跨批、跨重開一直累積、汙染清單筆數與分母
-          // （金鑰未填/配額耗盡屬全域問題，保留在佇列待之後重試）
-          if (!isGlobalIssue) {
-            await dbDeleteQueueItem(item.id);
-            const ei = scanQueue.indexOf(item);
-            if (ei !== -1) scanQueue.splice(ei, 1);
-            item.file = null;
-          }
+          await dbDeleteQueueItem(item.id);
+          const ei = scanQueue.indexOf(item);
+          if (ei !== -1) scanQueue.splice(ei, 1);
+          item.file = null;
           break; // 跳出重試迴圈
         }
       }

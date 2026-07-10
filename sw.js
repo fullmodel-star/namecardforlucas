@@ -1,4 +1,5 @@
-const CACHE_NAME = 'bizcard-pwa-v32';
+const CACHE_NAME = 'bizcard-pwa-v33';
+// 只預快取「同源」核心檔；跨網域資源(tabler/gsi)交給 runtime 快取，避免 addAll 單一失敗拖垮整個 install
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
@@ -6,72 +7,66 @@ const ASSETS_TO_CACHE = [
   './manifest.json',
   './icons/icon-192.png',
   './icons/icon-512.png',
-  './icons/icon-maskable-512.png',
-  'https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css',
-  'https://accounts.google.com/gsi/client'
+  './icons/icon-maskable-512.png'
 ];
 
-// [PWA sw.js] 安裝階段：將靜態資源快取起來
+// [PWA sw.js] 安裝階段：逐檔快取，單一資源失敗不拖垮整個 install
 self.addEventListener('install', (event) => {
-  event.waitUntil(
-    caches.open(CACHE_NAME)
-      .then((cache) => {
-        console.log('[PWA SW] 正在快取靜態資源...');
-        return cache.addAll(ASSETS_TO_CACHE);
-      })
-      // 不在此 skipWaiting：新版先進入 waiting，等使用者在畫面點「立即更新」再接管
-  );
+  event.waitUntil((async () => {
+    const cache = await caches.open(CACHE_NAME);
+    const results = await Promise.allSettled(ASSETS_TO_CACHE.map(async (url) => {
+      const res = await fetch(url, { cache: 'reload' });
+      if (res && res.ok) await cache.put(url, res);
+      else throw new Error('bad response ' + url);
+    }));
+    const failed = results.filter(r => r.status === 'rejected').length;
+    if (failed) console.warn('[PWA SW] 有 ' + failed + ' 個核心資源未快取（不影響安裝）');
+    // 不 skipWaiting：新版先進 waiting，等使用者按「立即更新」再接管
+  })());
 });
 
-// [PWA sw.js] 接收頁面指令：使用者按下「立即更新」時才讓新版 SW 立刻接管
+// [PWA sw.js] 使用者按「立即更新」時才讓新版 SW 立刻接管
 self.addEventListener('message', (event) => {
-  if (event.data === 'SKIP_WAITING') {
-    self.skipWaiting();
-  }
+  if (event.data === 'SKIP_WAITING') self.skipWaiting();
 });
 
-// [PWA sw.js] 啟用階段：清理舊版本的快取資料
+// [PWA sw.js] 啟用階段：清理舊版快取
 self.addEventListener('activate', (event) => {
   event.waitUntil(
-    caches.keys().then((cacheNames) => {
-      return Promise.all(
-        cacheNames.map((cache) => {
-          if (cache !== CACHE_NAME) {
-            console.log('[PWA SW] 清理舊快取：', cache);
-            return caches.delete(cache);
-          }
-        })
-      );
-    }).then(() => self.clients.claim())
+    caches.keys().then((names) => Promise.all(
+      names.map((c) => c !== CACHE_NAME ? caches.delete(c) : null)
+    )).then(() => self.clients.claim())
   );
 });
 
-// [PWA sw.js] 請求攔截階段：採用 Network-First (網路優先) 策略，斷網時回退使用本機快取
+// [PWA sw.js] Network-First：斷網回退本機快取；只快取成功的同源/CORS 回應
 self.addEventListener('fetch', (event) => {
-  // 只處理 GET 請求，避開 Google 登入或 Gemini API 的 POST/PATCH 請求
   if (event.request.method !== 'GET') return;
-
-  // 排除即時 API（匯率、QR Code）— 不快取，直接走網路
   const url = event.request.url;
+  // 即時 API 與登入/AI：不攔截、不快取，交給瀏覽器原生處理
   if (url.includes('er-api.com') || url.includes('frankfurter') ||
-      url.includes('qrserver.com') || url.includes('googleapis.com')) {
-    return; // 交給瀏覽器原生處理，不攔截、不快取
+      url.includes('qrserver.com') || url.includes('googleapis.com') ||
+      url.includes('generativelanguage') || url.includes('accounts.google.com')) {
+    return;
   }
-
-  event.respondWith(
-    fetch(event.request)
-      .then((networkResponse) => {
-        // 如果網路正常，複製一份結果存入快取，並返回網路資料
-        const responseToCache = networkResponse.clone();
-        caches.open(CACHE_NAME).then((cache) => {
-          cache.put(event.request, responseToCache);
-        });
-        return networkResponse;
-      })
-      .catch(() => {
-        // 如果斷網，嘗試從本機快取中讀取對應的資源
-        console.log('[PWA SW] 網路連線失敗，改由本機快取載入：', event.request.url);
-        return caches.match(event.request);
-      })
-  );
+  event.respondWith((async () => {
+    try {
+      const net = await fetch(event.request);
+      // 僅快取成功且非錯誤/重導的回應，避免把 4xx/5xx 壞頁回放
+      if (net && net.ok && (net.type === 'basic' || net.type === 'cors')) {
+        const copy = net.clone();
+        caches.open(CACHE_NAME).then((cache) => cache.put(event.request, copy));
+      }
+      return net;
+    } catch (e) {
+      // 斷網：查詢字串無關比對（start_url 帶 ?source=pwa 也命中）
+      const cached = await caches.match(event.request, { ignoreSearch: true });
+      if (cached) return cached;
+      // 導覽請求離線回退到首頁，避免白畫面
+      if (event.request.mode === 'navigate') {
+        return (await caches.match('./index.html')) || (await caches.match('./')) || Response.error();
+      }
+      return Response.error();
+    }
+  })());
 });
