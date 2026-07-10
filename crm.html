@@ -94,6 +94,7 @@
   .type-row{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;}
   .type-chip{padding:9px 14px;border-radius:12px;background:#f1f3f7;font-size:14px;font-weight:600;cursor:pointer;border:2px solid transparent;}
   .type-chip.on{border-color:var(--accent);background:#eaf0ff;color:var(--accent);}
+  .sub-lbl{font-size:12px;font-weight:700;color:var(--sub);letter-spacing:.5px;margin:2px 2px 8px;}
   .field{margin-bottom:12px;}
   .field label{display:block;font-size:12px;font-weight:700;color:var(--sub);margin-bottom:6px;letter-spacing:.5px;}
   .sheet textarea,.sheet input[type=text],.sheet input[type=date],.sheet input[type=number]{width:100%;border:1px solid var(--line);border-radius:12px;padding:13px;font-size:15px;font-family:inherit;outline:none;background:#fafbfc;}
@@ -140,8 +141,11 @@
 <!-- 記一筆 -->
 <div class="sheet" id="logSheet">
   <h3>記一筆互動</h3>
+  <div class="sub-lbl">怎麼聯絡</div>
   <div class="type-row" id="typeRow"></div>
-  <div class="field"><textarea id="logText" placeholder="備註（可留空，例如：聊了報價，Q3 有預算）"></textarea></div>
+  <div class="sub-lbl">重點（可不選，點一下就好）</div>
+  <div class="type-row" id="logNoteChips"></div>
+  <div class="field" id="logCustomField" style="display:none;"><textarea id="logText" placeholder="自己打…"></textarea></div>
   <div class="mini-toggle" id="logDateToggle" onclick="showLogDate()">＋ 補以前的日期</div>
   <div class="field" id="logDateField" style="display:none;"><label>日期</label><input type="date" id="logDate"></div>
   <button class="save" onclick="saveLog()">儲存</button>
@@ -150,9 +154,12 @@
 <!-- 設提醒 -->
 <div class="sheet" id="remindSheet">
   <h3>設定下次提醒</h3>
+  <div class="sub-lbl">多久後提醒</div>
   <div class="type-row" id="remindQuick"></div>
   <div class="field"><label>提醒日期</label><input type="date" id="remindDate" oninput="clearRemindChip()"></div>
-  <div class="field"><label>事由（可留空）</label><textarea id="remindNote" placeholder="例如：追報價進度" style="min-height:56px;"></textarea></div>
+  <div class="sub-lbl">事由（可不選，點一下就好）</div>
+  <div class="type-row" id="remindReasonChips"></div>
+  <div class="field" id="remindCustomField" style="display:none;"><textarea id="remindNote" placeholder="自己打…" style="min-height:56px;"></textarea></div>
   <button class="save" onclick="saveRemind()">儲存提醒</button>
   <button class="clear" onclick="clearRemind()">清除提醒</button>
 </div>
@@ -433,13 +440,34 @@ function buildTypeChips(){
     .map(([k,v])=>`<div class="type-chip ${k===logType?'on':''}" onclick="pickType('${k}')">${v}</div>`).join('');
 }
 function pickType(t){ logType=t; buildTypeChips(); }
+
+/* 互動重點：點選預設，不用打字（要自己打就點「✏️ 自訂」） */
+const LOG_NOTES=['已聯絡上','沒接到','約了見面','報價中','考慮中','已成交','送了資料','問候一下'];
+let logNoteSel=null;
+function buildLogNoteChips(){
+  document.getElementById('logNoteChips').innerHTML=LOG_NOTES.map(n=>
+    `<div class="type-chip ${logNoteSel===n?'on':''}" onclick="pickLogNote('${n}')">${n}</div>`).join('')
+    +`<div class="type-chip" onclick="showLogCustom()">✏️ 自訂</div>`;
+}
+function pickLogNote(n){
+  if(logNoteSel===n){ logNoteSel=null; document.getElementById('logText').value=''; }
+  else{ logNoteSel=n; document.getElementById('logText').value=n; document.getElementById('logCustomField').style.display='none'; }
+  buildLogNoteChips();
+}
+function showLogCustom(){
+  logNoteSel=null; buildLogNoteChips();
+  document.getElementById('logCustomField').style.display='block';
+  document.getElementById('logText').focus();
+}
 function showLogDate(){
   document.getElementById('logDateToggle').style.display='none';
   document.getElementById('logDateField').style.display='block';
 }
 function openLogSheet(){
   logType='phone'; buildTypeChips();
+  logNoteSel=null; buildLogNoteChips();
   document.getElementById('logText').value='';
+  document.getElementById('logCustomField').style.display='none';
   document.getElementById('logDate').value=todayISO();
   document.getElementById('logDateField').style.display='none';
   document.getElementById('logDateToggle').style.display='block';
@@ -469,12 +497,35 @@ function setRemindIn(days){
   buildRemindQuick();
 }
 function clearRemindChip(){ remindSel=null; buildRemindQuick(); }
+
+/* 提醒事由：點選預設，不用打字（要自己打就點「✏️ 自訂」） */
+const REMIND_REASONS=['追報價','追進度','回個電','送資料','約拜訪','問候','確認訂單','催收款'];
+let remindReasonSel=null;
+function buildRemindReasonChips(){
+  document.getElementById('remindReasonChips').innerHTML=REMIND_REASONS.map(n=>
+    `<div class="type-chip ${remindReasonSel===n?'on':''}" onclick="pickRemindReason('${n}')">${n}</div>`).join('')
+    +`<div class="type-chip" onclick="showRemindCustom()">✏️ 自訂</div>`;
+}
+function pickRemindReason(n){
+  if(remindReasonSel===n){ remindReasonSel=null; document.getElementById('remindNote').value=''; }
+  else{ remindReasonSel=n; document.getElementById('remindNote').value=n; document.getElementById('remindCustomField').style.display='none'; }
+  buildRemindReasonChips();
+}
+function showRemindCustom(){
+  remindReasonSel=null; buildRemindReasonChips();
+  document.getElementById('remindCustomField').style.display='block';
+  document.getElementById('remindNote').focus();
+}
 function openRemindSheet(){
   getCrm(currentId).then(crm=>{
     remindSel=null;
     document.getElementById('remindDate').value=crm&&crm.nextRemind?crm.nextRemind:todayISO();
-    document.getElementById('remindNote').value=crm&&crm.remindNote?crm.remindNote:'';
+    const note=crm&&crm.remindNote?crm.remindNote:'';
+    document.getElementById('remindNote').value=note;
+    remindReasonSel=REMIND_REASONS.includes(note)?note:null;
+    document.getElementById('remindCustomField').style.display=(note&&!remindReasonSel)?'block':'none';
     buildRemindQuick();
+    buildRemindReasonChips();
     openSheet('remindSheet');
   });
 }
