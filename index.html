@@ -1509,16 +1509,22 @@ input, select, textarea, button { font-size: 16px; }
   z-index: 200;
 }
 .btab {
-  flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px;
+  flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; align-items: center; gap: 4px;
   padding: 4px 0; background: none; border: none; cursor: pointer; font-family: inherit;
 }
 .btab-pip {
-  padding: 5px 20px; border-radius: 999px; background: transparent; transition: background .15s;
+  padding: 5px 14px; border-radius: 999px; background: transparent; transition: background .15s;
 }
-.btab i { font-size:24px; color: var(--text-tertiary); display: block; }
+.btab i { font-size:23px; color: var(--text-tertiary); display: block; }
 .btab.active .btab-pip { background: var(--accent-soft); }
 .btab.active i { color: var(--accent); }
-.btab span { font-size:14px; font-weight: 500; color: var(--text-tertiary); }
+.btab span { font-size:13px; font-weight: 500; color: var(--text-tertiary); white-space: nowrap; }
+/* 極窄機身（6 分頁）再收一點內距，確保最右的「總覽」不被切到 */
+@media (max-width: 380px) {
+  .btab-pip { padding: 5px 9px; }
+  .btab span { font-size: 12px; }
+  .bottom-tab-bar { padding-left: 4px; padding-right: 4px; }
+}
 .btab.active span { color: var(--text-primary); font-weight: 700; }
 
 /* 客戶追蹤 CRM 分頁：同源 iframe 全屏承載，與名片主程式完全隔離 */
