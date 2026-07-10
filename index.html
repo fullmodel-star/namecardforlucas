@@ -1672,23 +1672,14 @@ input, select, textarea, button { font-size: 16px; }
           </h3>
           <div id="home-recent-cards"></div>
         </div>
-        <!-- 快捷入口 -->
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+        <!-- 快捷入口：數據分析（組織圖無獨立分頁，由此進入） -->
+        <div style="display:grid;grid-template-columns:1fr;gap:10px;">
           <button class="db-section" style="text-align:left;cursor:pointer;border:none;width:100%;" onclick="switchTab('dashboard')">
             <div style="display:flex;align-items:center;gap:10px;">
               <div class="db-card-icon" style="width:36px;height:36px;font-size:19px;color:var(--accent);background:var(--accent-light);flex-shrink:0;"><i class="ti ti-chart-bar"></i></div>
               <div>
                 <div style="font-size:15.5px;font-weight:600;color:var(--text-primary);">數據分析</div>
                 <div style="font-size:14px;color:var(--text-tertiary);margin-top:2px;">群組・標籤・組織圖</div>
-              </div>
-            </div>
-          </button>
-          <button class="db-section" style="text-align:left;cursor:pointer;border:none;width:100%;" onclick="switchTab('myprofile')">
-            <div style="display:flex;align-items:center;gap:10px;">
-              <div class="db-card-icon" style="width:36px;height:36px;font-size:19px;color:#10b981;background:rgba(16,185,129,0.12);flex-shrink:0;"><i class="ti ti-settings"></i></div>
-              <div>
-                <div style="font-size:15.5px;font-weight:600;color:var(--text-primary);">設定與資料</div>
-                <div style="font-size:14px;color:var(--text-tertiary);margin-top:2px;">同步・匯出・備份・設定</div>
               </div>
             </div>
           </button>
@@ -1812,7 +1803,7 @@ input, select, textarea, button { font-size: 16px; }
           <i class="ti ti-copy"></i> 疑似重複名片清單
         </h2>
         <div style="display:flex;gap:8px;">
-          <button class="btn" onclick="switchTab('batch')"><i class="ti ti-arrow-left"></i> 返回工具箱</button>
+          <button class="btn" onclick="switchTab('myprofile')"><i class="ti ti-arrow-left"></i> 返回</button>
           <button class="btn" onclick="renderDupsTab()"><i class="ti ti-refresh"></i> 重新偵測</button>
         </div>
       </div>
@@ -2027,21 +2018,6 @@ input, select, textarea, button { font-size: 16px; }
 
     </div>
 
-    <!-- 5. 公司組織分頁 -->
-    <div id="view-graph" style="display:none">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;flex-wrap:wrap;gap:8px;">
-        <h2 style="font-size:18px;font-weight:700;display:flex;align-items:center;gap:7px;color:var(--accent)">
-          <i class="ti ti-building"></i> 公司組織圖
-        </h2>
-        <div style="display:flex;gap:8px;align-items:center;">
-          <input id="org-search" type="text" placeholder="搜尋公司名稱…" oninput="renderGraphTab()"
-            style="font-size:17px;padding:6px 10px;border-radius:var(--radius-sm);border:1px solid var(--border-color);background:var(--bg-secondary);color:var(--text-primary);width:160px;">
-          <button class="btn" onclick="renderGraphTab()"><i class="ti ti-refresh"></i></button>
-        </div>
-      </div>
-      <div id="graph-canvas" style="overflow-y:auto;"></div>
-    </div>
-
     <!-- 6. 應用設定分頁 -->
     <div id="view-settings" style="display:none">
 
@@ -2049,7 +2025,7 @@ input, select, textarea, button { font-size: 16px; }
         <h2 style="font-size:19px;font-weight:700;display:flex;align-items:center;gap:6px;color:var(--text-primary);margin:0;">
           <i class="ti ti-settings"></i> 應用設定
         </h2>
-        <button class="btn" onclick="switchTab('batch')"><i class="ti ti-arrow-left"></i> 返回工具箱</button>
+        <button class="btn" onclick="switchTab('myprofile')"><i class="ti ti-arrow-left"></i> 返回</button>
       </div>
 
       <div class="local-server-notice" id="local-server-notice" style="display:none">
