@@ -3746,8 +3746,8 @@ async function systemLoadAllData() {
   try { renderSettingsBadgeManager(); } catch(e) { console.warn('renderSettingsBadgeManager:', e); }
   try { renderCardsGrid(); } catch(e) { console.warn('renderCardsGrid:', e); }
   try { renderDashboard(); } catch(e) { console.warn('renderDashboard:', e); }
-  // 新手（名片庫還是空的）直接落在「掃名片」開始建檔；已有名片者維持停在「我的」
-  switchTab(cardsList.length === 0 ? 'batch' : 'myprofile');
+  // 首頁一律停在「我的」（依使用者指定）；新手要建檔可點中央醒目的「掃名片」
+  switchTab('myprofile');
   setTimeout(() => renderHomeScreen(), 50);
 }
 
