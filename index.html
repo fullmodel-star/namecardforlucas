@@ -1924,7 +1924,7 @@ input, select, textarea, button { font-size: 16px; }
           <button class="tool-card" style="--tc:#0ea5e9;" onclick="exportFullJsonBackup()">
             <div class="tool-card-icon"><i class="ti ti-database-export"></i></div>
             <div class="tool-card-title">備份資料</div>
-            <div class="tool-card-desc">完整備份名片庫（含圖片）至本機</div>
+            <div class="tool-card-desc">名片＋客戶追蹤＋圖片，換手機一次還原</div>
           </button>
 
           <button class="tool-card" style="--tc:#f59e0b;" onclick="switchTab('dups'); renderDupsTab();">
@@ -4508,6 +4508,41 @@ function exportToCsv(mode = 'all', explicitList = null) {
   showToast(`✓ 已匯出 ${list.length} 張名片至 Excel CSV！`);
 }
 
+// 讀取客戶追蹤(CrmDB)+案子(DealDB)供打包進完整備份（同源 IndexedDB，換手機才不會只剩名片）
+async function readCrmForBackup() {
+  const out = { crm: [], manual_cards: [], settings: [], deals: [] };
+  const getAll = (db, s) => new Promise(r => { if (!db.objectStoreNames.contains(s)) return r([]); const g = db.transaction([s], 'readonly').objectStore(s).getAll(); g.onsuccess = () => r(g.result || []); g.onerror = () => r([]); });
+  try {
+    const names = indexedDB.databases ? (await indexedDB.databases()).map(d => d.name) : ['CrmDB', 'DealDB'];
+    if (names.includes('CrmDB')) {
+      const db = await new Promise(res => { const q = indexedDB.open('CrmDB'); q.onsuccess = e => res(e.target.result); q.onerror = () => res(null); });
+      if (db) { out.crm = await getAll(db, 'crm'); out.manual_cards = await getAll(db, 'manual_cards'); out.settings = await getAll(db, 'settings'); db.close(); }
+    }
+    if (names.includes('DealDB')) {
+      const db = await new Promise(res => { const q = indexedDB.open('DealDB'); q.onsuccess = e => res(e.target.result); q.onerror = () => res(null); });
+      if (db) { out.deals = await getAll(db, 'deals'); db.close(); }
+    }
+  } catch (e) {}
+  return out;
+}
+// 把備份裡的客戶追蹤資料寫回 CrmDB/DealDB（用與 crm.html 相同的 v2/v1 結構）
+async function restoreCrmFromBackup(crmData) {
+  if (!crmData) return;
+  const putAll = (db, s, key, arr) => new Promise((res, rej) => { if (!arr || !arr.length || !db.objectStoreNames.contains(s)) return res(); const tx = db.transaction([s], 'readwrite'); const os = tx.objectStore(s); arr.forEach(r => { if (r && r[key] != null) os.put(r); }); tx.oncomplete = res; tx.onerror = e => rej(e.target.error); });
+  try {
+    const db = await new Promise((res, rej) => { const q = indexedDB.open('CrmDB', 2); q.onupgradeneeded = e => { const d = e.target.result; if (!d.objectStoreNames.contains('crm')) d.createObjectStore('crm', { keyPath: 'cardId' }); if (!d.objectStoreNames.contains('cards_snapshot')) d.createObjectStore('cards_snapshot', { keyPath: 'id' }); if (!d.objectStoreNames.contains('manual_cards')) d.createObjectStore('manual_cards', { keyPath: 'id' }); if (!d.objectStoreNames.contains('settings')) d.createObjectStore('settings', { keyPath: 'key' }); }; q.onsuccess = e => res(e.target.result); q.onerror = e => rej(e.target.error); });
+    await putAll(db, 'crm', 'cardId', crmData.crm);
+    await putAll(db, 'manual_cards', 'id', crmData.manual_cards);
+    await putAll(db, 'settings', 'key', crmData.settings);
+    db.close();
+    if ((crmData.deals || []).length) {
+      const dd = await new Promise((res, rej) => { const q = indexedDB.open('DealDB', 1); q.onupgradeneeded = e => { const d = e.target.result; if (!d.objectStoreNames.contains('deals')) { const st = d.createObjectStore('deals', { keyPath: 'id' }); st.createIndex('cardId', 'cardId', { unique: false }); } }; q.onsuccess = e => res(e.target.result); q.onerror = e => rej(e.target.error); });
+      await putAll(dd, 'deals', 'id', crmData.deals);
+      dd.close();
+    }
+  } catch (e) { console.warn('restoreCrm:', e); }
+}
+
 async function exportFullJsonBackup() {
   showToast('正在準備資料庫完整備份檔案...');
   try {
@@ -4519,14 +4554,16 @@ async function exportFullJsonBackup() {
     // 一併打包：個人名片、自訂群組、自訂標籤（這些原本只存在 localStorage、過去會漏備）
     let myCard = null;
     try { myCard = JSON.parse(localStorage.getItem('bizcard_user_mycard') || 'null'); } catch(e) {}
+    const crmData = await readCrmForBackup();  // 一併打包客戶追蹤，換手機才不會只剩名片、客戶紀錄全失
     const backup = {
       _format: 'bizcard-backup',
-      version: 2,
+      version: 3,
       exportedAt: new Date().toISOString(),
       cards: cards,
       myCard: myCard,
       groups: getCustomGroups(),
-      tags: getCustomTags()
+      tags: getCustomTags(),
+      crm: crmData
     };
 
     const blob = new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json' });
@@ -4537,7 +4574,7 @@ async function exportFullJsonBackup() {
     a.click();
     // 記錄備份時間與當下名片數
     localStorage.setItem('bizcard_last_backup', JSON.stringify({ ts: Date.now(), count: cardsList.length }));
-    showToast(`✓ 完整備份成功（${cards.length} 張名片＋個人名片＋群組標籤）`);
+    showToast(`✓ 完整備份成功（${cards.length} 張名片＋客戶追蹤${(crmData.crm||[]).length?` ${crmData.crm.length} 筆`:''}＋個人名片）`);
     renderHomeScreen(); // 更新總覽的備份狀態
   } catch(e) {
     alert('備份導出失敗：' + e.message);
@@ -4552,9 +4589,19 @@ function importFullJsonBackup(event) {
   reader.onload = async function(evt) {
     try {
       const parsed = JSON.parse(evt.target.result);
-      // 相容：舊版備份是純陣列；新版(v2)是物件 {cards, myCard, groups, tags}
+      // 相容：舊版純陣列；新版物件 {cards, myCard, groups, tags, crm}
       const isNew = parsed && !Array.isArray(parsed) && Array.isArray(parsed.cards);
       const cardEntries = isNew ? parsed.cards : (Array.isArray(parsed) ? parsed : null);
+      // 「客戶追蹤」單獨備份檔（來自客戶分頁匯出）：認得它、只還原 CRM，不再誤報「格式無效」
+      if (!cardEntries && parsed && (Array.isArray(parsed.crm) || Array.isArray(parsed.manual_cards))) {
+        if (confirm('這是「客戶追蹤」的備份檔，要還原客戶紀錄與提醒嗎？')) {
+          await restoreCrmFromBackup({ crm: parsed.crm || [], manual_cards: parsed.manual_cards || [], settings: parsed.settings || [], deals: parsed.deals || [] });
+          updateCrmBadge();
+          showToast('✓ 已還原客戶追蹤資料，請到「客戶」分頁查看');
+        }
+        event.target.value = '';
+        return;
+      }
       if (!cardEntries) {
         alert('還原失敗：此備份檔案格式無效。');
         return;
@@ -4577,6 +4624,7 @@ function importFullJsonBackup(event) {
           if (parsed.myCard) localStorage.setItem('bizcard_user_mycard', JSON.stringify(parsed.myCard));
           if (Array.isArray(parsed.groups)) localStorage.setItem('bizcard_custom_groups', JSON.stringify(parsed.groups));
           if (Array.isArray(parsed.tags)) localStorage.setItem('bizcard_custom_tags', JSON.stringify(parsed.tags));
+          if (parsed.crm) { await restoreCrmFromBackup(parsed.crm); updateCrmBadge(); }
         }
         cardsList = await dbGetAllCards();
         renderSidebarFilters();
@@ -4584,7 +4632,7 @@ function importFullJsonBackup(event) {
         closeDetailPanel();
         renderDashboard();
         try { renderMyProfile(); } catch(e) {}
-        showToast(`✓ 還原成功：${cardEntries.length} 張名片${extraTxt}`);
+        showToast(`✓ 還原成功：${cardEntries.length} 張名片${extraTxt}${(parsed.crm && parsed.crm.crm && parsed.crm.crm.length) ? `＋客戶追蹤 ${parsed.crm.crm.length} 筆` : ''}`);
       }
     } catch(err) {
       alert('無效的備份 JSON 檔案：' + err.message);
