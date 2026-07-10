@@ -3871,9 +3871,14 @@ function getFilteredAndSortedCards() {
   }
   
   const sortVal = document.getElementById('sort-select').value;
+  let tsMap = null;
+  if (sortVal === 'time-desc' || sortVal === 'time-asc') {
+    // 先一次算好數值時間戳(存 Map，不污染名片物件)，避免比較器裡反覆 new Date() 解析字串
+    tsMap = new Map(list.map(c => [c, c.createdAtTs || Date.parse(c.createdAt) || 0]));
+  }
   list.sort((a, b) => {
-    if (sortVal === 'time-desc') return new Date(b.createdAt || 0) - new Date(a.createdAt || 0);
-    if (sortVal === 'time-asc') return new Date(a.createdAt || 0) - new Date(b.createdAt || 0);
+    if (sortVal === 'time-desc') return tsMap.get(b) - tsMap.get(a);
+    if (sortVal === 'time-asc') return tsMap.get(a) - tsMap.get(b);
     if (sortVal === 'name-asc') return (a.name || '').localeCompare(b.name || '', 'zh-TW');
     if (sortVal === 'name-desc') return (b.name || '').localeCompare(a.name || '', 'zh-TW');
     if (sortVal === 'org-asc') return (a.org || '').localeCompare(b.org || '', 'zh-TW');
@@ -3899,14 +3904,52 @@ async function doInstallApp() {
   }
 }
 
-// 名片牆分批渲染：先出 _cardRenderLimit 列，捲到底再載更多，避免一次把上千列塞進 DOM 卡住
+// 名片牆分批渲染：先出 _cardRenderLimit 列，捲到底「只追加」新列(不重建整份)，避免上千列卡頓
 let _cardRenderLimit = 100, _lastFilterSig = '', _cardObserver = null;
 function ensureCardObserver() {
   if (_cardObserver) return _cardObserver;
   _cardObserver = new IntersectionObserver(entries => {
-    if (entries.some(e => e.isIntersecting)) { _cardRenderLimit += 100; renderCardsGrid(); }
-  }, { rootMargin: '500px' });
+    if (entries.some(e => e.isIntersecting)) loadMoreCards();
+  }, { rootMargin: '600px' });
   return _cardObserver;
+}
+// 單列 HTML（整份渲染與捲動追加共用同一份，確保一致）
+function cardRowHtml(c, dupList) {
+  const isDup = dupList.has(c.id);
+  const hue = nameToHue(c.name);
+  const subtitle = [c.org, c.title].filter(x => x).join(' · ') || c.dept || '未填資料';
+  let badge = '';
+  if (!c.processed) badge = '<div class="bcr-badge" style="background:rgba(245,158,11,0.16);color:var(--color-amber);"><i class="ti ti-clock"></i> 未處理</div>';
+  else if (isDup) badge = '<div class="bcr-badge bcr-dup"><i class="ti ti-copy"></i> 重複</div>';
+  const isSel = selectedIds.has(c.id);
+  const checkbox = selectionMode
+    ? `<div style="width:24px;height:24px;border-radius:6px;flex-shrink:0;border:2px solid ${isSel ? 'var(--accent)' : 'var(--border-color)'};background:${isSel ? 'var(--accent)' : 'transparent'};color:#fff;display:flex;align-items:center;justify-content:center;">${isSel ? '<i class="ti ti-check" style="font-size:16px;"></i>' : ''}</div>`
+    : '';
+  const rowOnclick = selectionMode ? `toggleCardSelection('${c.id}')` : `selectCard('${c.id}')`;
+  const rowSelected = (!selectionMode && selectedCardId === c.id) || (selectionMode && isSel) ? 'selected' : '';
+  return `<div class="biz-card-row ${rowSelected}" data-id="${c.id}" onclick="${rowOnclick}">${checkbox}<div class="bcr-avatar" style="background:hsl(${hue}, 50%, 48%);color:white;">${esc((c.name||'?').slice(0,1))}</div><div style="flex:1;min-width:0;"><div class="bcr-name">${esc(c.name) || '—'}</div><div class="bcr-sub">${esc(subtitle)}</div></div>${selectionMode ? '' : badge}</div>`;
+}
+function sentinelHtml(shown, total) {
+  return total > shown ? `<div id="cards-more-sentinel" style="padding:18px;text-align:center;color:var(--text-tertiary);font-size:14px;">↓ 向下捲動載入更多（${shown}/${total}）</div>` : '';
+}
+// 捲到底：只把「下一批」插到 sentinel 前，不動已在畫面上的列（避免越捲越重）
+function loadMoreCards() {
+  const grid = document.getElementById('card-grid'); if (!grid) return;
+  const filtered = getFilteredAndSortedCards();
+  const dupList = detectAllDuplicateIds();
+  const start = _cardRenderLimit, end = _cardRenderLimit + 100;
+  const html = filtered.slice(start, end).map(c => cardRowHtml(c, dupList)).join('');
+  const sen = document.getElementById('cards-more-sentinel');
+  if (sen) sen.insertAdjacentHTML('beforebegin', html); else grid.insertAdjacentHTML('beforeend', html);
+  _cardRenderLimit = end;
+  if (filtered.length > _cardRenderLimit) { if (sen) sen.textContent = `↓ 向下捲動載入更多（${_cardRenderLimit}/${filtered.length}）`; }
+  else if (sen) { if (_cardObserver) _cardObserver.unobserve(sen); sen.remove(); }
+}
+// 只切換選取高亮，不整份重繪（點一張卡就重繪上百列會頓）
+function highlightSelectedRow() {
+  const grid = document.getElementById('card-grid'); if (!grid) return;
+  grid.querySelectorAll('.biz-card-row.selected').forEach(el => el.classList.remove('selected'));
+  if (!selectionMode && selectedCardId) { const el = grid.querySelector(`.biz-card-row[data-id="${selectedCardId}"]`); if (el) el.classList.add('selected'); }
 }
 function renderCardsGrid() {
   const grid = document.getElementById('card-grid');
@@ -3924,41 +3967,8 @@ function renderCardsGrid() {
   }
 
   const dupList = detectAllDuplicateIds();
-
   const pageCards = filtered.slice(0, _cardRenderLimit);
-  grid.innerHTML = pageCards.map(c => {
-    const isDup = dupList.has(c.id);
-    const hue = nameToHue(c.name);
-    const subtitle = [c.org, c.title].filter(x => x).join(' · ') || c.dept || '未填資料';
-
-    // 只標示「需要注意」的狀態（未處理／重複），已處理為常態不再貼標、減少視覺雜訊
-    let badge = '';
-    if (!c.processed) {
-      badge = '<div class="bcr-badge" style="background:rgba(245,158,11,0.16);color:var(--color-amber);"><i class="ti ti-clock"></i> 未處理</div>';
-    } else if (isDup) {
-      badge = '<div class="bcr-badge bcr-dup"><i class="ti ti-copy"></i> 重複</div>';
-    }
-
-    const isSel = selectedIds.has(c.id);
-    const checkbox = selectionMode
-      ? `<div style="width:24px;height:24px;border-radius:6px;flex-shrink:0;border:2px solid ${isSel ? 'var(--accent)' : 'var(--border-color)'};background:${isSel ? 'var(--accent)' : 'transparent'};color:#fff;display:flex;align-items:center;justify-content:center;">${isSel ? '<i class="ti ti-check" style="font-size:16px;"></i>' : ''}</div>`
-      : '';
-    const rowOnclick = selectionMode ? `toggleCardSelection('${c.id}')` : `selectCard('${c.id}')`;
-    const rowSelected = (!selectionMode && selectedCardId === c.id) || (selectionMode && isSel) ? 'selected' : '';
-
-    return `
-      <div class="biz-card-row ${rowSelected}" onclick="${rowOnclick}">
-        ${checkbox}
-        <div class="bcr-avatar" style="background:hsl(${hue}, 50%, 48%);color:white;">${esc((c.name||'?').slice(0,1))}</div>
-        <div style="flex:1;min-width:0;">
-          <div class="bcr-name">${esc(c.name) || '—'}</div>
-          <div class="bcr-sub">${esc(subtitle)}</div>
-        </div>
-        ${selectionMode ? '' : badge}
-      </div>
-    `;
-  }).join('') + (filtered.length > _cardRenderLimit
-    ? `<div id="cards-more-sentinel" style="padding:18px;text-align:center;color:var(--text-tertiary);font-size:14px;">↓ 向下捲動載入更多（${pageCards.length}/${filtered.length}）</div>` : '');
+  grid.innerHTML = pageCards.map(c => cardRowHtml(c, dupList)).join('') + sentinelHtml(pageCards.length, filtered.length);
   const _sen = document.getElementById('cards-more-sentinel');
   if (_sen) ensureCardObserver().observe(_sen);
 
@@ -4087,8 +4097,8 @@ async function batchDelete() {
 async function selectCard(id) {
   if (selectionMode) { toggleCardSelection(id); return; }
   selectedCardId = id;
-  renderCardsGrid();
-  
+  highlightSelectedRow();   // 只換高亮，不整份重繪（點卡更順）
+
   const c = cardsList.find(x => x.id === id);
   const panel = document.getElementById('detail-panel');
   const wrapper = document.getElementById('detail-wrapper');
@@ -4245,7 +4255,7 @@ async function selectCard(id) {
 
 function closeDetailPanel() {
   selectedCardId = null;
-  renderCardsGrid();
+  highlightSelectedRow();
   const panel = document.getElementById('detail-panel');
   const wrapper = document.getElementById('detail-wrapper');
   if (panel) panel.classList.remove('open');
