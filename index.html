@@ -3874,6 +3874,9 @@ function getFilteredAndSortedCards() {
   return list;
 }
 
+// HTML 跳脫：名片欄位來自 OCR／通訊錄屬不可信輸入，插入 innerHTML 前一律經此處理，避免儲存型 XSS
+function esc(s){ return (s==null?'':String(s)).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
 function renderCardsGrid() {
   const grid = document.getElementById('card-grid');
   const filtered = getFilteredAndSortedCards();
@@ -3911,10 +3914,10 @@ function renderCardsGrid() {
     return `
       <div class="biz-card-row ${rowSelected}" onclick="${rowOnclick}">
         ${checkbox}
-        <div class="bcr-avatar" style="background:hsl(${hue}, 50%, 48%);color:white;">${(c.name||'?').slice(0,1)}</div>
+        <div class="bcr-avatar" style="background:hsl(${hue}, 50%, 48%);color:white;">${esc((c.name||'?').slice(0,1))}</div>
         <div style="flex:1;min-width:0;">
-          <div class="bcr-name">${c.name || '—'}</div>
-          <div class="bcr-sub">${subtitle}</div>
+          <div class="bcr-name">${esc(c.name) || '—'}</div>
+          <div class="bcr-sub">${esc(subtitle)}</div>
         </div>
         ${selectionMode ? '' : badge}
       </div>
@@ -3935,7 +3938,7 @@ function renderCardsGrid() {
     const groups = getCustomGroups();
     const sig = groups.join('|');
     if (gsel.dataset.sig !== sig) {
-      gsel.innerHTML = '<option value="">全部群組</option>' + groups.map(g => `<option value="${g}">${g}</option>`).join('');
+      gsel.innerHTML = '<option value="">全部群組</option>' + groups.map(g => `<option value="${esc(g)}">${esc(g)}</option>`).join('');
       gsel.dataset.sig = sig;
     }
     gsel.value = activeGroupFilter || '';
@@ -4077,16 +4080,16 @@ async function selectCard(id) {
               <div class="virtual-card-body">
                 <div class="vc-hd">
                   <span class="vc-logo"><i class="ti ti-address-book"></i></span>
-                  <span class="vc-org">${c.org || '未設定公司名稱'}</span>
+                  <span class="vc-org">${esc(c.org) || '未設定公司名稱'}</span>
                 </div>
                 <div class="vc-mid">
-                  <div class="vc-name">${c.name || '未輸入姓名'}</div>
-                  <div class="vc-title-row" style="display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${c.title || '無職稱'}</div>
-                  ${c.dept ? `<div style="font-size:13px;opacity:0.8;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${c.dept}</div>` : ''}
+                  <div class="vc-name">${esc(c.name) || '未輸入姓名'}</div>
+                  <div class="vc-title-row" style="display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${esc(c.title) || '無職稱'}</div>
+                  ${c.dept ? `<div style="font-size:13px;opacity:0.8;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${esc(c.dept)}</div>` : ''}
                 </div>
                 <div class="vc-ft">
-                  <div class="vc-contact-item"><i class="ti ti-phone"></i> ${c.mobile || c.phone || '無電話號碼'}</div>
-                  <div class="vc-contact-item"><i class="ti ti-mail"></i> ${c.email || '無電子郵件'}</div>
+                  <div class="vc-contact-item"><i class="ti ti-phone"></i> ${esc(c.mobile || c.phone) || '無電話號碼'}</div>
+                  <div class="vc-contact-item"><i class="ti ti-mail"></i> ${esc(c.email) || '無電子郵件'}</div>
                 </div>
               </div>
             </div>
@@ -4118,50 +4121,50 @@ async function selectCard(id) {
     <div class="detail-grid">
       <div class="detail-field-card ${c.phone ? 'clickable' : ''}">
         <div class="df-label"><i class="ti ti-phone"></i> 辦公電話</div>
-        <div class="df-val">${c.phone ? `<a href="tel:${cleanPhone}">${c.phone}${c.phoneExt ? ' 分機 ' + c.phoneExt : ''}</a>` : '—'}</div>
+        <div class="df-val">${c.phone ? `<a href="tel:${cleanPhone}">${esc(c.phone)}${c.phoneExt ? ' 分機 ' + esc(c.phoneExt) : ''}</a>` : '—'}</div>
       </div>
       
       <div class="detail-field-card ${c.mobile ? 'clickable' : ''}">
         <div class="df-label"><i class="ti ti-device-mobile"></i> 手機號碼</div>
-        <div class="df-val">${c.mobile ? `<a href="tel:${cleanMobile}">${c.mobile}</a>` : '—'}</div>
-        
+        <div class="df-val">${c.mobile ? `<a href="tel:${cleanMobile}">${esc(c.mobile)}</a>` : '—'}</div>
+
         <div class="quick-social-btns">
           ${c.mobile ? `<button class="btn-mini-social" onclick="window.open('https://wa.me/${waNumber}', '_blank')" title="WhatsApp 快速通訊" aria-label="用 WhatsApp 聯絡"><i class="ti ti-brand-whatsapp"></i></button>` : ''}
-          ${c.mobile ? `<button class="btn-mini-social" onclick="copyToClipboard('${c.mobile}', '已複製電話，可在 LINE 搜尋')" title="複製號碼" aria-label="複製手機號碼"><i class="ti ti-copy"></i></button>` : ''}
+          ${c.mobile ? `<button class="btn-mini-social" onclick="copyToClipboard('${cleanMobile}', '已複製電話，可在 LINE 搜尋')" title="複製號碼" aria-label="複製手機號碼"><i class="ti ti-copy"></i></button>` : ''}
         </div>
       </div>
       
       <div class="detail-field-card ${c.email ? 'clickable' : ''}">
         <div class="df-label"><i class="ti ti-mail"></i> 電子郵件 (Email)</div>
-        <div class="df-val">${c.email ? `<a href="mailto:${c.email}">${c.email}</a>` : '—'}</div>
+        <div class="df-val">${c.email ? `<a href="mailto:${esc(c.email)}">${esc(c.email)}</a>` : '—'}</div>
       </div>
       
       <div class="detail-field-card ${c.website ? 'clickable' : ''}">
         <div class="df-label"><i class="ti ti-world"></i> 官方網站</div>
-        <div class="df-val">${c.website ? `<a href="${c.website.startsWith('http') ? c.website : 'https://' + c.website}" target="_blank">${c.website}</a>` : '—'}</div>
+        <div class="df-val">${c.website ? `<a href="${esc(c.website.startsWith('http') ? c.website : 'https://' + c.website)}" target="_blank" rel="noopener">${esc(c.website)}</a>` : '—'}</div>
       </div>
 
       <div class="detail-field-card">
         <div class="df-label"><i class="ti ti-device-fax"></i> 傳真電話</div>
-        <div class="df-val">${c.fax || '—'}</div>
+        <div class="df-val">${esc(c.fax) || '—'}</div>
       </div>
 
       <div class="detail-field-card detail-grid-full ${c.addr ? 'clickable' : ''}">
-        <div class="df-label"><i class="ti ti-map-pin"></i> 地址${c.zip ? `（郵遞區號 ${c.zip}）` : ''}</div>
-        <div class="df-val">${c.addr ? `<a href="${mapUrl}" target="_blank">${c.addr}</a>` : '—'}</div>
+        <div class="df-label"><i class="ti ti-map-pin"></i> 地址${c.zip ? `（郵遞區號 ${esc(c.zip)}）` : ''}</div>
+        <div class="df-val">${c.addr ? `<a href="${mapUrl}" target="_blank" rel="noopener">${esc(c.addr)}</a>` : '—'}</div>
       </div>
       
       <div class="detail-field-card detail-grid-full">
         <div class="df-label"><i class="ti ti-tags"></i> 標籤與群組</div>
         <div class="df-val">
-          <span style="font-weight:700; color:var(--accent);">[${c.group || '其他'}]</span> 
-          ${c.tags && c.tags.length ? c.tags.map(t => `#${t}`).join(' ') : '無標籤'}
+          <span style="font-weight:700; color:var(--accent);">[${esc(c.group) || '其他'}]</span>
+          ${c.tags && c.tags.length ? c.tags.map(t => `#${esc(t)}`).join(' ') : '無標籤'}
         </div>
       </div>
 
       <div class="detail-field-card detail-grid-full">
         <div class="df-label"><i class="ti ti-note"></i> 備註筆記</div>
-        <div class="df-val">${c.note || '無備忘錄'}</div>
+        <div class="df-val">${esc(c.note) || '無備忘錄'}</div>
       </div>
       
       <div class="detail-field-card detail-grid-full">
@@ -4841,7 +4844,7 @@ function renderHomeScreen() {
         const color = colorMap[g]||'#94a3b8';
         return `<div onclick="setGroupFilter('${g}');switchTab('cards');" style="display:flex;align-items:center;gap:10px;padding:8px 0;cursor:pointer;${i>0?'border-top:1px solid var(--border-color);':''}">
           <span style="width:8px;height:8px;border-radius:50%;background:${color};flex-shrink:0;"></span>
-          <span style="flex:1;font-size:16px;color:var(--text-primary);">${g}</span>
+          <span style="flex:1;font-size:16px;color:var(--text-primary);">${esc(g)}</span>
           <span style="font-size:15px;color:var(--text-secondary);font-weight:600;">${count} 張</span>
         </div>`;
       }).join('');
@@ -4856,7 +4859,7 @@ function renderHomeScreen() {
     const keys = Object.keys(tagCounts).sort((a,b)=>tagCounts[b]-tagCounts[a]);
     tagCloud.innerHTML = keys.length === 0
       ? '<div style="font-size:15px;color:var(--text-tertiary);">暫無標籤</div>'
-      : keys.map(t => `<span class="tag-filter-chip" style="cursor:default;">#${t} (${tagCounts[t]})</span>`).join('');
+      : keys.map(t => `<span class="tag-filter-chip" style="cursor:default;">#${esc(t)} (${tagCounts[t]})</span>`).join('');
   }
 
   // 待處理名片 (最多 3 筆)
@@ -4874,10 +4877,10 @@ function renderHomeScreen() {
         const fg = `hsl(${hue} 55% 76%)`;
         return `
           <div onclick="selectCard('${c.id}');switchTab('cards');" style="display:flex;align-items:center;gap:13px;padding:12px 12px;border-top:${i===0?'none':'1px solid var(--border-color)'};cursor:pointer;">
-            <div style="width:42px;height:42px;border-radius:12px;background:${bg};color:${fg};display:flex;align-items:center;justify-content:center;font-size:19px;font-weight:600;flex-shrink:0;">${(c.name||'?').slice(0,1)}</div>
+            <div style="width:42px;height:42px;border-radius:12px;background:${bg};color:${fg};display:flex;align-items:center;justify-content:center;font-size:19px;font-weight:600;flex-shrink:0;">${esc((c.name||'?').slice(0,1))}</div>
             <div style="flex:1;min-width:0;">
-              <div style="font-size:17.5px;font-weight:600;color:var(--text-primary);">${c.name || '—'}</div>
-              <div style="font-size:14.5px;color:var(--text-secondary);margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${[c.title, c.org].filter(Boolean).join(' · ') || '—'}</div>
+              <div style="font-size:17.5px;font-weight:600;color:var(--text-primary);">${esc(c.name) || '—'}</div>
+              <div style="font-size:14.5px;color:var(--text-secondary);margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${esc([c.title, c.org].filter(Boolean).join(' · ')) || '—'}</div>
             </div>
             <div style="font-size:13.5px;font-weight:600;color:#f59e0b;padding:4px 9px;border-radius:7px;background:rgba(245,158,11,0.12);border:1px solid rgba(245,158,11,0.25);flex-shrink:0;">待處理</div>
           </div>`;
@@ -4900,12 +4903,12 @@ function renderHomeScreen() {
         const tag = c.tags && c.tags[0] ? c.tags[0] : (c.group || '');
         return `
           <div onclick="selectCard('${c.id}');switchTab('cards');" style="display:flex;align-items:center;gap:13px;padding:12px 12px;border-top:${i===0?'none':'1px solid var(--border-color)'};cursor:pointer;">
-            <div style="width:42px;height:42px;border-radius:12px;background:${bg};color:${fg};display:flex;align-items:center;justify-content:center;font-size:19px;font-weight:600;flex-shrink:0;">${initial}</div>
+            <div style="width:42px;height:42px;border-radius:12px;background:${bg};color:${fg};display:flex;align-items:center;justify-content:center;font-size:19px;font-weight:600;flex-shrink:0;">${esc(initial)}</div>
             <div style="flex:1;min-width:0;">
-              <div style="font-size:17.5px;font-weight:600;color:var(--text-primary);">${c.name || '—'}</div>
-              <div style="font-size:14.5px;color:var(--text-secondary);margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${[c.title, c.org].filter(Boolean).join(' · ') || '—'}</div>
+              <div style="font-size:17.5px;font-weight:600;color:var(--text-primary);">${esc(c.name) || '—'}</div>
+              <div style="font-size:14.5px;color:var(--text-secondary);margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${esc([c.title, c.org].filter(Boolean).join(' · ')) || '—'}</div>
             </div>
-            ${tag ? `<div style="font-size:13.5px;font-weight:600;color:var(--text-secondary);padding:4px 9px;border-radius:7px;background:var(--bg-tertiary);border:1px solid var(--border-color);flex-shrink:0;">${tag}</div>` : ''}
+            ${tag ? `<div style="font-size:13.5px;font-weight:600;color:var(--text-secondary);padding:4px 9px;border-radius:7px;background:var(--bg-tertiary);border:1px solid var(--border-color);flex-shrink:0;">${esc(tag)}</div>` : ''}
           </div>`;
       }).join('');
     }
@@ -6638,16 +6641,16 @@ function showOrgPersonDetail(cardId) {
   const color = {'學校委員':'#6366f1','政府機關':'#0ea5e9','企業客戶':'#10b981','資訊夥伴':'#f59e0b','法人夥伴':'#8b5cf6','供應商夥伴':'#ec4899','其他':'#94a3b8'}[c.group||'其他']||'#94a3b8';
   const html = `
     <div style="display:flex;align-items:center;gap:14px;margin-bottom:16px;">
-      <div style="width:56px;height:56px;border-radius:50%;background:${color};color:#fff;display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:700;flex-shrink:0;">${(c.name||'?').slice(0,1)}</div>
-      <div><div style="font-size:20px;font-weight:700;color:var(--text-primary);">${c.name||'—'}</div>
-        <div style="font-size:15px;color:var(--text-secondary);margin-top:3px;">${[c.title,c.dept].filter(Boolean).join(' · ')||''}</div>
-        <div style="font-size:15px;color:var(--text-tertiary);">${c.org||''}</div>
+      <div style="width:56px;height:56px;border-radius:50%;background:${color};color:#fff;display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:700;flex-shrink:0;">${esc((c.name||'?').slice(0,1))}</div>
+      <div><div style="font-size:20px;font-weight:700;color:var(--text-primary);">${esc(c.name)||'—'}</div>
+        <div style="font-size:15px;color:var(--text-secondary);margin-top:3px;">${esc([c.title,c.dept].filter(Boolean).join(' · '))}</div>
+        <div style="font-size:15px;color:var(--text-tertiary);">${esc(c.org)}</div>
       </div>
     </div>
     <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:18px;">
-      ${c.mobile?`<div style="display:flex;align-items:center;gap:10px;"><i class="ti ti-device-mobile" style="color:var(--accent);width:20px;"></i><a href="tel:${cleanMobile}" style="color:var(--text-primary);font-size:17px;">${c.mobile}</a></div>`:''}
-      ${c.phone?`<div style="display:flex;align-items:center;gap:10px;"><i class="ti ti-phone" style="color:var(--accent);width:20px;"></i><a href="tel:${cleanPhone}" style="color:var(--text-primary);font-size:17px;">${c.phone}</a></div>`:''}
-      ${c.email?`<div style="display:flex;align-items:center;gap:10px;"><i class="ti ti-mail" style="color:var(--accent);width:20px;"></i><a href="mailto:${c.email}" style="color:var(--text-primary);font-size:17px;">${c.email}</a></div>`:''}
+      ${c.mobile?`<div style="display:flex;align-items:center;gap:10px;"><i class="ti ti-device-mobile" style="color:var(--accent);width:20px;"></i><a href="tel:${cleanMobile}" style="color:var(--text-primary);font-size:17px;">${esc(c.mobile)}</a></div>`:''}
+      ${c.phone?`<div style="display:flex;align-items:center;gap:10px;"><i class="ti ti-phone" style="color:var(--accent);width:20px;"></i><a href="tel:${cleanPhone}" style="color:var(--text-primary);font-size:17px;">${esc(c.phone)}</a></div>`:''}
+      ${c.email?`<div style="display:flex;align-items:center;gap:10px;"><i class="ti ti-mail" style="color:var(--accent);width:20px;"></i><a href="mailto:${esc(c.email)}" style="color:var(--text-primary);font-size:17px;">${esc(c.email)}</a></div>`:''}
     </div>
     <div style="display:flex;gap:8px;">
       <button class="btn btn-primary" style="flex:1;" onclick="selectCard('${c.id}');switchTab('cards');document.getElementById('org-detail-modal-bg').classList.remove('open');">
@@ -6726,21 +6729,21 @@ function renderGraphTab() {
       const phone = c.mobile||c.phone||'';
       return `
         <div class="org-person-row" onclick="showOrgPersonDetail('${c.id}');" style="cursor:pointer;">
-          <div class="org-person-avatar" style="background:${color};">${label}</div>
+          <div class="org-person-avatar" style="background:${color};">${esc(label)}</div>
           <div style="flex:1;min-width:0;">
-            <div class="org-person-name">${c.name||'—'}</div>
-            <div class="org-person-title">${[c.title,c.dept].filter(Boolean).join(' · ')||'—'}</div>
+            <div class="org-person-name">${esc(c.name)||'—'}</div>
+            <div class="org-person-title">${esc([c.title,c.dept].filter(Boolean).join(' · '))||'—'}</div>
           </div>
-          ${phone?`<div style="font-size:15px;color:var(--text-tertiary);flex-shrink:0;">${phone}</div>`:''}
+          ${phone?`<div style="font-size:15px;color:var(--text-tertiary);flex-shrink:0;">${esc(phone)}</div>`:''}
           ${c.processed?`<i class="ti ti-circle-check" style="color:var(--color-green);font-size:18px;flex-shrink:0;"></i>`:''}
         </div>`;
     }).join('');
 
     return `
       <div class="org-company-card">
-        <div class="org-company-header" onclick="toggleOrgCompany('${orgName.replace(/'/g,"\\'")}');" style="cursor:pointer;user-select:none;">
+        <div class="org-company-header" onclick="toggleOrgCompany('${esc(orgName.replace(/\\/g,'\\\\').replace(/'/g,"\\'"))}');" style="cursor:pointer;user-select:none;">
           <i class="ti ${isNoOrg?'ti-user-question':'ti-building'}" style="color:var(--accent);font-size:18px;flex-shrink:0;"></i>
-          <div class="org-company-name" style="flex:1;">${orgName}</div>
+          <div class="org-company-name" style="flex:1;">${esc(orgName)}</div>
           <span class="org-company-count">${people.length} 人</span>
           <i class="ti ${isExpanded?'ti-chevron-up':'ti-chevron-down'}" style="font-size:17px;color:var(--text-tertiary);margin-left:6px;"></i>
         </div>
