@@ -2239,13 +2239,13 @@ input, select, textarea, button { font-size: 16px; }
   </main>
 
   <nav class="bottom-tab-bar">
+    <button class="btab active" id="btab-myprofile" onclick="switchTab('myprofile')">
+      <div class="btab-pip"><i class="ti ti-user-circle"></i></div>
+      <span>我的</span>
+    </button>
     <button class="btab" id="btab-cards" onclick="switchTab('cards')">
       <div class="btab-pip"><i class="ti ti-id"></i></div>
       <span>名片</span>
-    </button>
-    <button class="btab" id="btab-crm" onclick="switchTab('crm')">
-      <div class="btab-pip"><i class="ti ti-users"></i><span class="crm-badge" id="crm-badge" style="display:none"></span></div>
-      <span>客戶</span>
     </button>
     <button class="btab btab-scan" id="btab-batch" onclick="switchTab('batch')">
       <div class="btab-pip"><i class="ti ti-camera"></i></div>
@@ -2255,9 +2255,9 @@ input, select, textarea, button { font-size: 16px; }
       <div class="btab-pip"><i class="ti ti-chart-pie"></i></div>
       <span>洞察</span>
     </button>
-    <button class="btab active" id="btab-myprofile" onclick="switchTab('myprofile')">
-      <div class="btab-pip"><i class="ti ti-user-circle"></i></div>
-      <span>我的</span>
+    <button class="btab" id="btab-crm" onclick="switchTab('crm')">
+      <div class="btab-pip"><i class="ti ti-users"></i><span class="crm-badge" id="crm-badge" style="display:none"></span></div>
+      <span>客戶</span>
     </button>
   </nav>
 </div>
