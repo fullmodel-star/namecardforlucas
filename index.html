@@ -1892,9 +1892,15 @@ input, select, textarea, button { font-size: 16px; }
         </div>
 
         <div class="progress-bar" id="batch-progress-bar"><div class="progress-fill" id="batch-progress-fill"></div></div>
-        <div id="batch-progress-stats" style="display:none;font-size:16px;color:var(--text-secondary);margin:6px 0 0;text-align:center;min-height:18px;"></div>
-        <div id="batch-queue-count" style="display:none;font-size:14px;color:var(--text-secondary);margin:6px 2px 0;"></div>
-        <div class="queue-list" id="batch-queue-list"></div>
+        <div id="batch-progress-stats" style="display:none;font-size:16px;color:var(--text-secondary);margin:8px 0 0;text-align:center;min-height:18px;font-weight:600;"></div>
+        <!-- 聚焦模式：狀態統計膠囊 + 目前處理中那一張（辨識進行中才顯示，取代 99 列逐一變色） -->
+        <div id="batch-status-chips" style="display:none;flex-wrap:wrap;justify-content:center;gap:6px;margin:10px 2px 0;"></div>
+        <div id="batch-current" style="display:none;margin:10px 0 0;padding:12px 14px;border-radius:12px;border:1px solid var(--border);background:var(--accent-soft);"></div>
+        <!-- 完成後只列出需檢查的（空白/失敗） -->
+        <div id="batch-review" style="display:none;margin:12px 0 0;"></div>
+        <!-- 尚未處理的完整清單，預設收合，點「展開全部」才顯示 -->
+        <div id="batch-queue-count" style="display:none;font-size:14px;color:var(--text-secondary);margin:12px 2px 0;"></div>
+        <div class="queue-list" id="batch-queue-list" style="display:none;"></div>
 
         <div style="display:flex;gap:8px;margin:1.25rem 0 1.5rem;flex-wrap:wrap;">
           <button class="btn btn-primary" id="btn-start-batch" onclick="startBatchProcessing()" style="flex:1 1 140px;font-size:14px;white-space:nowrap;padding:8px 8px;"><i class="ti ti-robot"></i> 開始 AI 批次辨識</button>
@@ -5717,44 +5723,106 @@ async function addFilesToBatchQueue(files) {
   renderBatchQueueList();
 }
 
+// ── 批次辨識「聚焦模式」渲染 ─────────────────────────────────
+// 舊版把整份佇列（可能 99 列）全攤開、且每秒重畫一次，畫面狂閃像當機。
+// 新版：進行中只顯示「進度總覽 + 目前處理中那一張」，完整清單預設收合，
+// 完成後只列出需檢查的（空白/失敗）。狀態由 batchRun 承載、輕量更新。
+let batchRun = null;          // {total, done, empty, fail, cards, currentName, currentStatus, active, problems:[]}
+let batchListExpanded = false;
+
+function qItemName(q) { return (q && (q.fileName || (q.file && q.file.name))) || '雲端圖片'; }
+
+function toggleBatchList() {
+  batchListExpanded = !batchListExpanded;
+  renderBatchQueueList();
+}
+
+// 目前處理中那一張的輕量更新（冷卻倒數每秒呼叫，只動這一小塊，不重畫整份清單）
+function setBatchCurrent(name, statusHtml) {
+  if (batchRun) { batchRun.currentName = name; batchRun.currentStatus = statusHtml; }
+  const el = document.getElementById('batch-current');
+  if (!el || !batchRun || !batchRun.active) return;
+  el.style.display = 'block';
+  el.innerHTML =
+    `<div style="font-size:12.5px;color:var(--text-tertiary);margin-bottom:3px;">目前處理中</div>` +
+    `<div style="font-weight:600;font-size:15px;word-break:break-all;">${name || '—'}</div>` +
+    `<div style="margin-top:3px;font-size:13.5px;color:var(--accent);font-weight:600;">${statusHtml || ''}</div>`;
+}
+
+// 狀態統計膠囊（待 / 辨識中 / 完成 / 空白 / 失敗）+ 目前處理中
+function renderBatchStatus() {
+  const chips = document.getElementById('batch-status-chips');
+  const b = batchRun;
+  if (!chips) return;
+  if (!b || !b.active) { chips.style.display = 'none'; return; }
+  const waitLeft = scanQueue.filter(q => q.status === 'wait').length;
+  const scanning = scanQueue.some(q => q.status === 'scanning' || q.status === 'cooldown') ? 1 : 0;
+  const chip = (bg, txt) => `<span style="padding:3px 10px;border-radius:999px;background:${bg};color:#fff;font-weight:600;font-size:13px;">${txt}</span>`;
+  chips.style.display = 'flex';
+  chips.innerHTML =
+    chip('#94a3b8', `⏳ 待 ${waitLeft}`) +
+    (scanning ? chip('#6366f1', `⚡ 辨識中 ${scanning}`) : '') +
+    chip('#10b981', `✓ 完成 ${b.done}`) +
+    (b.empty ? chip('#f59e0b', `⚠ 空白 ${b.empty}`) : '') +
+    (b.fail ? chip('#ef4444', `✖ 失敗 ${b.fail}`) : '');
+  setBatchCurrent(b.currentName, b.currentStatus);
+}
+
+// 完成後：只列出需要檢查的（空白/失敗），成功的已進名片庫不再列
+function renderBatchReview() {
+  const el = document.getElementById('batch-review');
+  if (!el) return;
+  const probs = (batchRun && batchRun.problems) || [];
+  if (probs.length === 0) { el.style.display = 'none'; el.innerHTML = ''; return; }
+  const row = p => `<div style="display:flex;align-items:center;gap:8px;padding:7px 10px;border-bottom:1px solid var(--border);font-size:13.5px;">
+      <span style="color:${p.kind === 'empty' ? 'var(--color-amber)' : 'var(--color-red)'};">${p.kind === 'empty' ? '⚠' : '✖'}</span>
+      <span style="flex:1;word-break:break-all;">${p.name}</span>
+      <span style="color:var(--text-tertiary);white-space:nowrap;">${p.kind === 'empty' ? '未讀到名片' : (p.reason || '辨識失敗')}</span>
+    </div>`;
+  el.style.display = 'block';
+  el.innerHTML =
+    `<div style="font-weight:600;font-size:14px;color:var(--text-secondary);margin-bottom:6px;"><i class="ti ti-alert-triangle"></i> 需檢查 ${probs.length} 張（成功的已進名片庫，不列出）</div>` +
+    `<div style="border:1px solid var(--border);border-radius:12px;overflow:hidden;">${probs.map(row).join('')}</div>`;
+}
+
+// 唯一的清單渲染入口：統計膠囊 + 目前處理中 + 收合式「尚未處理」清單
 function renderBatchQueueList() {
   const list = document.getElementById('batch-queue-list');
   const countEl = document.getElementById('batch-queue-count');
-  if (scanQueue.length === 0) {
-    list.innerHTML = '';
+  const current = document.getElementById('batch-current');
+
+  if (batchRun && batchRun.active) {
+    renderBatchStatus();
+  } else {
+    const chips = document.getElementById('batch-status-chips');
+    if (chips) chips.style.display = 'none';
+    if (current) current.style.display = 'none';
+  }
+
+  // 收合式完整清單：只含「尚未處理」項目（wait/scanning/cooldown）；已完成/失敗者已移出佇列
+  const pending = scanQueue.filter(q => q.status === 'wait' || q.status === 'scanning' || q.status === 'cooldown');
+  if (pending.length === 0) {
+    if (list) { list.style.display = 'none'; list.innerHTML = ''; }
     if (countEl) countEl.style.display = 'none';
     return;
   }
-
-  // 佇列總覽標題（讓清單筆數與進度分母對得起來）
   if (countEl) {
-    const wait = scanQueue.filter(q => q.status === 'wait').length;
-    const done = scanQueue.filter(q => q.status === 'done').length;
-    const err = scanQueue.filter(q => q.status === 'error').length;
     countEl.style.display = 'block';
-    countEl.textContent = `佇列共 ${scanQueue.length} 張（待辨識 ${wait}・完成 ${done}${err ? `・失敗 ${err}` : ''}）`;
+    countEl.innerHTML =
+      `<span>佇列尚有 <b>${pending.length}</b> 張待辨識</span>` +
+      ` <button type="button" onclick="toggleBatchList()" style="background:none;border:0;color:var(--accent);font-weight:600;cursor:pointer;font-size:14px;padding:2px 4px;">${batchListExpanded ? '收合清單 ▴' : '展開全部 ▾'}</button>`;
   }
+  if (!batchListExpanded) { list.style.display = 'none'; list.innerHTML = ''; return; }
 
-  list.innerHTML = scanQueue.map(q => {
-    let statusText = '等待辨識中';
-    let statusClass = 'color:var(--text-tertiary)';
-    let statusIcon = 'ti ti-loader';
-    if (q.status === 'scanning') { statusText = '⚡ Gemini AI 智慧分析分割中...'; statusClass = 'color:var(--accent); font-weight:bold;'; }
-    if (q.status === 'cooldown') { statusText = q.errInfo ? `${q.errInfo} (剩餘 ${q.cooldownSec || 0} 秒)` : `⏳ 頻率限制保護中，等待下一張 (剩餘 ${q.cooldownSec || 0} 秒)...`; statusClass = 'color:var(--color-amber); font-weight:bold;'; statusIcon = 'ti ti-clock'; }
-    if (q.status === 'done') { statusText = '✓ 辨識完成並已匯入名片庫'; statusClass = 'color:var(--color-green);'; statusIcon = 'ti ti-circle-check'; }
-    if (q.status === 'empty') { statusText = '⚠ 未讀到名片（可能空白/模糊，請檢查）'; statusClass = 'color:var(--color-amber);'; statusIcon = 'ti ti-alert-triangle'; }
-    if (q.status === 'error') { statusText = `✖ 辨識失敗 (${q.errInfo || '未知原因'})`; statusClass = 'color:var(--color-red);'; statusIcon = 'ti ti-circle-x'; }
-
-    return `
-      <div class="queue-item">
-        <div class="qi-title-row">
-          <div class="qi-name">${q.fileName || (q.file && q.file.name) || '雲端硬碟圖片'}</div>
-          <div class="qi-status-text" style="${statusClass}">
-            <i class="${statusIcon}"></i> ${statusText}
-          </div>
-        </div>
-      </div>
-    `;
+  list.style.display = '';
+  list.innerHTML = pending.map(q => {
+    let statusText = '等待辨識中', statusClass = 'color:var(--text-tertiary)', statusIcon = 'ti ti-loader';
+    if (q.status === 'scanning') { statusText = '⚡ 辨識中…'; statusClass = 'color:var(--accent);font-weight:bold;'; }
+    if (q.status === 'cooldown') { statusText = q.errInfo ? `${q.errInfo}（剩 ${q.cooldownSec || 0} 秒）` : `⏳ 冷卻 ${q.cooldownSec || 0} 秒`; statusClass = 'color:var(--color-amber);font-weight:bold;'; statusIcon = 'ti ti-clock'; }
+    return `<div class="queue-item"><div class="qi-title-row">
+        <div class="qi-name">${qItemName(q)}</div>
+        <div class="qi-status-text" style="${statusClass}"><i class="${statusIcon}"></i> ${statusText}</div>
+      </div></div>`;
   }).join('');
 }
 
@@ -5778,6 +5846,11 @@ async function startBatchProcessing() {
   ps.textContent = `準備開始，共 ${waiting.length} 張照片待辨識...`;
   let doneCount = 0, failCount = 0, cardCount = 0, emptyCount = 0, multiPhotoCount = 0;
   driveArchiveFailThisRun = 0;  // 本批「已辨識但雲端實體歸檔失敗」歸零重算
+
+  // 聚焦模式狀態：開跑即重置，清掉上一輪的「需檢查」清單
+  batchRun = { total: waiting.length, done: 0, empty: 0, fail: 0, cards: 0, currentName: '', currentStatus: '', active: true, problems: [] };
+  batchListExpanded = false;
+  renderBatchReview();
   
   // 1. 自動修復解析：如果有雲端硬碟匯入的檔案且 cache 為空，重新載入 ID
   const hasDriveItems = waiting.some(item => item.driveId);
@@ -5794,10 +5867,12 @@ async function startBatchProcessing() {
   for (let i = 0; i < waiting.length; i++) {
     if (!isScanning) break;   // 使用者按了「停止辨識」→ 處理完當前這張就停
     const item = waiting[i];
+    const curName = qItemName(item);   // 先存名字：辨識完 item.file 會被清空
     item.status = 'scanning';
     await dbSaveQueueItem(item);
+    setBatchCurrent(curName, '⚡ Gemini 智慧分析中…');
     renderBatchQueueList();
-    
+
     let success = false;
     let retryCount = 0;
     const maxRetries = 3;
@@ -5830,7 +5905,8 @@ async function startBatchProcessing() {
         checkScanDuplicate(batchNewCards);
         cardCount += batchNewCards.length;
         const gotNothing = batchNewCards.length === 0;   // AI 讀不到任何名片（空白/模糊）
-        if (gotNothing) emptyCount++; else if (batchNewCards.length > 1) multiPhotoCount++;
+        if (gotNothing) { emptyCount++; batchRun.problems.push({ name: curName, kind: 'empty' }); }
+        else if (batchNewCards.length > 1) multiPhotoCount++;
 
         item.status = gotNothing ? 'empty' : 'done';
         success = true;
@@ -5856,12 +5932,12 @@ async function startBatchProcessing() {
         if (err.isRateLimit && retryCount < maxRetries) {
           retryCount++;
           item.status = 'cooldown';
-          // 顯示動態避讓倒數
+          // 顯示動態避讓倒數（只更新「目前處理中」小塊，不重畫整份清單）
           for (let sec = backoffDelay; sec > 0; sec--) {
             if (!isScanning) break;
             item.cooldownSec = sec;
             item.errInfo = `⚠️ 觸發頻率限制，第 ${retryCount} 次避讓重試中...`;
-            renderBatchQueueList();
+            setBatchCurrent(curName, `⚠️ 頻率限制保護中，第 ${retryCount} 次避讓重試 ${sec} 秒…`);
             await new Promise(r => setTimeout(r, 1000));
           }
           backoffDelay *= 2; // 指數級增加等待時間，例如 15s -> 30s -> 60s
@@ -5869,6 +5945,7 @@ async function startBatchProcessing() {
           delete item.cooldownSec;
           delete item.errInfo;
           await dbSaveQueueItem(item);
+          setBatchCurrent(curName, '⚡ Gemini 智慧分析中…');
           renderBatchQueueList();
         } else {
           item.status = 'error';
@@ -5877,6 +5954,7 @@ async function startBatchProcessing() {
           // 真正「這張辨識不出來」才搬到「辨識失敗」資料夾，避免下批又被抓回反覆卡住；
           // 金鑰未填或配額耗盡屬全域問題、照片本身沒問題，保留在「未辨識」待之後重試。
           const isGlobalIssue = err.message === 'API_KEY_EMPTY' || err.isRateLimit;
+          if (!isGlobalIssue) batchRun.problems.push({ name: curName, kind: 'error', reason: item.errInfo });
           if (!isGlobalIssue && item.driveId) {
             markDriveIdProcessed(item.driveId); // 真正辨識不出來也記帳，避免下批又抓回反覆卡住
             if (gdriveToken && driveFolderCache.failed) {
@@ -5901,7 +5979,9 @@ async function startBatchProcessing() {
     else if (item.status === 'error') failCount++;
     // （empty 已在成功分支以 emptyCount 計入，不重複計）
     pf.style.width = `${((i + 1) / waiting.length) * 100}%`;
-    ps.textContent = `已處理 ${doneCount + emptyCount + failCount} / ${waiting.length} 張照片　新增 ${cardCount} 張名片${emptyCount ? `　空白 ${emptyCount}` : ''}${failCount ? `　失敗 ${failCount}` : ''}`;
+    // 聚焦模式：進度頭條走精簡，明細改由狀態膠囊呈現
+    ps.textContent = `辨識中… ${doneCount + emptyCount + failCount} / ${waiting.length} 張`;
+    batchRun.done = doneCount; batchRun.empty = emptyCount; batchRun.fail = failCount; batchRun.cards = cardCount;
     renderBatchQueueList();
     renderSidebarFilters();
     renderCardsGrid();
@@ -5913,14 +5993,15 @@ async function startBatchProcessing() {
       const originalStatus = nextItem.status;
       nextItem.status = 'cooldown';
       renderBatchQueueList();
-      
+
       for (let sec = delaySec; sec > 0; sec--) {
         if (!isScanning) break;
         nextItem.cooldownSec = sec;
-        renderBatchQueueList();
+        // 只更新「目前處理中」小塊的倒數，不重畫整份清單（消除每秒閃爍）
+        setBatchCurrent(qItemName(nextItem), `⏳ 冷卻 ${sec} 秒，準備下一張…`);
         await new Promise(r => setTimeout(r, 1000));
       }
-      
+
       nextItem.status = originalStatus;
       delete nextItem.cooldownSec;
     }
@@ -5929,6 +6010,10 @@ async function startBatchProcessing() {
   isScanning = false;
   pb.classList.remove('show');
   pf.style.width = '0%';
+  // 收掉聚焦模式的「膠囊 / 目前處理中」，改列出需檢查的（空白/失敗）
+  if (batchRun) batchRun.active = false;
+  renderBatchQueueList();
+  renderBatchReview();
   // 還原「開始/停止」按鈕顯示
   { const sb = document.getElementById('btn-start-batch'), tb = document.getElementById('btn-stop-batch');
     if (sb) sb.style.display = ''; if (tb) tb.style.display = 'none'; }
@@ -5981,6 +6066,8 @@ async function clearBatchQueue() {
   if (isScanning) return;
   scanQueue = [];
   await dbClearQueue(); // 一併清空資料庫佇列
+  batchRun = null; batchListExpanded = false;
+  renderBatchReview();       // 清掉「需檢查」清單
   renderBatchQueueList();
 }
 
