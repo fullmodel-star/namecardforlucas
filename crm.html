@@ -18,7 +18,7 @@
   .top{padding:16px 20px 12px;background:var(--bg);position:sticky;top:0;z-index:5;}
   .top h1{font-size:24px;font-weight:800;}
   .top .sub{font-size:13px;color:var(--sub);margin-top:3px;}
-  .top-actions{position:absolute;right:16px;top:calc(env(safe-area-inset-top) + 18px);display:flex;gap:8px;}
+  .top-actions{position:absolute;right:16px;top:18px;display:flex;gap:8px;}
   .icon-btn{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:8px 11px;font-size:13px;font-weight:600;color:var(--ink);cursor:pointer;}
 
   .body{flex:1;overflow-y:auto;padding:0 16px 90px;}
@@ -35,9 +35,8 @@
   .card:active{transform:scale(.985);background:#fafbfc;}
   .avatar{width:44px;height:44px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-weight:700;color:#fff;font-size:17px;overflow:hidden;background-size:cover;background-position:center;}
   .c-main{flex:1;min-width:0;}
-  .c-name{font-size:16px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:flex;align-items:center;gap:6px;}
+  .c-name{font-size:16px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
   .c-org{font-size:13px;color:var(--sub);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-  .lv-tag{font-size:10px;font-weight:700;padding:1px 7px;border-radius:8px;color:#fff;flex-shrink:0;}
   .status{font-size:12px;font-weight:600;padding:5px 10px;border-radius:20px;white-space:nowrap;display:flex;align-items:center;gap:5px;}
   .dot{width:7px;height:7px;border-radius:50%;}
   .s-red{background:#ffe9e9;color:var(--red);} .s-red .dot{background:var(--red);}
@@ -47,7 +46,6 @@
 
   .empty{text-align:center;color:var(--sub);padding:60px 24px;line-height:1.8;font-size:14px;}
   .empty .big{font-size:40px;margin-bottom:12px;}
-  .empty button{margin-top:18px;background:var(--ink);color:#fff;border:none;border-radius:12px;padding:12px 20px;font-size:15px;font-weight:700;cursor:pointer;}
 
   .source-tag{display:inline-block;font-size:11px;padding:3px 9px;border-radius:8px;font-weight:600;margin-left:6px;}
   .src-live{background:#e4f8ec;color:var(--green);}
@@ -68,33 +66,6 @@
   .contact{display:flex;gap:10px;margin-top:16px;}
   .contact a{flex:1;text-align:center;background:#f1f3f7;border-radius:12px;padding:11px;font-size:14px;font-weight:600;color:#3a4658;text-decoration:none;}
   .contact a.off{opacity:.35;pointer-events:none;}
-
-  .level-sec{padding:0 22px 4px;}
-  .level-sec .lv-chips{display:flex;gap:8px;flex-wrap:wrap;}
-  .lv-chip{padding:7px 13px;border-radius:20px;background:#f1f3f7;font-size:13px;font-weight:600;cursor:pointer;border:2px solid transparent;color:#3a4658;}
-  .lv-chip.on{color:#fff;}
-
-  /* 待收款 KPI 卡 */
-  .kpi{display:flex;gap:10px;margin-bottom:16px;}
-  .kpi .box{flex:1;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:13px 14px;}
-  .kpi .box.money{background:#fff5f5;border-color:#ffd9d9;}
-  .kpi .n{font-size:19px;font-weight:800;}
-  .kpi .box.money .n{color:var(--red);}
-  .kpi .l{font-size:11px;color:var(--sub);margin-top:3px;}
-
-  /* 案子（deals） */
-  .recv-badge{font-size:11px;font-weight:700;color:var(--red);background:#ffe9e9;border-radius:8px;padding:1px 7px;margin-top:4px;display:inline-block;}
-  .deal-sec{padding:6px 16px 4px;}
-  .deal-row{display:flex;justify-content:space-between;align-items:center;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 14px;margin-bottom:8px;cursor:pointer;}
-  .deal-row:active{background:#fafbfc;}
-  .deal-title{font-size:15px;font-weight:700;}
-  .deal-sub{font-size:12px;color:var(--sub);margin-top:2px;}
-  .deal-amt{font-size:16px;font-weight:800;}
-  .stage-badge{font-size:11px;font-weight:700;color:#fff;border-radius:8px;padding:2px 8px;margin-top:5px;display:inline-block;}
-  .add-deal{width:calc(100% - 32px);margin:2px 16px 8px;background:#eef1f7;color:#3a4658;border:none;border-radius:12px;padding:12px;font-weight:700;cursor:pointer;font-size:14px;}
-  .stage-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;}
-  .stage-chip{padding:8px 13px;border-radius:12px;background:#f1f3f7;font-size:13px;font-weight:600;cursor:pointer;border:2px solid transparent;}
-  .stage-chip.on{color:#fff;}
 
   .remind-box{margin:12px 16px 16px;background:#fff8e8;border:1px solid #ffe4b0;border-radius:14px;padding:14px 16px;display:flex;justify-content:space-between;align-items:center;cursor:pointer;}
   .remind-box .r1{font-size:12px;color:#c98a1a;font-weight:700;}
@@ -119,6 +90,7 @@
   .sheet{position:fixed;left:0;right:0;bottom:0;background:var(--card);border-radius:24px 24px 0 0;z-index:31;transform:translateY(100%);transition:transform .24s ease;max-width:480px;margin:0 auto;padding:20px 20px calc(env(safe-area-inset-bottom) + 20px);max-height:88vh;overflow-y:auto;}
   .sheet.open{transform:translateY(0);}
   .sheet h3{font-size:18px;font-weight:800;margin-bottom:16px;}
+  .hint{font-size:13px;color:var(--sub);line-height:1.6;margin:-6px 0 16px;}
   .type-row{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;}
   .type-chip{padding:9px 14px;border-radius:12px;background:#f1f3f7;font-size:14px;font-weight:600;cursor:pointer;border:2px solid transparent;}
   .type-chip.on{border-color:var(--accent);background:#eaf0ff;color:var(--accent);}
@@ -128,14 +100,7 @@
   .sheet textarea{min-height:80px;resize:none;}
   .sheet .save{width:100%;background:var(--ink);color:#fff;border:none;border-radius:14px;padding:15px;font-size:16px;font-weight:700;cursor:pointer;margin-top:4px;}
   .sheet .clear{width:100%;background:transparent;color:var(--red);border:none;padding:12px;font-size:14px;font-weight:600;cursor:pointer;margin-top:6px;}
-
-  /* settings level rows */
-  .lv-row{display:flex;gap:8px;align-items:center;margin-bottom:10px;}
-  .lv-row input.nm{flex:2;} .lv-row input.dy{flex:1;text-align:center;}
-  .lv-row .del{background:#ffe9e9;color:var(--red);border:none;border-radius:10px;padding:10px 12px;font-weight:700;cursor:pointer;flex-shrink:0;}
-  .lv-head{display:flex;gap:8px;font-size:11px;color:var(--sub);font-weight:700;margin-bottom:6px;padding:0 2px;}
-  .lv-head span:nth-child(1){flex:2;} .lv-head span:nth-child(2),.lv-head span:nth-child(3){flex:1;text-align:center;} .lv-head span:nth-child(4){width:44px;}
-  .add-lv{width:100%;background:#eef1f7;color:#3a4658;border:none;border-radius:12px;padding:11px;font-weight:700;cursor:pointer;margin:6px 0 16px;}
+  .mini-toggle{font-size:13px;color:var(--accent);font-weight:600;cursor:pointer;margin:-4px 2px 14px;}
 
   .toast{position:fixed;bottom:calc(env(safe-area-inset-bottom) + 24px);left:50%;transform:translateX(-50%) translateY(20px);background:var(--ink);color:#fff;padding:12px 20px;border-radius:14px;font-size:14px;font-weight:600;z-index:50;opacity:0;transition:.25s;pointer-events:none;}
   .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
@@ -152,7 +117,7 @@
   </div>
   <div class="body">
     <div class="search">🔍
-      <input id="q" placeholder="搜尋姓名 / 公司 / 分級 / 紀錄內容" oninput="render()">
+      <input id="q" placeholder="搜尋姓名 / 公司 / 紀錄內容" oninput="render()">
     </div>
     <div id="today-wrap"></div>
     <div id="list"></div>
@@ -176,16 +141,18 @@
 <div class="sheet" id="logSheet">
   <h3>記一筆互動</h3>
   <div class="type-row" id="typeRow"></div>
-  <div class="field"><label>日期（可補過去）</label><input type="date" id="logDate"></div>
-  <div class="field"><label>內容</label><textarea id="logText" placeholder="聊了什麼？例如：對方詢問報價，Q3 有預算"></textarea></div>
+  <div class="field"><textarea id="logText" placeholder="備註（可留空，例如：聊了報價，Q3 有預算）"></textarea></div>
+  <div class="mini-toggle" id="logDateToggle" onclick="showLogDate()">＋ 補以前的日期</div>
+  <div class="field" id="logDateField" style="display:none;"><label>日期</label><input type="date" id="logDate"></div>
   <button class="save" onclick="saveLog()">儲存</button>
 </div>
 
 <!-- 設提醒 -->
 <div class="sheet" id="remindSheet">
   <h3>設定下次提醒</h3>
-  <div class="field"><label>提醒日期</label><input type="date" id="remindDate"></div>
-  <div class="field"><label>事由</label><textarea id="remindNote" placeholder="例如：追報價進度" style="min-height:60px;"></textarea></div>
+  <div class="type-row" id="remindQuick"></div>
+  <div class="field"><label>提醒日期</label><input type="date" id="remindDate" oninput="clearRemindChip()"></div>
+  <div class="field"><label>事由（可留空）</label><textarea id="remindNote" placeholder="例如：追報價進度" style="min-height:56px;"></textarea></div>
   <button class="save" onclick="saveRemind()">儲存提醒</button>
   <button class="clear" onclick="clearRemind()">清除提醒</button>
 </div>
@@ -195,81 +162,53 @@
   <h3>新增客戶</h3>
   <div class="field"><label>姓名 *</label><input type="text" id="nc-name" placeholder="王小明"></div>
   <div class="field"><label>公司</label><input type="text" id="nc-org" placeholder="某某公司"></div>
-  <div class="field"><label>職稱</label><input type="text" id="nc-title" placeholder="經理"></div>
-  <div class="field"><label>手機</label><input type="text" id="nc-mobile" placeholder="09xx-xxx-xxx"></div>
-  <div class="field"><label>Email</label><input type="text" id="nc-email" placeholder="name@example.com"></div>
+  <div class="field"><label>手機</label><input type="text" id="nc-mobile" placeholder="09xx-xxx-xxx" inputmode="tel"></div>
   <button class="save" onclick="saveNewCustomer()">建立</button>
 </div>
 
-<!-- 設定：分級門檻 -->
+<!-- 設定：提醒門檻 -->
 <div class="sheet" id="settingsSheet">
-  <h3>分級與提醒門檻</h3>
-  <p style="font-size:13px;color:var(--sub);line-height:1.6;margin-bottom:14px;">
-    每個分級可設自己的「黃燈 / 紅燈」天數。<br>例：熱客 3/7、一般 30/60。數字＝距上次聯絡幾天後變色。</p>
-  <div class="lv-head"><span>分級名稱</span><span>黃燈(天)</span><span>紅燈(天)</span><span></span></div>
-  <div id="lvRows"></div>
-  <button class="add-lv" onclick="addLvRow()">＋ 新增分級</button>
-  <div class="lv-head"><span>未分級客戶</span><span>黃燈(天)</span><span>紅燈(天)</span><span></span></div>
-  <div class="lv-row">
-    <input class="nm" type="text" value="（預設）" disabled style="flex:2;">
-    <input class="dy" type="number" id="def-yellow" style="flex:1;">
-    <input class="dy" type="number" id="def-red" style="flex:1;">
-    <span style="width:44px;"></span>
-  </div>
+  <h3>提醒門檻</h3>
+  <p class="hint">距離上次聯絡幾天後，燈號變色提醒你該追蹤。全部客戶共用這組門檻。</p>
+  <div class="field"><label>幾天沒聯絡 → 🟡 黃燈（該追蹤了）</label><input type="number" id="set-yellow" inputmode="numeric"></div>
+  <div class="field"><label>幾天沒聯絡 → 🔴 紅燈（太久沒聯絡）</label><input type="number" id="set-red" inputmode="numeric"></div>
   <button class="save" onclick="saveSettings()">儲存設定</button>
+  <div style="border-top:1px solid var(--line);margin:18px 0 14px;"></div>
+  <p class="hint" style="margin:0 0 12px;">資料只存這台裝置，<b style="color:var(--red);">清除瀏覽器資料或換手機就會消失</b>，請定期匯出備份。</p>
+  <div style="display:flex;gap:10px;">
+    <button class="btn btn-ghost" style="border-radius:12px;padding:13px;font-weight:700;" onclick="exportBackup()">⬇ 匯出備份</button>
+    <button class="btn btn-ghost" style="border-radius:12px;padding:13px;font-weight:700;" onclick="document.getElementById('crmFile').click()">⬆ 匯入還原</button>
+  </div>
 </div>
 
-<!-- 案子 / 報價 -->
-<div class="sheet" id="dealSheet">
-  <h3 id="dealSheetTitle">新增案子</h3>
-  <div class="field"><label>案名 *</label><input type="text" id="dl-title" placeholder="例如：品牌設計專案"></div>
-  <div class="field"><label>金額</label><input type="number" id="dl-amount" placeholder="40000" inputmode="numeric"></div>
-  <div class="field"><label>階段</label><div class="stage-row" id="stageRow"></div></div>
-  <div class="field"><label>備註</label><textarea id="dl-note" placeholder="例如：等對方採購簽核" style="min-height:56px;"></textarea></div>
-  <button class="save" onclick="saveDeal()">儲存</button>
-  <button class="clear" id="dl-delete" onclick="deleteDeal()" style="display:none;">刪除此案</button>
-</div>
-
+<input type="file" id="crmFile" accept="application/json" style="display:none" onchange="importBackup(event)">
 <div class="toast" id="toast"></div>
 
 <script>
 /* ============================================================
-   資料層 —— 遵循「資料契約 v1」
-   BizCardDB：名片程式擁有，CRM 只讀
-   CrmDB：CRM 擁有（crm 追蹤 / cards_snapshot 快照 / manual_cards 手動客戶 / settings 設定）
+   資料層
+   BizCardDB：名片程式擁有，CRM 只讀（同一支 App、同源即通）
+   CrmDB：CRM 擁有（crm 追蹤 / manual_cards 手動客戶 / settings 設定）
    ============================================================ */
-const BIZ_DB='BizCardDB', CRM_DB='CrmDB', DEAL_DB='DealDB';
-let crmDb=null, dealDb=null, dataSource='none', cardsCache=[], mergedCache=[], currentId=null;
-let config=null, dealsByCard={};
+const BIZ_DB='BizCardDB', CRM_DB='CrmDB';
+let crmDb=null, dataSource='none', cardsCache=[], mergedCache=[], currentId=null, config=null;
+let bizConn=null;
 
-/* 案子階段 —— 與未來「報價請款」程式共用同一組定義 */
-const STAGES=[
-  {key:'lead',   name:'洽談中', color:'#8a94a6', open:true},
-  {key:'quote',  name:'已報價', color:'#d98a00', open:true},
-  {key:'won',    name:'已成交', color:'#4f7cff', open:true},
-  {key:'billed', name:'已請款', color:'#e5484d', open:true},
-  {key:'paid',   name:'已收款', color:'#22a565', open:false},
-  {key:'lost',   name:'未成交', color:'#b4bccb', open:false}
-];
-const stageOf=k=>STAGES.find(s=>s.key===k)||STAGES[0];
+const DEFAULT_CONFIG={key:'config', yellow:30, red:60};
 
-const DEFAULT_CONFIG={
-  key:'config',
-  levels:[
-    {name:'重點', yellow:14, red:30, color:'#e5484d'},
-    {name:'一般', yellow:30, red:60, color:'#4f7cff'},
-    {name:'長期經營', yellow:60, red:120, color:'#22a565'}
-  ],
-  defYellow:30, defRed:60
-};
-
-function openBiz(){
-  return new Promise(resolve=>{
+/* 只讀 BizCardDB：共用單一連線＋onversionchange 主動讓路，避免堆積連線卡死名片 App 的 DB 升級；
+   且名片庫尚未建立時不憑空建出空 DB 干擾名片 App 初始化 */
+async function openBiz(){
+  if(bizConn) return bizConn;
+  try{ if(indexedDB.databases){ const dbs=await indexedDB.databases(); if(!dbs.some(d=>d.name===BIZ_DB)) return null; } }catch(e){}
+  bizConn=await new Promise(resolve=>{
     let req; try{ req=indexedDB.open(BIZ_DB); }catch(e){ return resolve(null); }
-    req.onsuccess=e=>resolve(e.target.result);
+    req.onsuccess=e=>{ const db=e.target.result; db.onversionchange=()=>{ try{db.close();}catch(_){} bizConn=null; imgCache={}; }; resolve(db); };
     req.onerror=()=>resolve(null);
   });
+  return bizConn;
 }
+/* CrmDB 維持與已上線版相同的 version 2 / 四表結構（含 cards_snapshot 不使用），避免升級風險 */
 function openCrm(){
   return new Promise((resolve,reject)=>{
     const req=indexedDB.open(CRM_DB,2);
@@ -284,46 +223,6 @@ function openCrm(){
     req.onerror=e=>reject(e.target.error);
   });
 }
-/* DealDB —— 案子/報價，未來由「報價請款」程式共同擁有 */
-function openDeal(){
-  return new Promise((resolve,reject)=>{
-    const req=indexedDB.open(DEAL_DB,1);
-    req.onupgradeneeded=e=>{
-      const db=e.target.result;
-      if(!db.objectStoreNames.contains('deals')){
-        const st=db.createObjectStore('deals',{keyPath:'id'});
-        st.createIndex('cardId','cardId',{unique:false});
-      }
-    };
-    req.onsuccess=e=>resolve(e.target.result);
-    req.onerror=e=>reject(e.target.error);
-  });
-}
-function getAllDeals(){
-  return new Promise(resolve=>{
-    if(!dealDb) return resolve([]);
-    const r=dealDb.transaction(['deals'],'readonly').objectStore('deals').getAll();
-    r.onsuccess=()=>resolve(r.result||[]); r.onerror=()=>resolve([]);
-  });
-}
-function putDeal(rec){
-  return new Promise((resolve,reject)=>{
-    const tx=dealDb.transaction(['deals'],'readwrite'); tx.objectStore('deals').put(rec);
-    tx.oncomplete=()=>resolve(); tx.onerror=e=>reject(e.target.error);
-  });
-}
-function removeDeal(id){
-  return new Promise((resolve,reject)=>{
-    const tx=dealDb.transaction(['deals'],'readwrite'); tx.objectStore('deals').delete(id);
-    tx.oncomplete=()=>resolve(); tx.onerror=e=>reject(e.target.error);
-  });
-}
-async function loadDeals(){
-  const all=await getAllDeals();
-  dealsByCard={};
-  for(const d of all){ (dealsByCard[d.cardId]=dealsByCard[d.cardId]||[]).push(d); }
-}
-const fmtMoney=n=>'$'+(Number(n)||0).toLocaleString('en-US');
 function getAll(db,store){
   return new Promise(resolve=>{
     if(!db||!db.objectStoreNames.contains(store)) return resolve([]);
@@ -348,10 +247,11 @@ const getCrm=id=>getOne('crm',id);
 
 async function loadConfig(){
   const r=await getOne('settings','config');
-  config = r || JSON.parse(JSON.stringify(DEFAULT_CONFIG));
+  config = r ? {key:'config', yellow:(r.yellow??r.defYellow??30), red:(r.red??r.defRed??60)} : {...DEFAULT_CONFIG};
 }
 
-/* 載入名片：直接讀名片 App 的 BizCardDB（同一支 App、同源即通），併入手動客戶 */
+/* 載入名片：直接讀名片 App 的 BizCardDB，併入手動客戶；
+   並保留「已被刪名片但仍有追蹤紀錄」的孤兒客戶（用 cards_snapshot） */
 async function loadCards(){
   const biz=await openBiz();
   const live=await getAll(biz,'cards');
@@ -359,23 +259,21 @@ async function loadCards(){
   const map=new Map();
   live.forEach(c=>{ if(c&&c.id) map.set(c.id,c); });
   manual.forEach(c=>{ if(c&&c.id) map.set(c.id,c); });
-  dataSource = live.length ? 'live' : (manual.length ? 'manual' : 'none');
+  // 現存名片存一份快照，之後名片被刪也能保住客戶歷史
+  for(const c of live){ if(c&&c.id){ try{ await putRec('cards_snapshot',c); }catch(e){} } }
+  // 補回「名片已刪、但還有 CRM 紀錄」的客戶
+  const [snap,crmRecs]=await Promise.all([getAll(crmDb,'cards_snapshot'),getAll(crmDb,'crm')]);
+  const tracked=new Set(crmRecs.map(r=>r&&r.cardId));
+  for(const s of snap){ if(s&&s.id&&!map.has(s.id)&&tracked.has(s.id)) map.set(s.id,{...s,_deletedCard:true}); }
+  dataSource = live.length ? 'live' : (map.size ? 'manual' : 'none');
   cardsCache=[...map.values()];
 }
 
 /* ============================================================
-   狀態燈計算（依分級門檻）
+   狀態燈（單一全域門檻）
    ============================================================ */
 const DAY=86400000;
 function todayStart(){ const d=new Date(); d.setHours(0,0,0,0); return d.getTime(); }
-function levelOf(crm){
-  if(!crm||!crm.level) return null;
-  return config.levels.find(l=>l.name===crm.level)||null;
-}
-function thresholds(crm){
-  const lv=levelOf(crm);
-  return lv?{y:lv.yellow,r:lv.red}:{y:config.defYellow,r:config.defRed};
-}
 function computeStatus(crm){
   if(!crm || !((crm.logs&&crm.logs.length)||crm.nextRemind))
     return {key:'grey',label:'尚未追蹤',cls:'s-grey'};
@@ -384,11 +282,10 @@ function computeStatus(crm){
     if(rt<=todayStart()) return {key:'red',label:'提醒到期',cls:'s-red'};
   }
   if(crm.logs&&crm.logs.length){
-    const {y,r}=thresholds(crm);
     const last=Math.max(...crm.logs.map(l=>l.at));
     const days=Math.floor((todayStart()-last)/DAY);
-    if(days>=r) return {key:'red',label:days+'天沒聯絡',cls:'s-red'};
-    if(days>=y) return {key:'yellow',label:'該追蹤了',cls:'s-yellow'};
+    if(days>=config.red) return {key:'red',label:days+'天沒聯絡',cls:'s-red'};
+    if(days>=config.yellow) return {key:'yellow',label:'該追蹤了',cls:'s-yellow'};
     return {key:'green',label:days<=0?'今天聯絡':days+'天前',cls:'s-green'};
   }
   return {key:'yellow',label:'待處理',cls:'s-yellow'};
@@ -406,7 +303,7 @@ function avatarColor(name){
 }
 function fmtDate(ts){ const d=new Date(ts); return (d.getMonth()+1)+'/'+d.getDate(); }
 function todayISO(){ const d=new Date(); d.setHours(12,0,0,0); return d.toISOString().slice(0,10); }
-const TYPE_LABEL={phone:'電話',visit:'拜訪',email:'Email',message:'訊息',note:'備註'};
+const TYPE_LABEL={phone:'電話',visit:'見面',message:'訊息',note:'備註'};
 function esc(s){return (s==null?'':String(s)).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
 
 /* ============================================================
@@ -416,7 +313,7 @@ async function buildMerged(){
   const merged=[];
   for(const card of cardsCache){
     const crm=await getCrm(card.id);
-    merged.push({card,crm,status:computeStatus(crm),deals:dealsByCard[card.id]||[]});
+    merged.push({card,crm,status:computeStatus(crm)});
   }
   merged.sort((a,b)=>{
     const s=STATUS_ORDER[a.status.key]-STATUS_ORDER[b.status.key];
@@ -442,22 +339,15 @@ function render(){
   }
   const dueToday=mergedCache.filter(m=>m.crm&&m.crm.nextRemind&&
     new Date(m.crm.nextRemind+'T00:00:00').getTime()<=todayStart());
-  const allDeals=Object.values(dealsByCard).flat();
-  const receivable=allDeals.filter(d=>d.stage==='billed').reduce((s,d)=>s+(Number(d.amount)||0),0);
-  const openCount=allDeals.filter(d=>stageOf(d.stage).open).length;
-  const kpiHtml = allDeals.length
-    ? `<div class="kpi"><div class="box money"><div class="n">${fmtMoney(receivable)}</div><div class="l">待收款（已請款）</div></div>
-       <div class="box"><div class="n">${openCount}</div><div class="l">進行中案子</div></div></div>` : '';
   document.getElementById('today-wrap').innerHTML=(dueToday.length
     ? `<div class="today"><div class="t1">⏰ 今天要聯絡（${dueToday.length}）</div>
        <div class="t2">${dueToday.map(m=>esc(m.card.name)+(m.crm.remindNote?'（'+esc(m.crm.remindNote)+'）':'')).join('<br>')}</div></div>`
-    : '')+kpiHtml;
+    : '');
 
   const shown=mergedCache.filter(m=>{
     if(!q) return true;
     const logText=(m.crm&&m.crm.logs?m.crm.logs.map(l=>l.text).join(' '):'');
-    const dealText=(m.deals||[]).map(d=>d.title+' '+(d.note||'')).join(' ');
-    return ((m.card.name||'')+(m.card.org||'')+(m.crm&&m.crm.level||'')+logText+dealText).toLowerCase().includes(q);
+    return ((m.card.name||'')+(m.card.org||'')+logText).toLowerCase().includes(q);
   });
   const groups=[
     {key:'待跟進',items:shown.filter(m=>m.status.key==='red'||m.status.key==='yellow')},
@@ -471,13 +361,10 @@ function render(){
 function cardRow(m){
   const c=m.card, col=avatarColor(c.name);
   const role=[c.org,c.title].filter(Boolean).join(' · ')||'—';
-  const lv=levelOf(m.crm);
-  const lvTag=lv?`<span class="lv-tag" style="background:${lv.color||'#8a94a6'}">${esc(lv.name)}</span>`:'';
-  const recv=(m.deals||[]).filter(d=>d.stage==='billed').reduce((s,d)=>s+(Number(d.amount)||0),0);
-  const recvBadge=recv?`<div class="recv-badge">待收 ${fmtMoney(recv)}</div>`:'';
+  const delTag=c._deletedCard?' <span style="color:#b4bccb;font-weight:600;">（名片已刪）</span>':'';
   return `<div class="card" onclick="openDetail('${c.id}')">
     <div class="avatar" style="background:${col}">${initial(c.name)}</div>
-    <div class="c-main"><div class="c-name">${esc(c.name)||'（無名）'}${lvTag}</div><div class="c-org">${esc(role)}</div>${recvBadge}</div>
+    <div class="c-main"><div class="c-name">${esc(c.name)||'（無名）'}</div><div class="c-org">${esc(role)}${delTag}</div></div>
     <div class="status ${m.status.cls}"><span class="dot"></span>${m.status.label}</div>
   </div>`;
 }
@@ -502,25 +389,12 @@ async function openDetail(id){
   const c=m.card, crm=m.crm, col=avatarColor(c.name);
   const role=[c.org,c.title,c.dept].filter(Boolean).join(' · ')||'—';
   const tel=c.mobile||c.tel||c.phone||'';
-  const lvChips=config.levels.map(l=>{
-    const on=crm&&crm.level===l.name;
-    return `<div class="lv-chip ${on?'on':''}" style="${on?'background:'+(l.color||'#4f7cff'):''}" onclick="pickLevel('${esc(l.name)}')">${esc(l.name)}</div>`;
-  }).join('')+`<div class="lv-chip ${!crm||!crm.level?'on':''}" style="${!crm||!crm.level?'background:#8a94a6':''}" onclick="pickLevel('')">未分級</div>`;
 
   const remindHtml=crm&&crm.nextRemind
     ? `<div class="remind-box" onclick="openRemindSheet()"><div><div class="r1">⏰ 下次提醒</div>
         <div class="r2">${crm.nextRemind.slice(5).replace('-','/')}　${esc(crm.remindNote||'')}</div></div><div style="font-size:22px">🔔</div></div>`
     : `<div class="remind-box none" onclick="openRemindSheet()"><div><div class="r1">下次提醒</div>
         <div class="r2">尚未設定，點此新增</div></div><div style="font-size:20px">＋</div></div>`;
-
-  const deals=(m.deals||[]).slice().sort((a,b)=>(b.updatedAt||0)-(a.updatedAt||0));
-  const dealRows=deals.map(d=>{ const st=stageOf(d.stage);
-    return `<div class="deal-row" onclick="openDealSheet('${d.id}')">
-      <div><div class="deal-title">${esc(d.title)}</div>${d.note?`<div class="deal-sub">${esc(d.note)}</div>`:''}</div>
-      <div style="text-align:right"><div class="deal-amt">${fmtMoney(d.amount)}</div>
-        <span class="stage-badge" style="background:${st.color}">${st.name}</span></div></div>`; }).join('');
-  const dealsHtml=`<div class="deal-sec"><div class="lbl" style="margin:8px 0 8px;">案子 / 報價${deals.length?'（'+deals.length+'）':''}</div>${dealRows}</div>
-    <button class="add-deal" onclick="openDealSheet(null)">＋ 新增案子</button>`;
 
   const logs=(crm&&crm.logs?[...crm.logs]:[]).sort((a,b)=>b.at-a.at);
   const logHtml=logs.length
@@ -540,8 +414,6 @@ async function openDetail(id){
         <a class="${tel?'':'off'}" href="sms:${esc(tel)}">💬 訊息</a>
       </div>
     </div>
-    <div class="level-sec"><div class="lbl" style="margin:4px 0 8px;">客戶分級</div><div class="lv-chips">${lvChips}</div></div>
-    ${dealsHtml}
     ${remindHtml}${logHtml}`;
   getImage(id).then(img=>{ if(img){const el=document.getElementById('d-av'); if(el){el.style.backgroundImage=`url(${img})`;el.textContent='';}}});
   document.getElementById('detail').classList.add('open');
@@ -549,16 +421,11 @@ async function openDetail(id){
 function closeDetail(){ document.getElementById('detail').classList.remove('open'); currentId=null; }
 
 async function ensureCrm(){
-  return await getCrm(currentId) || {cardId:currentId,logs:[],nextRemind:null,remindNote:'',status:'',level:'',tags:[]};
-}
-async function pickLevel(name){
-  const crm=await ensureCrm(); crm.level=name; crm.updatedAt=Date.now();
-  await putRec('crm',crm); await refresh(); openDetail(currentId);
-  toast(name?('已標記：'+name):'已取消分級');
+  return await getCrm(currentId) || {cardId:currentId,logs:[],nextRemind:null,remindNote:'',updatedAt:0};
 }
 
 /* ============================================================
-   記一筆 / 設提醒 / 新增客戶 / 設定
+   記一筆
    ============================================================ */
 let logType='phone';
 function buildTypeChips(){
@@ -566,19 +433,48 @@ function buildTypeChips(){
     .map(([k,v])=>`<div class="type-chip ${k===logType?'on':''}" onclick="pickType('${k}')">${v}</div>`).join('');
 }
 function pickType(t){ logType=t; buildTypeChips(); }
-function openLogSheet(){ logType='phone'; buildTypeChips(); document.getElementById('logText').value=''; document.getElementById('logDate').value=todayISO(); openSheet('logSheet'); }
+function showLogDate(){
+  document.getElementById('logDateToggle').style.display='none';
+  document.getElementById('logDateField').style.display='block';
+}
+function openLogSheet(){
+  logType='phone'; buildTypeChips();
+  document.getElementById('logText').value='';
+  document.getElementById('logDate').value=todayISO();
+  document.getElementById('logDateField').style.display='none';
+  document.getElementById('logDateToggle').style.display='block';
+  openSheet('logSheet');
+}
 async function saveLog(){
   const text=document.getElementById('logText').value.trim();
   const dateStr=document.getElementById('logDate').value;
-  if(!text){ toast('請輸入內容'); return; }
   const at=dateStr?new Date(dateStr+'T12:00:00').getTime():Date.now();
   const crm=await ensureCrm(); crm.logs=crm.logs||[]; crm.logs.push({at,type:logType,text}); crm.updatedAt=Date.now();
   await putRec('crm',crm); closeSheets(); toast('已記錄 ✓'); await refresh(); openDetail(currentId);
 }
+
+/* ============================================================
+   設提醒（快捷天數）
+   ============================================================ */
+let remindSel=null;
+function buildRemindQuick(){
+  const opts=[{d:3,t:'3 天後'},{d:7,t:'1 週後'},{d:30,t:'1 個月後'}];
+  document.getElementById('remindQuick').innerHTML=opts.map(o=>
+    `<div class="type-chip ${remindSel===o.d?'on':''}" onclick="setRemindIn(${o.d})">${o.t}</div>`).join('');
+}
+function setRemindIn(days){
+  remindSel=days;
+  const d=new Date(); d.setHours(12,0,0,0); d.setDate(d.getDate()+days);
+  document.getElementById('remindDate').value=d.toISOString().slice(0,10);
+  buildRemindQuick();
+}
+function clearRemindChip(){ remindSel=null; buildRemindQuick(); }
 function openRemindSheet(){
   getCrm(currentId).then(crm=>{
+    remindSel=null;
     document.getElementById('remindDate').value=crm&&crm.nextRemind?crm.nextRemind:todayISO();
     document.getElementById('remindNote').value=crm&&crm.remindNote?crm.remindNote:'';
+    buildRemindQuick();
     openSheet('remindSheet');
   });
 }
@@ -595,8 +491,11 @@ async function clearRemind(){
   closeSheets(); toast('提醒已清除'); await refresh(); openDetail(currentId);
 }
 
+/* ============================================================
+   新增客戶（姓名 / 公司 / 手機）
+   ============================================================ */
 function openNewCustomer(){
-  ['name','org','title','mobile','email'].forEach(f=>document.getElementById('nc-'+f).value='');
+  ['name','org','mobile'].forEach(f=>document.getElementById('nc-'+f).value='');
   openSheet('newSheet');
 }
 async function saveNewCustomer(){
@@ -605,85 +504,25 @@ async function saveNewCustomer(){
   const id='m'+Date.now()+Math.floor(Math.random()*1000);
   const card={id,name,
     org:document.getElementById('nc-org').value.trim(),
-    title:document.getElementById('nc-title').value.trim(),
     mobile:document.getElementById('nc-mobile').value.trim(),
-    email:document.getElementById('nc-email').value.trim(),
     createdAt:Date.now(), _manual:true};
   await putRec('manual_cards',card);
   closeSheets(); toast('客戶已建立 ✓'); await refresh(); openDetail(id);
 }
 
-/* 案子 / 報價 */
-let currentDealId=null, dealStage='lead';
-function buildStageChips(){
-  document.getElementById('stageRow').innerHTML=STAGES.map(s=>
-    `<div class="stage-chip ${s.key===dealStage?'on':''}" style="${s.key===dealStage?'background:'+s.color:''}" onclick="pickStage('${s.key}')">${s.name}</div>`).join('');
-}
-function pickStage(k){ dealStage=k; buildStageChips(); }
-function openDealSheet(dealId){
-  currentDealId=dealId;
-  const del=document.getElementById('dl-delete');
-  if(dealId){
-    const d=(dealsByCard[currentId]||[]).find(x=>x.id===dealId)||{};
-    document.getElementById('dealSheetTitle').textContent='編輯案子';
-    document.getElementById('dl-title').value=d.title||'';
-    document.getElementById('dl-amount').value=d.amount||'';
-    document.getElementById('dl-note').value=d.note||'';
-    dealStage=d.stage||'lead'; del.style.display='block';
-  }else{
-    document.getElementById('dealSheetTitle').textContent='新增案子';
-    document.getElementById('dl-title').value='';
-    document.getElementById('dl-amount').value='';
-    document.getElementById('dl-note').value='';
-    dealStage='lead'; del.style.display='none';
-  }
-  buildStageChips(); openSheet('dealSheet');
-}
-async function saveDeal(){
-  const title=document.getElementById('dl-title').value.trim();
-  if(!title){ toast('請輸入案名'); return; }
-  const amount=Number(document.getElementById('dl-amount').value)||0;
-  const note=document.getElementById('dl-note').value.trim();
-  let deal;
-  if(currentDealId){
-    deal=(dealsByCard[currentId]||[]).find(x=>x.id===currentDealId)||{id:currentDealId,cardId:currentId,createdAt:Date.now()};
-    Object.assign(deal,{title,amount,note,stage:dealStage,updatedAt:Date.now()});
-  }else{
-    deal={id:'d'+Date.now()+Math.floor(Math.random()*1000),cardId:currentId,title,amount,note,stage:dealStage,createdAt:Date.now(),updatedAt:Date.now()};
-  }
-  await putDeal(deal); closeSheets(); toast('案子已儲存 ✓'); await refresh(); openDetail(currentId);
-}
-async function deleteDeal(){
-  if(currentDealId){ await removeDeal(currentDealId); }
-  closeSheets(); toast('案子已刪除'); await refresh(); openDetail(currentId);
-}
-
-/* 設定：分級門檻 */
-let editLevels=[];
+/* ============================================================
+   設定：單一提醒門檻
+   ============================================================ */
 function openSettings(){
-  editLevels=JSON.parse(JSON.stringify(config.levels));
-  document.getElementById('def-yellow').value=config.defYellow;
-  document.getElementById('def-red').value=config.defRed;
-  renderLvRows(); openSheet('settingsSheet');
+  document.getElementById('set-yellow').value=config.yellow;
+  document.getElementById('set-red').value=config.red;
+  openSheet('settingsSheet');
 }
-function renderLvRows(){
-  document.getElementById('lvRows').innerHTML=editLevels.map((l,i)=>
-    `<div class="lv-row">
-      <input class="nm" type="text" value="${esc(l.name)}" oninput="editLevels[${i}].name=this.value">
-      <input class="dy" type="number" value="${l.yellow}" oninput="editLevels[${i}].yellow=+this.value">
-      <input class="dy" type="number" value="${l.red}" oninput="editLevels[${i}].red=+this.value">
-      <button class="del" onclick="delLvRow(${i})">✕</button>
-    </div>`).join('');
-}
-function addLvRow(){ editLevels.push({name:'新分級',yellow:14,red:30,color:'#6a5cff'}); renderLvRows(); }
-function delLvRow(i){ editLevels.splice(i,1); renderLvRows(); }
 async function saveSettings(){
-  config.levels=editLevels.filter(l=>l.name&&l.name.trim()).map(l=>({
-    name:l.name.trim(), yellow:+l.yellow||30, red:+l.red||60, color:l.color||'#6a5cff'
-  }));
-  config.defYellow=+document.getElementById('def-yellow').value||30;
-  config.defRed=+document.getElementById('def-red').value||60;
-  config.key='config';
+  const y=+document.getElementById('set-yellow').value||30;
+  let r=+document.getElementById('set-red').value||60;
+  if(r<y) r=y; // 紅燈天數不得小於黃燈
+  config={key:'config', yellow:y, red:r};
   await putRec('settings',config);
   closeSheets(); toast('設定已儲存 ✓'); await refresh();
 }
@@ -697,8 +536,45 @@ function toast(msg){
   clearTimeout(toastTimer); toastTimer=setTimeout(()=>t.classList.remove('show'),1800);
 }
 
-async function refresh(){ await loadCards(); await loadDeals(); await buildMerged(); render(); }
-async function init(){ crmDb=await openCrm(); dealDb=await openDeal(); await loadConfig(); await refresh(); }
+/* ============================================================
+   匯出 / 匯入備份（本機資料保命）
+   ============================================================ */
+async function exportBackup(){
+  const data={ v:1, exportedAt:new Date().toISOString(),
+    crm: await getAll(crmDb,'crm'),
+    manual_cards: await getAll(crmDb,'manual_cards'),
+    settings: await getAll(crmDb,'settings') };
+  const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url; a.download='客戶追蹤備份_'+new Date().toISOString().slice(0,10)+'.json';
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(()=>URL.revokeObjectURL(url),1000);
+  toast('已匯出備份 ✓');
+}
+async function importBackup(ev){
+  const file=ev.target.files[0]; if(!file) return;
+  try{
+    const data=JSON.parse(await file.text());
+    if(!data||(!data.crm&&!data.manual_cards&&!data.settings)){ toast('檔案格式不符'); ev.target.value=''; return; }
+    for(const r of (data.crm||[])) if(r&&r.cardId) await putRec('crm',r);
+    for(const r of (data.manual_cards||[])) if(r&&r.id) await putRec('manual_cards',r);
+    for(const r of (data.settings||[])) if(r&&r.key) await putRec('settings',r);
+    await loadConfig(); closeSheets(); toast('已還原備份 ✓'); await refresh();
+  }catch(e){ toast('匯入失敗'); console.error(e); }
+  ev.target.value='';
+}
+
+/* 通知外層（名片 App）更新分頁紅點；並接收「切回分頁」重整訊號 */
+function notifyParent(){ try{ if(window.parent&&window.parent!==window) window.parent.postMessage('crm-changed','*'); }catch(e){} }
+window.addEventListener('message', e=>{ if(e&&e.data==='crm-refresh') refresh(); });
+
+async function refresh(){ await loadCards(); await buildMerged(); render(); notifyParent(); }
+async function init(){
+  try{ crmDb=await openCrm(); }
+  catch(e){ const s=document.getElementById('subline'); if(s) s.textContent='⚠️ 此裝置無法儲存資料（可能是無痕模式）'; return; }
+  await loadConfig(); await refresh();
+}
 init();
 </script>
 <footer style="max-width:520px;margin:22px auto 0;padding:16px 22px calc(env(safe-area-inset-bottom,0px) + 22px);text-align:center;font-size:11.5px;line-height:1.85;color:#8a94a6;border-top:1px solid rgba(128,138,166,.18);">

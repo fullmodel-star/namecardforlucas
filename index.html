@@ -1532,6 +1532,10 @@ input, select, textarea, button { font-size: 16px; }
 #view-crm iframe { width: 100%; height: 100%; border: 0; display: block; }
 #btab-crm .btab-pip { position: relative; }
 #crm-badge { position:absolute; top:-3px; right:6px; min-width:16px; height:16px; padding:0 4px; border-radius:8px; background:#e5484d; color:#fff; font-size:11px; font-weight:700; line-height:16px; text-align:center; box-shadow:0 0 0 2px var(--bg-secondary); }
+/* 掃名片：中央主要動作，永遠醒目（實心底色 + 白色相機圖示） */
+.btab-scan .btab-pip, .btab-scan.active .btab-pip { background: var(--accent); }
+.btab-scan i { color: #fff !important; }
+.btab-scan span { font-weight: 700; }
 
 /* ── 無障礙修正：鍵盤焦點指示 + 最小觸控尺寸 ── */
 :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
@@ -1679,12 +1683,12 @@ input, select, textarea, button { font-size: 16px; }
               </div>
             </div>
           </button>
-          <button class="db-section" style="text-align:left;cursor:pointer;border:none;width:100%;" onclick="switchTab('batch')">
+          <button class="db-section" style="text-align:left;cursor:pointer;border:none;width:100%;" onclick="switchTab('myprofile')">
             <div style="display:flex;align-items:center;gap:10px;">
-              <div class="db-card-icon" style="width:36px;height:36px;font-size:19px;color:#10b981;background:rgba(16,185,129,0.12);flex-shrink:0;"><i class="ti ti-tools"></i></div>
+              <div class="db-card-icon" style="width:36px;height:36px;font-size:19px;color:#10b981;background:rgba(16,185,129,0.12);flex-shrink:0;"><i class="ti ti-settings"></i></div>
               <div>
-                <div style="font-size:15.5px;font-weight:600;color:var(--text-primary);">工具箱</div>
-                <div style="font-size:14px;color:var(--text-tertiary);margin-top:2px;">同步・匯出・設定</div>
+                <div style="font-size:15.5px;font-weight:600;color:var(--text-primary);">設定與資料</div>
+                <div style="font-size:14px;color:var(--text-tertiary);margin-top:2px;">同步・匯出・備份・設定</div>
               </div>
             </div>
           </button>
@@ -1738,7 +1742,7 @@ input, select, textarea, button { font-size: 16px; }
                 <i class="ti ti-plus" style="font-size:17px;"></i> 新增
               </button>
               <button class="btn" onclick="switchTab('batch')" style="flex:1;white-space:nowrap;border-radius:10px;font-size:15px;font-weight:600;padding:8px 6px;">
-                <i class="ti ti-printer" style="font-size:17px;"></i> 批次工具
+                <i class="ti ti-camera" style="font-size:17px;"></i> 掃名片
               </button>
             </div>
           </div>
@@ -1863,6 +1867,98 @@ input, select, textarea, button { font-size: 16px; }
           </div>
         </div>
 
+        <!-- 設定與資料（原工具箱：同步 / 匯出 / 備份 / 設定） -->
+        <div style="display:flex;align-items:center;gap:10px;margin:10px 0 2px;">
+          <div style="flex:1;height:1px;background:var(--border-color);"></div>
+          <span style="font-size:15px;font-weight:700;color:var(--text-secondary);white-space:nowrap;"><i class="ti ti-settings"></i> 設定與資料</span>
+          <div style="flex:1;height:1px;background:var(--border-color);"></div>
+        </div>
+        <div class="toolbox-grid">
+
+          <button class="tool-card" style="--tc:#6366f1;" onclick="switchTab('settings'); renderSettingsBadgeManager();">
+            <div class="tool-card-icon"><i class="ti ti-settings"></i></div>
+            <div class="tool-card-title">應用設定</div>
+            <div class="tool-card-desc">金鑰、同步、群組標籤管理</div>
+          </button>
+
+          <button class="tool-card" style="--tc:#7c3aed;" onclick="openSmartSyncModal()">
+            <div class="tool-card-icon"><i class="ti ti-wand"></i></div>
+            <div class="tool-card-title">智慧同步精靈</div>
+            <div class="tool-card-desc">清重複 + 同步 Google + 匯出 VCF</div>
+          </button>
+
+          <button class="tool-card" style="--tc:#4285F4;" onclick="syncAllCardsToGoogle()">
+            <div class="tool-card-icon"><i class="ti ti-brand-google"></i></div>
+            <div class="tool-card-title">Google 通訊錄</div>
+            <div class="tool-card-desc">推送至 Google，手機自動同步</div>
+          </button>
+
+          <button class="tool-card" style="--tc:#10b981;" onclick="exportAllVcf()">
+            <div class="tool-card-icon"><i class="ti ti-address-book"></i></div>
+            <div class="tool-card-title">儲存到手機</div>
+            <div class="tool-card-desc">匯出 VCF，iOS / Android 一鍵匯入</div>
+          </button>
+
+          <button class="tool-card" style="--tc:#217346;" onclick="exportToCsv('all')">
+            <div class="tool-card-icon"><i class="ti ti-table-export"></i></div>
+            <div class="tool-card-title">匯出 Excel</div>
+            <div class="tool-card-desc">下載 CSV，用 Excel / 試算表開啟</div>
+          </button>
+
+          <button class="tool-card" style="--tc:#f59e0b;" onclick="importFromContactPicker()">
+            <div class="tool-card-icon"><i class="ti ti-phone-incoming"></i></div>
+            <div class="tool-card-title">從手機匯入</div>
+            <div class="tool-card-desc">從手機通訊錄選取聯絡人匯入</div>
+          </button>
+
+          <button class="tool-card" style="--tc:#0ea5e9;" onclick="exportFullJsonBackup()">
+            <div class="tool-card-icon"><i class="ti ti-database-export"></i></div>
+            <div class="tool-card-title">備份資料</div>
+            <div class="tool-card-desc">完整備份名片庫（含圖片）至本機</div>
+          </button>
+
+          <button class="tool-card" style="--tc:#f59e0b;" onclick="switchTab('dups'); renderDupsTab();">
+            <div class="tool-card-icon"><i class="ti ti-copy"></i></div>
+            <div class="tool-card-title">重複偵測</div>
+            <div class="tool-card-desc">查找疑似重複的名片並清整</div>
+          </button>
+
+        </div>
+
+        <!-- 更多小工具（與名片管理無關，預設收合） -->
+        <div style="padding:4px 0 0;">
+          <button onclick="toggleMoreTools()" id="more-tools-toggle" style="width:100%;border:1px dashed var(--border-color);background:none;color:var(--text-secondary);font-size:15px;font-weight:600;padding:11px;border-radius:12px;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:8px;">
+            <i class="ti ti-tools"></i> 更多小工具（簽名 / 笑話 / 匯率 / 計時器）<i class="ti ti-chevron-down" id="more-tools-chevron"></i>
+          </button>
+        </div>
+        <div class="toolbox-grid" id="more-tools-grid" style="display:none;">
+
+          <button class="tool-card" style="--tc:#e11d48;" onclick="openSignatureModal()">
+            <div class="tool-card-icon"><i class="ti ti-signature"></i></div>
+            <div class="tool-card-title">PDF 簽名</div>
+            <div class="tool-card-desc">手寫簽名 + 蓋到 PDF 上下載</div>
+          </button>
+
+          <button class="tool-card" style="--tc:#f59e0b;" onclick="openJokeModal()">
+            <div class="tool-card-icon"><i class="ti ti-mood-smile"></i></div>
+            <div class="tool-card-title">暖場笑話</div>
+            <div class="tool-card-desc">商務聚會破冰，隨機抽一則</div>
+          </button>
+
+          <button class="tool-card" style="--tc:#14b8a6;" onclick="openFxModal()">
+            <div class="tool-card-icon"><i class="ti ti-currency-dollar"></i></div>
+            <div class="tool-card-title">匯率換算</div>
+            <div class="tool-card-desc">TWD / USD / JPY / EUR 即時換算</div>
+          </button>
+
+          <button class="tool-card" style="--tc:#ef4444;" onclick="openTimerModal()">
+            <div class="tool-card-icon"><i class="ti ti-clock-hour-4"></i></div>
+            <div class="tool-card-title">開會計時器</div>
+            <div class="tool-card-desc">倒數計時，控制會議時間</div>
+          </button>
+
+        </div>
+
       </div>
     </div>
 
@@ -1927,92 +2023,7 @@ input, select, textarea, button { font-size: 16px; }
         </div>
       </div>
 
-      <!-- 工具卡片網格 -->
-      <div class="toolbox-grid">
-
-        <button class="tool-card" style="--tc:#7c3aed;" onclick="openSmartSyncModal()">
-          <div class="tool-card-icon"><i class="ti ti-wand"></i></div>
-          <div class="tool-card-title">智慧同步精靈</div>
-          <div class="tool-card-desc">清重複 + 同步 Google + 匯出 VCF</div>
-        </button>
-
-        <button class="tool-card" style="--tc:#4285F4;" onclick="syncAllCardsToGoogle()">
-          <div class="tool-card-icon"><i class="ti ti-brand-google"></i></div>
-          <div class="tool-card-title">Google 通訊錄</div>
-          <div class="tool-card-desc">推送至 Google，手機自動同步</div>
-        </button>
-
-        <button class="tool-card" style="--tc:#10b981;" onclick="exportAllVcf()">
-          <div class="tool-card-icon"><i class="ti ti-address-book"></i></div>
-          <div class="tool-card-title">儲存到手機</div>
-          <div class="tool-card-desc">匯出 VCF，iOS / Android 一鍵匯入</div>
-        </button>
-
-        <button class="tool-card" style="--tc:#217346;" onclick="exportToCsv('all')">
-          <div class="tool-card-icon"><i class="ti ti-table-export"></i></div>
-          <div class="tool-card-title">匯出 Excel</div>
-          <div class="tool-card-desc">下載 CSV，用 Excel / 試算表開啟</div>
-        </button>
-
-        <button class="tool-card" style="--tc:#f59e0b;" onclick="importFromContactPicker()">
-          <div class="tool-card-icon"><i class="ti ti-phone-incoming"></i></div>
-          <div class="tool-card-title">從手機匯入</div>
-          <div class="tool-card-desc">從手機通訊錄選取聯絡人匯入</div>
-        </button>
-
-        <button class="tool-card" style="--tc:#0ea5e9;" onclick="exportFullJsonBackup()">
-          <div class="tool-card-icon"><i class="ti ti-database-export"></i></div>
-          <div class="tool-card-title">備份資料</div>
-          <div class="tool-card-desc">完整備份名片庫（含圖片）至本機</div>
-        </button>
-
-        <button class="tool-card" style="--tc:#f59e0b;" onclick="switchTab('dups'); renderDupsTab();">
-          <div class="tool-card-icon"><i class="ti ti-copy"></i></div>
-          <div class="tool-card-title">重複偵測</div>
-          <div class="tool-card-desc">查找疑似重複的名片並清整</div>
-        </button>
-
-        <button class="tool-card" style="--tc:#6366f1;" onclick="switchTab('settings'); renderSettingsBadgeManager();">
-          <div class="tool-card-icon"><i class="ti ti-settings"></i></div>
-          <div class="tool-card-title">應用設定</div>
-          <div class="tool-card-desc">金鑰、同步、群組標籤管理</div>
-        </button>
-
-      </div>
-
-      <!-- 更多小工具（與名片管理無關，預設收合，保持工具箱聚焦） -->
-      <div style="padding:4px 14px 0;">
-        <button onclick="toggleMoreTools()" id="more-tools-toggle" style="width:100%;border:1px dashed var(--border-color);background:none;color:var(--text-secondary);font-size:15px;font-weight:600;padding:11px;border-radius:12px;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:8px;">
-          <i class="ti ti-tools"></i> 更多小工具（簽名 / 笑話 / 匯率 / 計時器）<i class="ti ti-chevron-down" id="more-tools-chevron"></i>
-        </button>
-      </div>
-      <div class="toolbox-grid" id="more-tools-grid" style="display:none;">
-
-        <button class="tool-card" style="--tc:#e11d48;" onclick="openSignatureModal()">
-          <div class="tool-card-icon"><i class="ti ti-signature"></i></div>
-          <div class="tool-card-title">PDF 簽名</div>
-          <div class="tool-card-desc">手寫簽名 + 蓋到 PDF 上下載</div>
-        </button>
-
-        <button class="tool-card" style="--tc:#f59e0b;" onclick="openJokeModal()">
-          <div class="tool-card-icon"><i class="ti ti-mood-smile"></i></div>
-          <div class="tool-card-title">暖場笑話</div>
-          <div class="tool-card-desc">商務聚會破冰，隨機抽一則</div>
-        </button>
-
-        <button class="tool-card" style="--tc:#14b8a6;" onclick="openFxModal()">
-          <div class="tool-card-icon"><i class="ti ti-currency-dollar"></i></div>
-          <div class="tool-card-title">匯率換算</div>
-          <div class="tool-card-desc">TWD / USD / JPY / EUR 即時換算</div>
-        </button>
-
-        <button class="tool-card" style="--tc:#ef4444;" onclick="openTimerModal()">
-          <div class="tool-card-icon"><i class="ti ti-clock-hour-4"></i></div>
-          <div class="tool-card-title">開會計時器</div>
-          <div class="tool-card-desc">倒數計時，控制會議時間</div>
-        </button>
-
-      </div>
+      <!-- 工具（同步 / 匯出 / 備份 / 設定 / 小工具）已移至「我的」分頁 -->
 
     </div>
 
@@ -2228,10 +2239,6 @@ input, select, textarea, button { font-size: 16px; }
   </main>
 
   <nav class="bottom-tab-bar">
-    <button class="btab active" id="btab-myprofile" onclick="switchTab('myprofile')">
-      <div class="btab-pip"><i class="ti ti-user-circle"></i></div>
-      <span>我的</span>
-    </button>
     <button class="btab" id="btab-cards" onclick="switchTab('cards')">
       <div class="btab-pip"><i class="ti ti-id"></i></div>
       <span>名片</span>
@@ -2240,17 +2247,17 @@ input, select, textarea, button { font-size: 16px; }
       <div class="btab-pip"><i class="ti ti-users"></i><span class="crm-badge" id="crm-badge" style="display:none"></span></div>
       <span>客戶</span>
     </button>
-    <button class="btab" id="btab-dashboard" onclick="switchTab('dashboard')">
-      <div class="btab-pip"><i class="ti ti-building"></i></div>
-      <span>組織</span>
-    </button>
-    <button class="btab" id="btab-batch" onclick="switchTab('batch')">
-      <div class="btab-pip"><i class="ti ti-apps"></i></div>
-      <span>工具</span>
+    <button class="btab btab-scan" id="btab-batch" onclick="switchTab('batch')">
+      <div class="btab-pip"><i class="ti ti-camera"></i></div>
+      <span>掃名片</span>
     </button>
     <button class="btab" id="btab-home" onclick="switchTab('home')">
-      <div class="btab-pip"><i class="ti ti-layout-dashboard"></i></div>
-      <span>總覽</span>
+      <div class="btab-pip"><i class="ti ti-chart-pie"></i></div>
+      <span>洞察</span>
+    </button>
+    <button class="btab active" id="btab-myprofile" onclick="switchTab('myprofile')">
+      <div class="btab-pip"><i class="ti ti-user-circle"></i></div>
+      <span>我的</span>
     </button>
   </nav>
 </div>
@@ -4219,10 +4226,11 @@ function switchTab(tabId) {
     const btn = document.getElementById('tab-' + t);
     if (btn) btn.classList.toggle('active', t === tabId);
   });
-  // Bottom tab bar
-  ['home','cards','dashboard','batch','myprofile','crm'].forEach(t => {
+  // Bottom tab bar（5 分頁；下鑽子頁高亮其父分頁：組織圖/圖表→洞察，重複/設定→我的）
+  const activeParent = { dashboard:'home', graph:'home', dups:'myprofile', settings:'myprofile' }[tabId] || tabId;
+  ['cards','crm','batch','home','myprofile'].forEach(t => {
     const btn = document.getElementById('btab-' + t);
-    if (btn) btn.classList.toggle('active', t === tabId);
+    if (btn) btn.classList.toggle('active', t === activeParent);
   });
   // 客戶分頁：首次進入才載入 iframe（延遲載入），並讓承載層剛好貼齊底部導覽列上緣
   if (tabId === 'crm') {
