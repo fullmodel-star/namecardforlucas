@@ -1530,6 +1530,8 @@ input, select, textarea, button { font-size: 16px; }
 /* 客戶追蹤 CRM 分頁：同源 iframe 全屏承載，與名片主程式完全隔離 */
 #view-crm { position: fixed; top: 0; left: 0; right: 0; bottom: 64px; z-index: 150; display: none; background: var(--bg-secondary); padding-top: env(safe-area-inset-top); }
 #view-crm iframe { width: 100%; height: 100%; border: 0; display: block; }
+#btab-crm .btab-pip { position: relative; }
+#crm-badge { position:absolute; top:-3px; right:6px; min-width:16px; height:16px; padding:0 4px; border-radius:8px; background:#e5484d; color:#fff; font-size:11px; font-weight:700; line-height:16px; text-align:center; box-shadow:0 0 0 2px var(--bg-secondary); }
 
 /* ── 無障礙修正：鍵盤焦點指示 + 最小觸控尺寸 ── */
 :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
@@ -2235,7 +2237,7 @@ input, select, textarea, button { font-size: 16px; }
       <span>名片</span>
     </button>
     <button class="btab" id="btab-crm" onclick="switchTab('crm')">
-      <div class="btab-pip"><i class="ti ti-users"></i></div>
+      <div class="btab-pip"><i class="ti ti-users"></i><span class="crm-badge" id="crm-badge" style="display:none"></span></div>
       <span>客戶</span>
     </button>
     <button class="btab" id="btab-dashboard" onclick="switchTab('dashboard')">
@@ -4226,9 +4228,12 @@ function switchTab(tabId) {
   if (tabId === 'crm') {
     const f = document.getElementById('crm-frame');
     if (f && !f.getAttribute('src')) f.setAttribute('src', 'crm.html');
+    else if (f && f.contentWindow) f.contentWindow.postMessage('crm-refresh', '*'); // 切回分頁時重整，才看得到剛掃的新名片
     const nav = document.querySelector('.bottom-tab-bar');
     const vc = document.getElementById('view-crm');
     if (nav && vc) vc.style.bottom = nav.offsetHeight + 'px';
+  } else {
+    updateCrmBadge();
   }
   if (tabId === 'cards') renderCardsGrid();
   if (tabId === 'batch') refreshDriveFolderStats();  // 進入同步分頁即顯示本機/雲端張數
@@ -4239,6 +4244,60 @@ function switchTab(tabId) {
   if (tabId === 'myprofile') renderMyProfile();
   if (tabId !== 'graph' && tabId !== 'dashboard' && graphSimulation) { cancelAnimationFrame(graphSimulation); graphSimulation = null; }
 }
+
+// ============================================================================
+// 客戶分頁紅點：開 App 就算出「該聯絡的人數」，主動提醒（不必先開客戶分頁）
+// 只讀 CrmDB（不帶版本、用完即關，不干擾 crm.html 的 v2 升級）
+// ============================================================================
+async function updateCrmBadge() {
+  let cnt = 0;
+  try {
+    if (indexedDB.databases) {
+      const dbs = await indexedDB.databases();
+      if (!dbs.some(d => d.name === 'CrmDB')) { setCrmBadge(0); return; }
+    }
+    cnt = await new Promise(resolve => {
+      let req; try { req = indexedDB.open('CrmDB'); } catch (e) { return resolve(0); }
+      req.onsuccess = e => {
+        const db = e.target.result;
+        if (!db.objectStoreNames.contains('crm')) { try { db.close(); } catch (_) {} return resolve(0); }
+        const hasSettings = db.objectStoreNames.contains('settings');
+        const tx = db.transaction(hasSettings ? ['crm', 'settings'] : ['crm'], 'readonly');
+        const gc = tx.objectStore('crm').getAll();
+        let recs = [], cfg = null;
+        gc.onsuccess = () => recs = gc.result || [];
+        if (hasSettings) { const gs = tx.objectStore('settings').get('config'); gs.onsuccess = () => cfg = gs.result || null; }
+        tx.oncomplete = () => {
+          try { db.close(); } catch (_) {}
+          const red = (cfg && (cfg.red ?? cfg.defRed)) || 60;
+          const DAY = 86400000; const d = new Date(); d.setHours(0, 0, 0, 0); const t0 = d.getTime();
+          let n = 0;
+          for (const rec of recs) {
+            if (!rec) continue;
+            if (rec.nextRemind) { const rt = new Date(rec.nextRemind + 'T00:00:00').getTime(); if (rt <= t0) { n++; continue; } }
+            if (rec.logs && rec.logs.length) {
+              const last = Math.max(...rec.logs.map(l => l && l.at).filter(Number.isFinite));
+              if (Number.isFinite(last) && Math.floor((t0 - last) / DAY) >= red) n++;
+            }
+          }
+          resolve(n);
+        };
+        tx.onerror = () => { try { db.close(); } catch (_) {} resolve(0); };
+      };
+      req.onerror = () => resolve(0);
+    });
+  } catch (e) { cnt = 0; }
+  setCrmBadge(cnt);
+}
+function setCrmBadge(n) {
+  const b = document.getElementById('crm-badge');
+  if (!b) return;
+  if (n > 0) { b.textContent = n > 99 ? '99+' : n; b.style.display = 'block'; }
+  else b.style.display = 'none';
+}
+// crm.html 每次寫入後會 postMessage('crm-changed')，即時更新紅點
+window.addEventListener('message', e => { if (e && e.data === 'crm-changed') updateCrmBadge(); });
+window.addEventListener('load', () => setTimeout(updateCrmBadge, 800));
 
 // ============================================================================
 // [5] 匯出、匯入與備份模組
@@ -5841,6 +5900,18 @@ function renderBatchQueueList() {
   }).join('');
 }
 
+// 沉重整頁重繪（名片牆/儀表板/側欄）的節流器：辨識中最多每 1.5 秒重繪一次。
+// force=true（批次結束時）立即完整重繪，確保最終畫面正確。
+let lastHeavyRender = 0;
+function batchHeavyRenderThrottled(force) {
+  const now = Date.now();
+  if (!force && now - lastHeavyRender < 1500) return;
+  lastHeavyRender = now;
+  renderSidebarFilters();
+  renderCardsGrid();
+  renderDashboard();
+}
+
 async function startBatchProcessing() {
   if (isScanning) return;
   if (!getGeminiApiKey()) { goSetApiKey(); return; }
@@ -5997,11 +6068,12 @@ async function startBatchProcessing() {
     // 聚焦模式：進度頭條走精簡，明細改由狀態膠囊呈現
     ps.textContent = `辨識中… ${doneCount + emptyCount + failCount} / ${waiting.length} 張`;
     batchRun.done = doneCount; batchRun.empty = emptyCount; batchRun.fail = failCount; batchRun.cards = cardCount;
-    renderBatchQueueList();
-    renderSidebarFilters();
-    renderCardsGrid();
-    renderDashboard();
-    
+    renderBatchQueueList();   // 輕量：只更新進度膠囊與收合清單
+    // 沉重的整頁重繪（名片牆/儀表板/側欄）節流成最多每 1.5 秒一次，避免辨識中
+    // 每張都全部重畫塞爆主執行緒，導致捲動與辨識互相卡住（Android「一滑就暫停」主因）
+    batchHeavyRenderThrottled();
+
+
     // 如果不是最後一個項目，且有設定延遲，且本次是成功的，則進入正常的冷卻延遲
     if (success && i < waiting.length - 1 && delaySec > 0) {
       const nextItem = waiting[i + 1];
@@ -6029,6 +6101,7 @@ async function startBatchProcessing() {
   if (batchRun) batchRun.active = false;
   renderBatchQueueList();
   renderBatchReview();
+  batchHeavyRenderThrottled(true);   // 批次結束：強制完整重繪，確保名片牆/儀表板為最終狀態
   // 還原「開始/停止」按鈕顯示
   { const sb = document.getElementById('btn-start-batch'), tb = document.getElementById('btn-stop-batch');
     if (sb) sb.style.display = ''; if (tb) tb.style.display = 'none'; }
