@@ -6,13 +6,16 @@
 <title>智慧名片管理系統 (終極完全體)</title>
 
 <link rel="manifest" href="./manifest.json">
-<meta name="theme-color" content="#0f0f12">
+<meta name="theme-color" content="#35508C">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="名片系統">
+<link rel="icon" href="./favicon.svg" type="image/svg+xml">
 <link rel="icon" type="image/png" sizes="192x192" href="./icons/icon-192.png">
 <link rel="apple-touch-icon" href="./icons/icon-192.png">
+<!-- 稜線識別 · 共用地基 -->
+<link rel="stylesheet" href="./ridgeline-ui.css">
 
 <!-- Tabler Icons 向量圖標庫 -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css">
@@ -39,33 +42,33 @@ function makeQrDataUrl(text, cell){
    [CSS] 全域變數與主題系統
    ============================================================================ */
 :root {
-  /* Graphite dark (default) */
-  --bg-primary: #0f0f12;
-  --bg-secondary: #17171b;
-  --bg-tertiary: #1e1e23;
-  --bg-glass: rgba(23,23,27,0.9);
-  --field-bg: #101013;
+  /* 稜線識別 · theme-indigo（靛藍）— 深色為預設(graphite)；紙背淺色見 [data-theme=light] */
+  --bg-primary: #141E2B;
+  --bg-secondary: #1B2838;
+  --bg-tertiary: #22303F;
+  --bg-glass: rgba(27,40,56,0.9);
+  --field-bg: #0F1824;
 
-  --text-primary: #f4f4f5;
-  --text-secondary: #a1a1aa;
-  --text-tertiary: #71717a;
+  --text-primary: #EEF3F6;
+  --text-secondary: #B9C6D2;
+  --text-tertiary: #6E8BA3;
 
-  --border-color: rgba(255,255,255,0.07);
-  --border-strong: rgba(255,255,255,0.12);
-  --border-color-glow: rgba(99,102,241,0.2);
+  --border-color: #2A3A4E;
+  --border-strong: #3A4D63;
+  --border-color-glow: rgba(74,104,168,0.3);
 
-  --shadow-sm: 0 1px 2px rgba(0,0,0,0.5);
-  --shadow-md: 0 4px 12px rgba(0,0,0,0.35);
-  --shadow-lg: 0 10px 24px rgba(0,0,0,0.4);
+  --shadow-sm: none;
+  --shadow-md: none;
+  --shadow-lg: none;
   --shadow-glow: none;
 
-  --accent: #6366f1;
-  --accent-solid: #6366f1;
-  --accent-soft: rgba(99,102,241,0.14);
+  --accent: #4A68A8;
+  --accent-solid: #4A68A8;
+  --accent-soft: rgba(74,104,168,0.16);
   --accent-on: #ffffff;
-  --accent-hover: #4f46e5;
-  --accent-light: rgba(99,102,241,0.14);
-  --accent-gradient: #6366f1;
+  --accent-hover: #35508C;
+  --accent-light: rgba(74,104,168,0.16);
+  --accent-gradient: #4A68A8;
 
   --color-green: #34d399;
   --color-green-bg: rgba(52,211,153,0.12);
@@ -87,20 +90,21 @@ function makeQrDataUrl(text, cell){
 }
 
 [data-theme="light"] {
-  --bg-primary: #f4f4f6;
-  --bg-secondary: #ffffff;
-  --bg-tertiary: #f8f8fa;
+  /* 稜線識別 · 紙背淺色 */
+  --bg-primary: #F7F3EC;
+  --bg-secondary: #FFFFFF;
+  --bg-tertiary: #F1EBDD;
   --bg-glass: rgba(255,255,255,0.9);
-  --field-bg: #f1f1f4;
-  --text-primary: #1a1a1e;
-  --text-secondary: #5b5b66;
-  --text-tertiary: #9a9aa6;
-  --border-color: rgba(0,0,0,0.08);
-  --border-strong: rgba(0,0,0,0.13);
-  --border-color-glow: rgba(99,102,241,0.15);
-  --shadow-sm: 0 1px 2px rgba(0,0,0,0.06);
-  --shadow-md: 0 4px 12px rgba(0,0,0,0.08);
-  --shadow-lg: 0 10px 24px rgba(0,0,0,0.10);
+  --field-bg: #F1EBDD;
+  --text-primary: #141E2B;
+  --text-secondary: #2C4459;
+  --text-tertiary: #6E8BA3;
+  --border-color: #E4DDCE;
+  --border-strong: #D8CFB8;
+  --border-color-glow: rgba(74,104,168,0.18);
+  --shadow-sm: none;
+  --shadow-md: none;
+  --shadow-lg: none;
   --color-green-bg: #ecfdf5;
   --color-green-border: #a7f3d0;
   --color-amber-bg: #fffbeb;
@@ -109,17 +113,17 @@ function makeQrDataUrl(text, cell){
   --color-red-border: #fecaca;
 }
 
-/* Keep dark as alias for graphite */
+/* Keep dark as alias for graphite（稜線靛藍深色） */
 [data-theme="dark"] {
-  --bg-primary: #0f0f12;
-  --bg-secondary: #17171b;
-  --bg-tertiary: #1e1e23;
-  --text-primary: #f4f4f5;
-  --text-secondary: #a1a1aa;
-  --text-tertiary: #71717a;
-  --border-color: rgba(255,255,255,0.07);
-  --accent: #6366f1;
-  --accent-light: rgba(99,102,241,0.14);
+  --bg-primary: #141E2B;
+  --bg-secondary: #1B2838;
+  --bg-tertiary: #22303F;
+  --text-primary: #EEF3F6;
+  --text-secondary: #B9C6D2;
+  --text-tertiary: #6E8BA3;
+  --border-color: #2A3A4E;
+  --accent: #4A68A8;
+  --accent-light: rgba(74,104,168,0.16);
   --color-green: #34d399;
   --color-green-bg: rgba(52,211,153,0.12);
   --color-green-border: rgba(52,211,153,0.25);
@@ -160,6 +164,12 @@ input, select, textarea, button { font-size: 16px; }
 }
 
 /* ============================================================================
+   [CSS] 稜線識別 rl 元件（讓 appbar／頁尾簽名跟隨本 App 明暗主題）
+   ============================================================================ */
+.rl-appbar { position: sticky; top: 0; z-index: 40; padding-top: calc(env(safe-area-inset-top,0px) + 14px); }
+.rl-signature { --ink: var(--text-primary); --line: var(--border-color); --muted: var(--text-tertiary); --surface: var(--bg-secondary); }
+
+/* ============================================================================
    [CSS] 頂部導覽與標題列
    ============================================================================ */
 .app-header {
@@ -176,12 +186,6 @@ input, select, textarea, button { font-size: 16px; }
   flex-wrap: wrap;
   gap: 12px;
 }
-@supports (backdrop-filter: blur(1px)) {
-  .app-header {
-    background: var(--bg-glass);
-    backdrop-filter: blur(16px);
-  }
-}
 .app-title {
   display: flex;
   align-items: center;
@@ -197,15 +201,12 @@ input, select, textarea, button { font-size: 16px; }
   justify-content: center;
   color: #ffffff;
   font-size:26px;
-  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
 }
 .app-title-text h1 {
   font-size:26px; /* 字體加大 */
   font-weight: 800; /* 更厚實 professional */
   letter-spacing: -0.02em;
-  background: linear-gradient(135deg, #6366f1 0%, #06b6d4 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
+  color: var(--accent);
   display: inline-block;
 }
 .app-title-text .badges {
@@ -254,15 +255,13 @@ input, select, textarea, button { font-size: 16px; }
   border-color: var(--text-secondary);
 }
 .btn-primary {
-  background: var(--accent-gradient);
+  background: var(--accent);
   color: #ffffff;
   border: none;
-  box-shadow: 0 4px 10px rgba(99, 102, 241, 0.2);
 }
 .btn-primary:hover {
   opacity: 0.9;
   transform: translateY(-1px);
-  box-shadow: 0 6px 14px rgba(99, 102, 241, 0.3);
 }
 .btn-icon {
   width: 36px;
@@ -1607,30 +1606,20 @@ input, select, textarea, button { font-size: 16px; }
 .fx-result-row .fx-val { font-size:21px; font-weight:700; color:var(--text-primary); font-variant-numeric:tabular-nums; }
 </style>
 </head>
-<body>
+<body class="theme-indigo">
 <div class="container">
   
   <!-- ==========================================================================
        [HTML] 頂部標題與狀態導覽列
        ========================================================================== -->
-  <header class="app-header" style="display:flex;align-items:center;justify-content:space-between;gap:10px;">
-    <div style="display:flex;align-items:center;gap:11px;">
-      <svg width="40" height="40" viewBox="0 0 512 512" aria-hidden="true" style="border-radius:11px;flex-shrink:0;box-shadow:0 2px 7px rgba(0,0,0,.28);">
-        <defs>
-          <linearGradient id="ncbg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#243459"/><stop offset="1" stop-color="#0c1326"/></linearGradient>
-          <linearGradient id="ncgold" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ecd48f"/><stop offset="1" stop-color="#b8923c"/></linearGradient>
-        </defs>
-        <rect width="512" height="512" rx="118" fill="url(#ncbg)"/>
-        <rect x="100" y="122" width="312" height="268" rx="30" fill="none" stroke="url(#ncgold)" stroke-width="5" opacity="0.5"/>
-        <text x="256" y="262" text-anchor="middle" dominant-baseline="central" font-family="PMingLiU,'MingLiU','Microsoft JhengHei',serif" font-size="238" font-weight="700" fill="url(#ncgold)">名</text>
-        <rect x="206" y="388" width="100" height="7" rx="3.5" fill="url(#ncgold)"/>
-      </svg>
-      <div style="display:flex;flex-direction:column;line-height:1.25;gap:4px;">
-        <div style="font-size:20px;font-weight:700;color:var(--text-primary);letter-spacing:0.2px;">名片管理</div>
-        <div style="font-size:12.5px;color:var(--text-tertiary);">拍照即存・AI 名片管家</div>
-      </div>
+  <header class="rl-appbar theme-indigo">
+    <span class="rl-mark"><svg class="rl-glyph" width="26" height="26" viewBox="0 0 64 64" fill="none" stroke-linejoin="round" stroke-linecap="round" stroke-width="3.6"><path class="ridge" stroke="currentColor" d="M0 54 L8 48 L14 51 L22 38 L26 42 L36 14 L46 34 L61 44"/><path d="M31.3 27.2 L36 14 L38.7 19.4" stroke="#DE9A45"/></svg></span>
+    <div>
+      <div class="rl-title">名片管理</div>
+      <div class="rl-sub">拍照即存・AI 名片管家</div>
     </div>
-    <button id="theme-toggle-btn" class="btn btn-icon" onclick="toggleTheme()" title="切換深色／淺色" aria-label="切換深色或淺色主題" style="width:40px;height:40px;flex-shrink:0;border-radius:50%;">
+    <span class="rl-spacer"></span>
+    <button id="theme-toggle-btn" onclick="toggleTheme()" title="切換深色／淺色" aria-label="切換深色或淺色主題" style="width:40px;height:40px;flex-shrink:0;border-radius:50%;border:0;background:rgba(238,243,246,.16);color:#EEF3F6;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:18px;">
       <i class="ti ti-sun"></i>
     </button>
   </header>
@@ -4288,7 +4277,7 @@ function closeLightbox() {
 
 function switchTab(tabId) {
   // Header 只在首頁顯示；客戶分頁走全屏 iframe，隱藏名片主標頭
-  const header = document.querySelector('.app-header');
+  const header = document.querySelector('.rl-appbar');
   if (header) header.style.display = (tabId === 'crm') ? 'none' : 'flex';
 
   // Map tab IDs to view IDs
@@ -7352,12 +7341,15 @@ function showUpdateBanner(worker) {
 }
 </script>
 <!--RIDGELINE_BIZ_FOOT-->
-<footer style="max-width:520px;margin:22px auto 0;padding:16px 22px calc(env(safe-area-inset-bottom,0px) + 100px);text-align:center;font-size:11.5px;line-height:1.85;color:#8a94a6;border-top:1px solid rgba(128,138,166,.18);">
-<div style="margin-bottom:11px;line-height:0;"><svg class="rdg-mk" width="48" height="37" viewBox="0 10 62 48" aria-hidden="true"><path d="M0 54 L8 48 L14 51 L22 38 L26 42 L36 14 L46 34 L61 44" fill="none" stroke="currentColor" stroke-width="3.6" stroke-linejoin="round" stroke-linecap="round"/><path d="M31.3 27.2 L36 14 L38.7 19.4" fill="none" stroke="#DE9A45" stroke-width="3.6" stroke-linejoin="round" stroke-linecap="round"/></svg></div>
-<div style="font-style:italic;opacity:.9;">「人生走稜，高低都是風景。」</div>
-<div style="margin-top:6px;">⚠️ 名片辨識結果可能有誤，請自行核對。名片與客戶資料預設只存在本機裝置；使用 AI 辨識時該張照片會傳送到 Google Gemini 做文字辨識；使用 Google 通訊錄／雲端同步時才會上傳，皆為主動選用。</div>
-<div style="margin-top:8px;font-weight:600;">© 2026 Ridgeline · LUCAS 出品</div>
-<div style="margin-top:4px;opacity:.85;">本工具免費提供使用；程式與內容著作權皆屬作者，未經同意請勿重製、散布或作商業用途。</div>
+<footer class="rl-signature theme-indigo">
+  <div class="rl-sig-row">
+    <svg viewBox="0 0 64 64" class="rl-sig-glyph" width="60" height="60" fill="none" stroke-linejoin="round" stroke-linecap="round" stroke-width="3.6"><path class="ridge" stroke="currentColor" d="M0 54 L8 48 L14 51 L22 38 L26 42 L36 14 L46 34 L61 44"/><path d="M31.3 27.2 L36 14 L38.7 19.4" stroke="#DE9A45"/></svg>
+    <span class="rl-sig-rule"></span>
+    <p class="rl-sig-quote">人生走稜，<br>高低都是風景。</p>
+  </div>
+  <p class="rl-sig-by">LUCAS 出品</p>
+  <p style="max-width:520px;margin:14px auto 0;padding:0 22px;font-size:11.5px;line-height:1.85;color:var(--text-tertiary);">⚠️ 名片辨識結果可能有誤，請自行核對。名片與客戶資料預設只存在本機裝置；使用 AI 辨識時該張照片會傳送到 Google Gemini 做文字辨識；使用 Google 通訊錄／雲端同步時才會上傳，皆為主動選用。</p>
+  <p style="max-width:520px;margin:8px auto 0;padding:0 22px calc(env(safe-area-inset-bottom,0px) + 90px);font-size:11.5px;line-height:1.85;color:var(--text-tertiary);">© 2026 Ridgeline · LUCAS 出品｜本工具免費提供使用；程式與內容著作權皆屬作者，未經同意請勿重製、散布或作商業用途。</p>
 </footer>
 </body>
 </html>

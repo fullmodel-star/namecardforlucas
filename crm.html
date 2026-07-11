@@ -4,13 +4,16 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="theme-color" content="#4f7cff">
+<meta name="theme-color" content="#35508C">
 <title>客戶追蹤 CRM</title>
+<link rel="icon" href="./favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="./ridgeline-ui.css">
 <script>/* 開場即依名片 App 傳來的主題上色，避免白閃 */document.documentElement.setAttribute('data-theme', new URLSearchParams(location.search).get('theme')==='light'?'light':'dark');</script>
 <style>
   :root{
-    --bg:#eef1f5; --card:#fff; --line:#eef1f5; --ink:#1c2430; --sub:#8a94a6;
-    --accent:#4f7cff; --red:#e5484d; --yellow:#d98a00; --green:#22a565; --grey:#aab2c0;
+    /* 稜線識別 · theme-indigo（紙背淺色） */
+    --bg:#F7F3EC; --card:#fff; --line:#E4DDCE; --ink:#141E2B; --sub:#6E8BA3;
+    --accent:#4A68A8; --red:#e5484d; --yellow:#d98a00; --green:#22a565; --grey:#aab2c0;
   }
   *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
   body{font-family:-apple-system,"Segoe UI","Microsoft JhengHei",sans-serif;background:var(--bg);color:var(--ink);}
@@ -26,7 +29,7 @@
   .search{display:flex;align-items:center;gap:8px;background:#f1f3f7;border-radius:12px;padding:11px 14px;margin:6px 0 16px;}
   .search input{border:none;background:transparent;outline:none;font-size:16px;flex:1;color:var(--ink);}
 
-  .today{background:linear-gradient(135deg,#4f7cff,#6a5cff);color:#fff;border-radius:18px;padding:16px 18px;margin-bottom:18px;box-shadow:0 8px 20px rgba(80,100,255,.28);}
+  .today{background:var(--accent);color:#fff;border-radius:18px;padding:16px 18px;margin-bottom:18px;}
   .today .t1{font-size:13px;opacity:.85;}
   .today .t2{font-size:16px;font-weight:700;margin-top:5px;line-height:1.5;}
 
@@ -53,7 +56,7 @@
   .src-json{background:#fff4e0;color:var(--yellow);}
   .src-none{background:#ffe9e9;color:var(--red);}
 
-  .fab{position:fixed;right:calc(50% - 240px + 20px);bottom:24px;background:var(--ink);color:#fff;border:none;border-radius:16px;padding:14px 20px;font-size:15px;font-weight:700;box-shadow:0 10px 24px rgba(28,36,48,.35);cursor:pointer;z-index:6;}
+  .fab{position:fixed;right:calc(50% - 240px + 20px);bottom:24px;background:var(--accent);color:#fff;border:none;border-radius:16px;padding:14px 20px;font-size:15px;font-weight:700;cursor:pointer;z-index:6;}
   @media(max-width:520px){.fab{right:20px;}}
 
   .detail{position:fixed;inset:0;background:var(--bg);z-index:20;transform:translateX(100%);transition:transform .22s ease;display:flex;flex-direction:column;max-width:480px;margin:0 auto;}
@@ -110,8 +113,8 @@
   /* ===== 深色模式：跟名片 App 主題同步 ===== */
   html[data-theme="dark"]{
     color-scheme:dark;
-    --bg:#141416; --card:#1e1e22; --line:#2c2c33; --ink:#f0f1f4; --sub:#9aa1ad;
-    --accent:#6a8bff; --red:#ff6b6f; --yellow:#e0a83a; --green:#35c07d; --grey:#5a6070;
+    --bg:#141E2B; --card:#1B2838; --line:#2A3A4E; --ink:#EEF3F6; --sub:#6E8BA3;
+    --accent:#4A68A8; --red:#ff6b6f; --yellow:#e0a83a; --green:#35c07d; --grey:#5a6070;
   }
   html[data-theme="dark"] .search{background:#26262c;}
   html[data-theme="dark"] .search input{color:var(--ink);}
@@ -145,7 +148,7 @@
   html[data-theme="dark"] .toast{background:#2c2c33;color:#fff;}
 </style>
 </head>
-<body>
+<body class="theme-indigo">
 <div class="wrap">
   <div class="top">
     <h1>我的客戶</h1>
@@ -684,11 +687,15 @@ async function init(){
 }
 init();
 </script>
-<footer style="max-width:520px;margin:22px auto 0;padding:16px 22px calc(env(safe-area-inset-bottom,0px) + 96px);text-align:center;font-size:11.5px;line-height:1.85;color:#8a94a6;border-top:1px solid rgba(128,138,166,.18);">
-<div style="margin-bottom:11px;line-height:0;"><svg class="rdg-mk" width="48" height="37" viewBox="0 10 62 48" aria-hidden="true"><path d="M0 54 L8 48 L14 51 L22 38 L26 42 L36 14 L46 34 L61 44" fill="none" stroke="currentColor" stroke-width="3.6" stroke-linejoin="round" stroke-linecap="round"/><path d="M31.3 27.2 L36 14 L38.7 19.4" fill="none" stroke="#DE9A45" stroke-width="3.6" stroke-linejoin="round" stroke-linecap="round"/></svg></div>
-<div style="font-style:italic;opacity:.9;">「人生走稜，高低都是風景。」</div>
-<div style="margin-top:6px;">⚠️ 客戶資料僅存於本機裝置（不上傳雲端），請自行備份；追蹤狀態與提醒僅供參考。</div>
-<div style="margin-top:8px;font-weight:600;">© 2026 Ridgeline · LUCAS 出品</div><div style="margin-top:4px;opacity:.85;">本工具免費提供使用；程式與內容著作權皆屬作者，未經同意請勿重製、散布或作商業用途。</div>
+<footer class="rl-signature theme-indigo">
+  <div class="rl-sig-row">
+    <svg viewBox="0 0 64 64" class="rl-sig-glyph" width="60" height="60" fill="none" stroke-linejoin="round" stroke-linecap="round" stroke-width="3.6"><path class="ridge" stroke="currentColor" d="M0 54 L8 48 L14 51 L22 38 L26 42 L36 14 L46 34 L61 44"/><path d="M31.3 27.2 L36 14 L38.7 19.4" stroke="#DE9A45"/></svg>
+    <span class="rl-sig-rule"></span>
+    <p class="rl-sig-quote">人生走稜，<br>高低都是風景。</p>
+  </div>
+  <p class="rl-sig-by">LUCAS 出品</p>
+  <p style="max-width:520px;margin:14px auto 0;padding:0 22px;font-size:11.5px;line-height:1.85;color:var(--sub);">⚠️ 客戶資料僅存於本機裝置（不上傳雲端），請自行備份；追蹤狀態與提醒僅供參考。</p>
+  <p style="max-width:520px;margin:8px auto 0;padding:0 22px calc(env(safe-area-inset-bottom,0px) + 90px);font-size:11.5px;line-height:1.85;color:var(--sub);">© 2026 Ridgeline · LUCAS 出品｜本工具免費提供使用；程式與內容著作權皆屬作者，未經同意請勿重製、散布或作商業用途。</p>
 </footer>
 </body>
 </html>
