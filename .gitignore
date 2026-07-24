@@ -6,3 +6,10 @@ _上架素材/
 
 # 本機工具暫存，不進 repo
 .claude/
+
+# wrangler files
+.wrangler
+.dev.vars*
+!.dev.vars.example
+.env*
+!.env.example
