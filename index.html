@@ -1604,6 +1604,10 @@ input, select, textarea, button { font-size: 16px; }
 .fx-result-row { display:flex; align-items:center; justify-content:space-between; gap:10px; padding:11px 16px; background:var(--bg-secondary); border:1px solid var(--border-color); border-radius:12px; }
 .fx-result-row .fx-cur { font-size:16px; font-weight:600; color:var(--text-secondary); }
 .fx-result-row .fx-val { font-size:21px; font-weight:700; color:var(--text-primary); font-variant-numeric:tabular-nums; }
+
+.rl-glyph-d{display:none}
+html[data-theme="dark"] .rl-glyph-l{display:none}
+html[data-theme="dark"] .rl-glyph-d{display:inline}
 </style>
 </head>
 <body class="theme-indigo">
@@ -1613,7 +1617,7 @@ input, select, textarea, button { font-size: 16px; }
        [HTML] 頂部標題與狀態導覽列
        ========================================================================== -->
   <header class="rl-appbar theme-indigo">
-    <span class="rl-mark"><svg class="rl-glyph" viewBox="0 0 64 64" width="30" height="30" fill="none"><path d="M0 54 L8 48 L14 51 L22 38 L26 42 L36 14 L46 34 L61 44" fill="none" stroke="currentColor" stroke-width="4.4" stroke-linejoin="round" stroke-linecap="round"/><path d="M31.3 27.2 L36 14 L38.7 19.4" fill="none" stroke="#DE9A45" stroke-width="4.4" stroke-linejoin="round" stroke-linecap="round"/></svg></span>
+    <span class="rl-mark"><img class="rl-glyph rl-glyph-l" src="rl-mark-matterhorn-navy.png" width="30" height="30" alt="" style="object-fit:contain"><img class="rl-glyph rl-glyph-d" src="rl-mark-matterhorn-white.png" width="30" height="30" alt="" style="object-fit:contain"></span>
     <div>
       <div class="rl-title">名片管理</div>
       <div class="rl-sub">拍照即存・AI 名片管家</div>
@@ -7343,7 +7347,7 @@ function showUpdateBanner(worker) {
 <!--RIDGELINE_BIZ_FOOT-->
 <footer class="rl-signature theme-indigo">
   <div class="rl-sig-row">
-    <span class="rl-mkcol" style="display:inline-flex;flex-direction:column;align-items:center;gap:3px"><svg class="rl-sig-glyph" viewBox="0 0 64 64" width="66" height="34" fill="none"><path d="M0 54 L8 48 L14 51 L22 38 L26 42 L36 14 L46 34 L61 44" fill="none" stroke="currentColor" stroke-width="4.4" stroke-linejoin="round" stroke-linecap="round"/><path d="M31.3 27.2 L36 14 L38.7 19.4" fill="none" stroke="#DE9A45" stroke-width="4.4" stroke-linejoin="round" stroke-linecap="round"/></svg><span style="font-family:'Noto Serif TC',serif;font-size:14px;font-weight:600;letter-spacing:.5px;color:currentColor">Matterhorn</span><span style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:2px;color:#8794a3">4,478 M</span></span>
+    <span class="rl-mkcol" style="display:inline-flex;flex-direction:column;align-items:center;gap:3px"><img class="rl-sig-glyph rl-glyph-l" src="rl-mark-matterhorn-navy.png" width="66" height="34" alt="" style="object-fit:contain"><img class="rl-sig-glyph rl-glyph-d" src="rl-mark-matterhorn-white.png" width="66" height="34" alt="" style="object-fit:contain"><span style="font-family:'Noto Serif TC',serif;font-size:14px;font-weight:600;letter-spacing:.5px;color:currentColor">Matterhorn</span><span style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:2px;color:#8794a3">4,478 M</span></span>
     <span class="rl-sig-rule" style="height:88px"></span>
     <p class="rl-sig-quote">稜角分明，<br>才立得住。</p>
   </div>
