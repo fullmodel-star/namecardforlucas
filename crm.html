@@ -59,8 +59,9 @@
   .fab{position:fixed;right:calc(50% - 240px + 20px);bottom:24px;background:var(--accent);color:#fff;border:none;border-radius:16px;padding:14px 20px;font-size:15px;font-weight:700;cursor:pointer;z-index:6;}
   @media(max-width:520px){.fab{right:20px;}}
 
-  .detail{position:fixed;inset:0;background:var(--bg);z-index:20;transform:translateX(100%);transition:transform .22s ease;display:flex;flex-direction:column;max-width:480px;margin:0 auto;}
-  .detail.open{transform:translateX(0);}
+  .detail{position:fixed;inset:0;background:var(--bg);z-index:20;transform:translateX(calc(50vw + 50%));visibility:hidden;transition:transform .22s ease,visibility 0s linear .22s;display:flex;flex-direction:column;max-width:480px;margin:0 auto;}
+  /* 面板寬上限 480px 且置中：寬螢幕下只位移自身寬度(100%)會留一截在畫面右側，所以關閉時要推出整個視窗並隱藏 */
+  .detail.open{transform:translateX(0);visibility:visible;transition:transform .22s ease,visibility 0s;}
   .d-back{padding:12px 20px 6px;color:var(--accent);font-weight:600;font-size:16px;cursor:pointer;}
   .d-body{flex:1;overflow-y:auto;padding-bottom:110px;}
   .d-head{padding:8px 22px 18px;}
