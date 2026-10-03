@@ -68,6 +68,12 @@ PWA 規定網頁必須在具有 `https://` 的加密安全網域下才能觸發�
 
 ## 🔧 Bug 修正記錄
 
+
+### 2026-10-03: 首訪不自己重整＋三個函式庫改自帶（離線）（sw bizcard-pwa-v59）
+- **首訪自己重整**：sw activate 會 clients.claim()，首訪「沒有控制者→有控制者」也觸發 controllerchange，原本直接 reload。加 hadController，只有真的換版才重新載入。全新瀏覽器實測導覽次數 2→1。
+- **CDN 改自帶**：Tabler Icons webfont 3.19.0、html2canvas 1.4.1、pdf-lib 1.17.1 原本從 jsDelivr 載入。這三個 <script>/<link> 沒有 crossorigin，瀏覽器取得的是 opaque 回應，而 sw.js 只快取 basic／cors 回應——實測 Cache Storage 裡根本沒有這三個檔，離線完全靠瀏覽器 HTTP 快取（被清掉就壞：名片截圖、PDF 簽名、所有圖示）。改放 vendor/（npm 官方包，與 jsDelivr 逐位元相同；各附 LICENSE.txt，皆 MIT），加進 sw 預先快取。改後 Cache Storage 有 4 個 vendor 檔。
+- Tabler 字型只帶 woff2（865KB；CSS 原封不動，現代瀏覽器第一個就用 woff2，woff／ttf 共 3.7MB 不帶）。vendor 合計約 1.8MB，超過品牌規範「300KB 要寫理由」：理由＝原本每次首訪就從 CDN 下載同樣這些檔，改自帶只是換來源、讓離線可用。
+- Google 登入（GSI）與 Google Fonts 維持外部：登入本來就要連網；字型離線會退回系統字。
 ### 2026-06-13: 多角色 UX 體檢後的全面修正（資料安全／離線／無障礙／效率）
 依「6 種使用者角色 × 對抗式驗證」找出的問題，進行一輪全面修正：
 
