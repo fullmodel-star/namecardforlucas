@@ -672,7 +672,7 @@ input, select, textarea, button { font-size: 16px; }
   cursor: pointer;
   background: var(--bg-secondary);
   border: 1px solid var(--border-color);
-  border-left: 4px solid var(--tc, var(--accent));
+  border-left: 4px solid var(--accent); /* 2026-10-12 色彩收斂：一律主色，不再每張卡各一色 */
   color: var(--text-primary);
   display: flex;
   flex-direction: column;
@@ -683,9 +683,9 @@ input, select, textarea, button { font-size: 16px; }
   font-family: inherit;
   box-shadow: var(--shadow-sm);
 }
-.tool-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); border-color: var(--tc, var(--accent)); }
+.tool-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); border-color: var(--accent); }
 .tool-card:active { transform: scale(0.98); }
-.tool-card-icon { font-size:26px; line-height: 1; color: var(--tc, var(--accent)); }
+.tool-card-icon { font-size:26px; line-height: 1; color: var(--accent-text); }
 .tool-card-title { font-size:16px; font-weight: 700; color: var(--text-primary); line-height: 1.3; }
 .tool-card-desc { font-size:16px; color: var(--text-secondary); line-height: 1.4; }
 /* 公司組織圖 */
