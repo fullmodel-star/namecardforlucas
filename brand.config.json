@@ -1,0 +1,6 @@
+{
+  "_說明": "100 名片管理＋CRM 的品牌設定（2026-10-12 補）。icon_slug 讓 04_管理工具\\品牌檢核.py 找到正式 icon 資料夾 bizcard（資料夾名是中文，猜不出 slug）；family_slug＝商務家族 matterhorn。頁尾已是手動注入的 RIDGELINE_BIZ_FOOT 區塊，這份不用來重新注入。",
+  "icon_slug": "bizcard",
+  "family_slug": "matterhorn",
+  "byline": "Ridgeline · by Lucas"
+}

@@ -1,4 +1,4 @@
-const CACHE_NAME = 'bizcard-pwa-v60';
+const CACHE_NAME = 'bizcard-pwa-v61';
 // 只預快取「同源」核心檔；跨網域資源(tabler/gsi)交給 runtime 快取，避免 addAll 單一失敗拖垮整個 install
 const ASSETS_TO_CACHE = [
   './',
@@ -11,8 +11,11 @@ const ASSETS_TO_CACHE = [
   './icons/icon-512.png',
   './icons/icon-maskable-512.png',
   // 2026-10-03：原本從 jsDelivr 載入的三個函式庫改自帶，預先快取才能離線
-  './vendor/tabler-icons/tabler-icons.min.css',
-  './vendor/tabler-icons/fonts/tabler-icons.woff2',
+  // 2026-10-12：Tabler 改用子集（_tools/subset_tabler.py 產生；原整份 865KB 字型不再載入）
+  './vendor/tabler-icons/tabler-icons.subset.css',
+  './vendor/tabler-icons/fonts/tabler-icons.subset.woff2',
+  './favicon-32.png',
+  // html2canvas／pdf-lib 改成按功能才載入，但仍預先快取，離線照常可用
   './vendor/html2canvas/html2canvas.min.js',
   './vendor/pdf-lib/pdf-lib.min.js'
 ];
