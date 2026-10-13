@@ -1647,6 +1647,15 @@ footer.rl-signature > p:not(.rl-sig-by):not(.rl-sig-quote) { font-size:13px !imp
 .mp-empty { grid-column:1/-1; font-size:15px; line-height:1.6; color:var(--text-secondary); text-align:center; padding:2px 4px 0; }
 [data-theme="light"] .mp-line-word { color:#04702F !important; } /* LINE 綠 #06C755 在紙底只有 1.9，淺色主題改深綠 5.2 */
 .mp-link-btn { background:none; border:0; padding:8px 4px; min-height:40px; font:inherit; font-weight:600; color:var(--accent-text); cursor:pointer; }
+/* 2026-10-13 UI/UX 評比修正 */
+.api-notice-acts { display:flex; gap:8px; flex-wrap:wrap; width:100%; margin-top:8px; }
+.api-notice-acts .btn { flex:1 1 140px; justify-content:center; font-size:15px; }
+.mp-start-acts { display:flex; gap:10px; flex-wrap:wrap; justify-content:center; max-width:520px; margin:0 auto; }
+.mp-start-acts .btn { flex:1 1 150px; justify-content:center; font-size:16px; padding:12px 14px; }
+.mp-start-acts .btn-primary { flex-grow:1.4; }
+/* 手動新增／編輯名片：「儲存名片」固定在彈窗可視範圍底部，不用先往下滑 */
+#form-modal-bg .form-actions { position:sticky; bottom:-32px; z-index:2; background:var(--bg-secondary); margin:1rem -1rem -1.25rem; padding:12px 1rem calc(12px + env(safe-area-inset-bottom)); box-shadow:0 -6px 14px rgba(0,0,0,.12); }
+@media (min-width: 481px) { #form-modal-bg .form-actions { bottom:-48px; margin:1rem -1.5rem -1.5rem; padding:12px 1.5rem 14px; } }
 
 </style>
 
@@ -2042,9 +2051,13 @@ footer.rl-signature > p:not(.rl-sig-by):not(.rl-sig-quote) { font-size:13px !imp
           <div style="flex:1;height:1px;background:var(--border-color);"></div>
         </div>
 
-        <div id="api-notice-batch-top" class="api-notice" style="display:none;cursor:pointer;" onclick="goSetApiKey()">
+        <div id="api-notice-batch-top" class="api-notice" style="display:none;flex-wrap:wrap;">
           <i class="ti ti-alert-triangle" style="flex-shrink:0;margin-top:1px"></i>
-          <span>AI 辨識需先設定「AI 辨識金鑰」（Google 免費提供）。<u>點此前往設定 →</u></span>
+          <span style="flex:1;min-width:0;">拍照「自動辨識」需先設定「AI 辨識金鑰」（Google 免費提供，約 1 分鐘）。沒有金鑰也能先手動輸入名片。</span>
+          <div class="api-notice-acts">
+            <button type="button" class="btn btn-primary" onclick="switchTab('cards');openFormModal();"><i class="ti ti-edit"></i> 先手動輸入一張</button>
+            <button type="button" class="btn" onclick="goSetApiKey()"><i class="ti ti-settings"></i> 設定 AI 金鑰</button>
+          </div>
         </div>
 
         <div class="batch-dropzone" id="drop-zone"
@@ -3807,6 +3820,7 @@ async function systemLoadAllData() {
   try { renderDashboard(); } catch(e) { console.warn('renderDashboard:', e); }
   // 首頁一律停在「我的」（依使用者指定）；新手要建檔可點中央醒目的「掃名片」
   switchTab('myprofile');
+  _histReady = true;
   setTimeout(() => renderHomeScreen(), 50);
 }
 
@@ -3901,6 +3915,15 @@ let _searchDebounce = null;
 function onSearchInput() { clearTimeout(_searchDebounce); _searchDebounce = setTimeout(() => filterCards(), 180); }
 function filterCards() {
   searchKeyword = document.getElementById('search-input').value.toLowerCase().trim();
+  renderCardsGrid();
+}
+
+function clearCardSearch() {
+  const si = document.getElementById('search-input'); if (si) si.value = '';
+  searchKeyword = '';
+  try { setProcessedFilter('all'); } catch (e) {}
+  activeGroupFilter = ''; activeTagFilter = '';
+  try { renderSidebarFilters(); } catch (e) {}
   renderCardsGrid();
 }
 
@@ -4018,10 +4041,16 @@ function renderCardsGrid() {
   if (_sig !== _lastFilterSig) { _cardRenderLimit = 100; _lastFilterSig = _sig; }
 
   if (filtered.length === 0) {
+    // 2026-10-13：搜尋／篩選無結果時給下一步，並讓上方張數標籤跟著顯示 0（以前仍寫總張數，與空結果矛盾）
+    const _hasFilter = !!searchKeyword || activeProcessedFilter !== 'all' || !!activeGroupFilter || !!activeTagFilter;
     grid.innerHTML = `<div style="text-align:center;padding:40px 20px;color:var(--text-tertiary);">
       <i class="ti ti-inbox" style="font-size:48px;opacity:0.4;"></i>
-      <p style="margin-top:12px;font-size:16px;">沒有符合條件的名片資料</p>
+      <p style="margin-top:12px;font-size:16px;">${searchKeyword ? `找不到符合「${esc(searchKeyword)}」的名片` : '沒有符合條件的名片資料'}</p>
+      ${_hasFilter ? `<p style="font-size:14.5px;margin-top:6px;">可以改搜姓名、公司或電話的一部分，或清除條件看全部名片。</p>
+      <button type="button" class="btn" style="margin-top:12px;" onclick="clearCardSearch()"><i class="ti ti-x"></i> 清除搜尋與篩選</button>` : ''}
     </div>`;
+    const _cl = document.getElementById('cards-count-label');
+    if (_cl) _cl.textContent = `0 張${cardsList.length ? `（共 ${cardsList.length} 張）` : ''}`;
     return;
   }
 
@@ -4170,6 +4199,7 @@ async function selectCard(id) {
 
   if (wrapper) { wrapper.style.display = 'block'; wrapper.classList.add('open'); }
   if (panel) panel.classList.add('open');
+  _ovOpen();
   
   const imageBase64 = await dbGetCardImage(c.id);
   const cleanMobile = (c.mobile || '').replace(/[^\d+]/g, '');
@@ -4319,6 +4349,7 @@ function closeDetailPanel() {
   const wrapper = document.getElementById('detail-wrapper');
   if (panel) panel.classList.remove('open');
   if (wrapper) { wrapper.classList.remove('open'); wrapper.style.display = 'none'; }
+  _ovClosed();
 }
 
 function flipVirtualCard(id) {
@@ -4345,7 +4376,33 @@ function closeLightbox() {
   document.getElementById('lightbox-bg').classList.remove('open');
 }
 
+/* 2026-10-13：手機返回鍵。切分頁 pushState({tab})；開名片詳情／新增編輯表單／個人名片彈窗 pushState({ov:1})，
+   返回鍵先關彈窗、再回上一個分頁，在第一個畫面才離開 App。用按鈕關彈窗時把那筆紀錄標成 dead，之後退到它會自動再退一格。 */
+let _curTab = 'myprofile', _histReady = false, _tabFromPop = false, _popClosing = false;
+function _anyOverlayOpen() { return !!document.querySelector('#form-modal-bg.open, #mycard-modal-bg.open, #detail-wrapper.open'); }
+function _ovOpen() { if (_histReady && !(history.state && history.state.ov)) history.pushState({ tab: _curTab, ov: 1 }, ''); }
+function _ovClosed() { if (!_popClosing && history.state && history.state.ov && !_anyOverlayOpen()) history.replaceState({ tab: _curTab, dead: 1 }, ''); }
+window.addEventListener('popstate', (e) => {
+  const st = e.state || { tab: 'myprofile' };
+  _popClosing = true;
+  try {
+    if (!st.ov) {
+      if (document.getElementById('form-modal-bg').classList.contains('open')) closeFormModal();
+      if (document.getElementById('mycard-modal-bg').classList.contains('open')) closeMyCardModal();
+      const dw = document.getElementById('detail-wrapper'); if (dw && dw.classList.contains('open')) closeDetailPanel();
+      document.querySelectorAll('.modal-overlay.open').forEach(m => m.classList.remove('open'));
+    }
+  } finally { _popClosing = false; }
+  if (st.dead) { history.back(); return; }
+  if (st.tab && st.tab !== _curTab) { _tabFromPop = true; try { switchTab(st.tab); } finally { _tabFromPop = false; } }
+});
+
 function switchTab(tabId) {
+  if (!_tabFromPop) {
+    if (!_histReady) history.replaceState({ tab: tabId }, '');
+    else if (!(history.state && history.state.tab === tabId && !history.state.ov && !history.state.dead)) history.pushState({ tab: tabId }, '');
+  }
+  _curTab = tabId;
   // Header 只在首頁顯示；客戶分頁走全屏 iframe，隱藏名片主標頭
   const header = document.querySelector('.rl-appbar');
   if (header) header.style.display = (tabId === 'crm') ? 'none' : 'flex';
@@ -5116,11 +5173,26 @@ function renderMyProfile() {
       <div class="mp-empty">名片庫還是空的，拍照就能自動建檔：<button type="button" class="mp-link-btn" onclick="switchTab('batch')">去拍照掃名片 →</button></div>` : '');
   }
   const libEmpty = !(Array.isArray(cardsList) && cardsList.length);
+  // 2026-10-13：首訪（名片庫空、也沒填個人名片）主行動改成「新增第一張名片」，個人名片退為次要連結；下方統計列不再重複空狀態連結
+  const firstRun = libEmpty && !c.name;
+  if (firstRun && statsEl) { const me = statsEl.querySelector('.mp-empty'); if (me) me.remove(); }
 
   // 個人虛擬名片
   const cardSection = document.getElementById('myprofile-card-section');
   if (cardSection) {
-    if (!c.name) {
+    if (firstRun) {
+      cardSection.innerHTML = `
+        <div class="db-section" style="text-align:center;padding:28px 18px;">
+          <i class="ti ti-id" style="font-size:52px;color:var(--accent-text);opacity:0.8;display:block;margin-bottom:10px;"></i>
+          <div style="font-size:19px;font-weight:700;color:var(--text-primary);margin-bottom:6px;">新增第一張名片</div>
+          <div style="font-size:15px;color:var(--text-tertiary);margin-bottom:18px;">拍照自動辨識（需 AI 金鑰），或直接手動輸入。存好的名片會自動成為「客戶」。</div>
+          <div class="mp-start-acts">
+            <button class="btn btn-primary" onclick="switchTab('batch')"><i class="ti ti-camera"></i> 拍照掃名片</button>
+            <button class="btn" onclick="switchTab('cards');openFormModal();"><i class="ti ti-edit"></i> 手動輸入</button>
+          </div>
+          <div style="margin-top:12px;font-size:14.5px;color:var(--text-tertiary);">也想分享自己的名片？<button type="button" class="mp-link-btn" onclick="openMyCardModal();setTimeout(enterMyCardEditMode,100);">填寫個人名片 →</button></div>
+        </div>`;
+    } else if (!c.name) {
       cardSection.innerHTML = `
         <div class="db-section" style="text-align:center;padding:32px 20px;">
           <i class="ti ti-user-circle" style="font-size:52px;color:var(--text-tertiary);opacity:0.4;display:block;margin-bottom:12px;"></i>
@@ -5345,10 +5417,12 @@ function openMyCardModal() {
   const myCard = getMyCardData();
   renderMyCardModal(myCard, false);
   document.getElementById('mycard-modal-bg').classList.add('open');
+  _ovOpen();
 }
 
 function closeMyCardModal() {
   document.getElementById('mycard-modal-bg').classList.remove('open');
+  _ovClosed();
 }
 
 function closeMyCardModalBg(e) {
@@ -5860,6 +5934,7 @@ function updateBadgesOnly() {
 function openFormModal(prepopulate = null) {
   const modalBg = document.getElementById('form-modal-bg');
   modalBg.classList.add('open');
+  _ovOpen();
   
   const fields = ['name','title','org','dept','phone','phoneExt','mobile','fax','email','website','zip','addr','note'];
   const groupSelect = document.getElementById('f-group');
@@ -5912,6 +5987,7 @@ function toggleModalTag(tag, e) {
 
 function closeFormModal() {
   document.getElementById('form-modal-bg').classList.remove('open');
+  _ovClosed();
 }
 
 function closeFormModalBg(e) {
