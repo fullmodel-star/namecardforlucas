@@ -1355,6 +1355,13 @@ input, select, textarea, button { font-size: 16px; }
   color: var(--color-red);
   cursor: pointer;
   font-weight: bold;
+  /* 2026-10-19 窄手機：刪除鈕原本 9×18 太小，放大成可點的方塊 */
+  flex: none;
+  min-width: 28px;
+  min-height: 28px;
+  padding: 0;
+  font-size: 18px;
+  line-height: 1;
 }
 
 /* ============================================================================
@@ -1782,7 +1789,7 @@ footer.rl-signature > p:not(.rl-sig-by):not(.rl-sig-quote) { font-size:13px !imp
             <option value="">全部群組</option>
           </select>
           <!-- 狀態和排序 -->
-          <div style="display:flex;gap:10px;align-items:center;justify-content:space-between;">
+          <div style="display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;">
             <div class="status-segmented">
               <button class="seg-btn active" id="fc-all" onclick="setProcessedFilter('all')">全部</button>
               <button class="seg-btn" id="fc-unprocessed" onclick="setProcessedFilter('unprocessed')">未處理</button>
