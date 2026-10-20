@@ -147,6 +147,14 @@
   html[data-theme="dark"] .fab,
   html[data-theme="dark"] .empty button{background:var(--accent);color:#fff;}
   html[data-theme="dark"] .toast{background:#2c2c33;color:#fff;}
+/* 2026-10-20 文字量調整（App文字分層規則 B）：頁尾免責收成一行「⚠ 使用前須知 ›」，點開看全文（全文仍在 DOM；原生 details 可鍵盤開合；字級 13px） */
+.disc-fold{max-width:520px;margin:12px auto 0;padding:0 22px;font-size:13px;line-height:1.85;color:var(--sub);text-align:center}
+.disc-fold>summary{display:flex;align-items:center;justify-content:center;gap:6px;width:fit-content;margin:0 auto;min-height:44px;padding:6px 16px;box-sizing:border-box;border:1px solid rgba(130,130,130,.4);border-radius:999px;font-size:13px;letter-spacing:1px;line-height:1.4;color:inherit;cursor:pointer;list-style:none;-webkit-tap-highlight-color:transparent;-webkit-user-select:none;user-select:none}
+.disc-fold>summary::-webkit-details-marker{display:none}
+.disc-fold>summary::after{content:"\203A";display:inline-block;font-size:16px;line-height:1;transition:transform .2s}
+.disc-fold[open]>summary::after{transform:rotate(90deg)}
+.disc-fold>summary:focus-visible{outline:2px solid currentColor;outline-offset:2px}
+.disc-fold-body{margin-top:8px;text-align:left}
 </style>
 </head>
 <body class="theme-indigo">
@@ -695,7 +703,7 @@ init();
     <p class="rl-sig-quote">稜角分明，<br>才立得住。</p>
   </div>
   <p class="rl-sig-by">Ridgeline · by Lucas</p>
-  <p style="max-width:520px;margin:14px auto 0;padding:0 22px;font-size:11.5px;line-height:1.85;color:var(--sub);">⚠️ 客戶資料僅存於本機裝置（不上傳雲端），請自行備份；追蹤狀態與提醒僅供參考。</p>
+  <details class="disc-fold"><summary>⚠ 使用前須知</summary><div class="disc-fold-body">⚠️ 客戶資料僅存於本機裝置（不上傳雲端），請自行備份；追蹤狀態與提醒僅供參考。</div></details>
   <p style="max-width:520px;margin:8px auto 0;padding:0 22px calc(env(safe-area-inset-bottom,0px) + 90px);font-size:11.5px;line-height:1.85;color:var(--sub);">© 2026 Ridgeline · Ridgeline · by Lucas｜本工具免費提供使用；程式與內容著作權皆屬作者，未經同意請勿重製、散布或作商業用途。</p>
 </footer>
 </body>
