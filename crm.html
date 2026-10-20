@@ -706,5 +706,34 @@ init();
   <details class="disc-fold"><summary>⚠ 使用前須知</summary><div class="disc-fold-body">⚠️ 客戶資料僅存於本機裝置（不上傳雲端），請自行備份；追蹤狀態與提醒僅供參考。</div></details>
   <p style="max-width:520px;margin:8px auto 0;padding:0 22px calc(env(safe-area-inset-bottom,0px) + 90px);font-size:11.5px;line-height:1.85;color:var(--sub);">© 2026 Ridgeline · Ridgeline · by Lucas｜本工具免費提供使用；程式與內容著作權皆屬作者，未經同意請勿重製、散布或作商業用途。</p>
 </footer>
+<script>/* 2026-10-20：crm.html 平常在 index.html 的 iframe 裡，更新交給外層頁；單獨打開時才由下面區塊處理 */if(window.top!==window)window.__rlUpdOpen=1;</script>
+<!--RL_UPDATE_OPEN_START-->
+<script>
+/* 2026-10-19 全家族：打開時套用已下載好的新版（母版 04_管理工具\PWA新鮮度\rl_update_open.html，apply.py 套用，不要手改）。
+   原本更新提示只在「當下偵測到新版」才跳；新版在背景裝好或第一次沒按，之後每次打開都不再提示，手機 PWA 常不真的關 → 一直卡舊版。
+   這裡：打開後 10 秒內發現有等待中的新版就直接換（剛打開還沒操作，不打斷）；使用中才偵測到的新版仍走 App 原本的提示。回到前景時主動檢查新版。 */
+(function(){
+  if (window.__rlUpdOpen || !('serviceWorker' in navigator)) return; window.__rlUpdOpen = 1;
+  var t0 = Date.now(), done = false;
+  function apply(w){
+    if (done || !w || !navigator.serviceWorker.controller) return; done = true;
+    navigator.serviceWorker.addEventListener('controllerchange', function(){ if (window.__rlUpdReload) return; window.__rlUpdReload = 1; location.reload(); });
+    try { w.postMessage('SKIP_WAITING'); } catch (e) {}
+    try { w.postMessage({ type: 'SKIP_WAITING' }); } catch (e) {}
+    try { w.postMessage({ action: 'skipWaiting' }); } catch (e) {}
+  }
+  function watch(reg){
+    if (!reg) return;
+    if (reg.waiting && Date.now() - t0 < 10000) apply(reg.waiting);
+    function track(n){ if (n) n.addEventListener('statechange', function(){ if (n.state === 'installed' && Date.now() - t0 < 10000) apply(reg.waiting || n); }); }
+    track(reg.installing);
+    reg.addEventListener('updatefound', function(){ track(reg.installing); });
+    document.addEventListener('visibilitychange', function(){ if (document.visibilityState === 'visible') reg.update().catch(function(){}); });
+  }
+  function go(){ navigator.serviceWorker.getRegistration().then(watch).catch(function(){}); }
+  if (document.readyState === 'complete') go(); else window.addEventListener('load', go);
+})();
+</script>
+<!--RL_UPDATE_OPEN_END-->
 </body>
 </html>
