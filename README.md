@@ -1,5 +1,13 @@
 # 智慧名片系統 UI/UX 與 PWA (漸進式網頁應用) 部署驗證報告
 
+> **2026-10-20 首頁視覺改版「青瓷名片匣」（sw bizcard-pwa-v69→v70；已 commit、未 push＝未上線）**
+> - 為什麼：UI/UX 評比扣分＝首屏個人名片卡、三格 0、掃碼虛線框份量接近、主鈕偏小；桌機把手機版拉寬、大片空框。照 `05_品牌資源\01_品牌規範\05_App套用範本\App版面美化做法.md` 做三樣看得見的東西。
+> - 主題：交換名片的場合——青瓷綠名片匣＋象牙卡紙＋黃銅細線（深色預設、淺色都有）。「我的」頁最上面＝主視覺大卡「收到名片，拍一下就存好」＋唯一主要行動「拍照掃名片」（Fluent 按鈕）＋次要框線鈕「手動輸入」。桌機「我的」頁兩欄（左個人名片＋統計＋聯絡資訊｜右掃碼交流）。CRM（crm.html，iframe）同步換色、標題字型、線條圖示。
+> - 套件（全部 vendor 自帶）：Fluent UI Web Components 3.1.3（MIT，只打包 `<fluent-button>`，`vendor/fluent-ui/` 83KB，`_tools/build_fluent_vendor.mjs`）；Noto Serif TC 2.002 宋體子集（OFL-1.1，改名 BC Serif，`vendor/serif-ui/bc-serif.woff2` 239KB，收 index.html＋crm.html 用字，`_tools/build_serif_font.py`；**改介面文字後要重跑**）；Fluent Emoji 3D（MIT，6 張 128px，`_tools/build_fluent3d.py`）；線條圖示沿用既有 Tabler 子集（新增 ti-alarm，已重跑 `_tools/subset_tabler.py`）。
+> - 只改呈現：新增名片、AI 金鑰流程與提示、隱私說明、CRM 資料都沒動；使用者自選的虛擬名片配色（vc-theme-*）不動。
+> - 測試（本 App 第一支自動測試）：`node _tools/ui_test.mjs <網址>`——第 1 節主要流程（手動輸入新增名片→列表→搜尋有／無結果→開 CRM 看到該客戶→拍照掃名片沒金鑰提示）改前 11/11、改後 11/11；全套 37/37。品牌檢核 0 FAIL／0 WARN。
+> - 部署：GitHub Pages，`git push origin main` 即上線（本次未 push）。
+
 本報告新增了針對 **PWA (Progressive Web App)** 的部署與安裝驗證說明，以利您順利將系統當成手機 App 進行安裝與離線使用。
 
 ---

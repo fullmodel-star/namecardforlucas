@@ -47,7 +47,7 @@
   });
 })();
 /* RL_FRESH_END */
-const CACHE_NAME = 'bizcard-pwa-v69';
+const CACHE_NAME = 'bizcard-pwa-v70';
 // 只預快取「同源」核心檔；跨網域資源(tabler/gsi)交給 runtime 快取，避免 addAll 單一失敗拖垮整個 install
 const ASSETS_TO_CACHE = [
   './',
@@ -66,7 +66,16 @@ const ASSETS_TO_CACHE = [
   './favicon-32.png',
   // html2canvas／pdf-lib 改成按功能才載入，但仍預先快取，離線照常可用
   './vendor/html2canvas/html2canvas.min.js',
-  './vendor/pdf-lib/pdf-lib.min.js'
+  './vendor/pdf-lib/pdf-lib.min.js',
+  // 2026-10-20 首頁視覺改版：宋體子集、Fluent UI 按鈕、3D 圖（離線也要有）
+  './vendor/serif-ui/bc-serif.woff2',
+  './vendor/fluent-ui/fluent-button.min.js',
+  './vendor/fluent-3d/cardindex.png',
+  './vendor/fluent-3d/camera.png',
+  './vendor/fluent-3d/filebox.png',
+  './vendor/fluent-3d/hourglass.png',
+  './vendor/fluent-3d/idcard.png',
+  './vendor/fluent-3d/handshake.png'
 ];
 
 // [PWA sw.js] 安裝階段：逐檔快取，單一資源失敗不拖垮整個 install

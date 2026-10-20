@@ -6,7 +6,7 @@
 <title>智慧名片管理系統 (終極完全體)</title>
 
 <link rel="manifest" href="./manifest.json">
-<meta name="theme-color" content="#35508C">
+<meta name="theme-color" content="#134540">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -17,6 +17,9 @@
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <!-- 稜線識別 · 共用地基 -->
 <link rel="stylesheet" href="./ridgeline-ui.css">
+<!-- 2026-10-20 首頁視覺改版：宋體子集（標題）＋Fluent UI 按鈕（vendor 自帶，沒載入時照樣是 .btn、可按） -->
+<link rel="preload" href="vendor/serif-ui/bc-serif.woff2" as="font" type="font/woff2" crossorigin>
+<script src="vendor/fluent-ui/fluent-button.min.js" defer></script>
 
 <!-- Tabler Icons 向量圖標庫 -->
 <link rel="stylesheet" href="vendor/tabler-icons/tabler-icons.subset.css"><!-- 2026-10-03 改自帶（原 jsDelivr；script/link 沒 crossorigin＝opaque 回應，sw 不會快取，離線全靠瀏覽器 HTTP 快取）。
@@ -1672,6 +1675,91 @@ footer.rl-signature > p:not(.rl-sig-by):not(.rl-sig-quote) { font-size:13px !imp
 #form-modal-bg .form-actions { position:sticky; bottom:-32px; z-index:2; background:var(--bg-secondary); margin:1rem -1rem -1.25rem; padding:12px 1rem calc(12px + env(safe-area-inset-bottom)); box-shadow:0 -6px 14px rgba(0,0,0,.12); }
 @media (min-width: 481px) { #form-modal-bg .form-actions { bottom:-48px; margin:1rem -1.5rem -1.5rem; padding:12px 1.5rem 14px; } }
 
+/* ===== POLISH_2026-10-20 首頁視覺改版「青瓷名片匣」（只改呈現；手冊 05_品牌資源\01_品牌規範\05_App套用範本\App版面美化做法.md）=====
+   主題：交換名片的場合——青瓷綠名片匣＋象牙卡紙＋黃銅細線；標題用宋體子集（BC Serif，Noto Serif TC 改名）、數字走系統字。
+   元件庫：Fluent UI Web Components 3.1.3（只用 <fluent-button>，vendor/fluent-ui/）；3D 圖：Fluent Emoji 3D（vendor/fluent-3d/）；
+   線條圖示：沿用既有 Tabler Icons 子集（ti-*）。CRM（crm.html，iframe）同步換色與標題字型。 */
+@font-face{font-family:"BCSerif";src:url("vendor/serif-ui/bc-serif.woff2") format("woff2");font-weight:700;font-style:normal;font-display:swap;
+  unicode-range:U+0020-002F,U+003A-007E,U+2010-2027,U+3000-303F,U+3400-9FFF,U+FF01-FF0F,U+FF1A-FFEF}
+:root,[data-theme="graphite"],[data-theme="dark"]{
+  --serif:"BCSerif","Noto Serif TC","Songti TC",serif;--brass:#C9A65A;--hero1:#1E6B62;--hero2:#0E3A35;--hero-ink:#F7F3E8;
+  --bg-primary:#0E191A;--bg-secondary:#132224;--bg-tertiary:#192C2E;--bg-glass:rgba(19,34,36,.92);--field-bg:#0B1516;
+  --text-primary:#EAF3F1;--text-secondary:#B7CCC8;--text-tertiary:#93B2AD;--accent-text:#86D6CA;
+  --border-color:#24393B;--border-strong:#33504F;--border-color-glow:rgba(46,140,128,.32);
+  --accent:#1F7268;--accent-solid:#1F7268;--accent-soft:rgba(46,140,128,.20);--accent-hover:#185E56;--accent-light:rgba(46,140,128,.18);--accent-gradient:#1F7268}
+[data-theme="light"]{
+  --hero1:#1E6B62;--hero2:#114A44;
+  --bg-primary:#F5F1E8;--bg-secondary:#FFFDF8;--bg-tertiary:#FFFFFF;--bg-glass:rgba(255,253,248,.92);--field-bg:#EFEADF;
+  --text-primary:#132321;--text-secondary:#2D4845;--text-tertiary:#4C6864;--accent-text:#1A6157;
+  --border-color:#E3DCCB;--border-strong:#D5CBB4;--border-color-glow:rgba(30,107,98,.18);
+  --accent:#1E6B62;--accent-solid:#1E6B62;--accent-soft:rgba(30,107,98,.12);--accent-hover:#155248;--accent-light:rgba(30,107,98,.10);--accent-gradient:#1E6B62}
+/* body 上的 .theme-indigo（ridgeline-ui.css）會把 --accent 蓋回靛藍，這裡同一層蓋成青瓷綠 */
+body.theme-indigo{--accent:#1F7268}
+[data-theme="light"] body.theme-indigo{--accent:#1E6B62}
+/* 頁首（品牌層：山形＋App 名不變，只換底色） */
+.rl-appbar.theme-indigo{--hdr:#134540}
+[data-theme="light"] .rl-appbar.theme-indigo{--hdr:#1A5B53}
+.rl-appbar .rl-sub{color:#D9ECE8}
+@media (min-width:1100px){body{background:radial-gradient(1100px 520px at 50% -180px,color-mix(in srgb,var(--brass) 14%,transparent),transparent 70%),var(--bg-primary)}}
+.rl-appbar .rl-title,.db-section h3,.btn,.btab span,.bc-h,.mp-stat span,.tool-card-title,#more-tools-toggle,.modal-title,h2{font-family:var(--serif)}
+.rl-appbar .rl-title{font-weight:700;letter-spacing:1px}
+.db-section h3{letter-spacing:.5px}
+.db-section{border-radius:18px}
+
+/* 首屏主視覺：青瓷名片匣大卡＋一句大標＋唯一主要行動 */
+.bc-hero{position:relative;overflow:hidden;border-radius:22px;padding:22px 20px 20px;color:var(--hero-ink);
+  background:linear-gradient(135deg,var(--hero1) 0%,var(--hero2) 100%);
+  box-shadow:0 16px 34px -20px rgba(6,40,36,.9),inset 0 0 0 1px color-mix(in srgb,var(--brass) 50%,transparent)}
+.bc-hero::before{content:"";position:absolute;inset:8px;border:1px solid color-mix(in srgb,#E9CF97 34%,transparent);border-radius:16px;pointer-events:none}
+.bc-hero::after{content:"";position:absolute;right:-70px;top:-70px;width:240px;height:240px;border-radius:50%;
+  background:radial-gradient(circle,color-mix(in srgb,#E9CF97 26%,transparent),transparent 65%);pointer-events:none}
+.bc-art{position:absolute;right:12px;top:12px;width:96px;height:84px;z-index:1}
+.bc-art img{position:absolute;filter:drop-shadow(0 8px 14px rgba(0,0,0,.35))}
+.bc-art .a1{width:74px;height:74px;right:2px;top:0;transform:rotate(-7deg)}
+.bc-art .a2{width:46px;height:46px;left:0;bottom:-4px;transform:rotate(8deg)}
+.bc-h{position:relative;z-index:2;margin:2px 96px 16px 0;font-size:25px;line-height:1.32;font-weight:700;letter-spacing:1px;color:var(--hero-ink)}
+.bc-h .nb{white-space:nowrap}
+.bc-acts{position:relative;z-index:2;display:flex;gap:10px;align-items:stretch}
+.bc-acts .bc-main{flex:1.6;justify-content:center;background:#FFF8EA;color:#134A44;border:0;font-size:18px;font-weight:700;min-height:52px;border-radius:14px;box-shadow:0 6px 16px -6px rgba(0,0,0,.45)}
+.bc-acts .bc-main:hover{background:#FFFFFF;opacity:1;transform:none}
+.bc-acts .bc-alt{flex:1;justify-content:center;background:transparent;color:var(--hero-ink);border:1px solid color-mix(in srgb,var(--hero-ink) 55%,transparent);min-height:52px;border-radius:14px;font-size:16px;white-space:nowrap;padding:8px 10px}
+.bc-acts .bc-alt:hover{background:rgba(255,255,255,.08);border-color:var(--hero-ink)}
+.bc-acts .ti{font-size:20px}
+/* Fluent 按鈕：只用它的結構與焦點框，顏色字型由本 App 決定（沒載入時一樣是 .btn 樣式、onclick 照樣能按） */
+fluent-button.bc-main{--fontFamilyBase:var(--serif);--colorBrandBackground:#FFF8EA;--colorBrandBackgroundHover:#FFFFFF;--colorBrandBackgroundPressed:#EEE6D2;
+  --colorNeutralForegroundOnBrand:#134A44;--borderRadiusMedium:14px;--colorStrokeFocus2:#E9CF97;height:auto;cursor:pointer}
+fluent-button.bc-main:not(:defined){display:inline-flex;align-items:center}
+fluent-button.bc-main .ti{margin-right:6px}
+/* 首訪說明卡（原「新增第一張名片」卡，行動鈕移到主視覺） */
+.mp-first{display:flex;align-items:center;gap:12px;padding:14px 16px !important;border-left:4px solid var(--brass)}
+.mp-first img{width:40px;height:40px;flex:none}
+.mp-first .mp-first-t{flex:1;min-width:0;font-size:15px;line-height:1.6;color:var(--text-secondary)}
+.mp-first .mp-link-btn{padding:4px 0;min-height:36px}
+/* 解釋句收進 ⓘ（App文字分層規則 B） */
+.mp-why>summary{list-style:none;cursor:pointer}
+.mp-why>summary::-webkit-details-marker{display:none}
+.mp-why>summary .ti{margin-left:4px;color:var(--accent-text);vertical-align:-2px}
+.mp-why[open]>summary{margin-bottom:2px}
+.mp-why>summary:focus-visible{outline:2px solid var(--brass);outline-offset:2px;border-radius:4px}
+/* 名片庫統計格：3D 小圖＋數字 */
+.mp-stat img{display:inline-block;width:24px;height:24px;vertical-align:-3px;margin-right:4px}
+.mp-stat b{display:inline-block}
+.mp-stat b,.mp-stat b small{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Microsoft JhengHei",sans-serif}
+/* 桌機：我的頁兩欄（主視覺跨欄；左＝個人名片＋統計＋聯絡資訊，右＝掃碼交流） */
+@media (min-width:1100px){
+  #view-myprofile>div{display:grid !important;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);align-items:start;max-width:1180px;margin:0 auto;padding-left:24px !important;padding-right:24px !important;column-gap:20px !important}
+  #view-myprofile>div>*{grid-column:1/-1}
+  #view-myprofile>div>#myprofile-card-section,#view-myprofile>div>#myprofile-stats,#view-myprofile>div>#myprofile-info-section{grid-column:1}
+  #view-myprofile>div>.mp-qr{grid-column:2;grid-row:2 / span 3}
+  .bc-hero{padding:32px 36px 30px}
+  .bc-h{font-size:34px;margin-right:200px}
+  .bc-art{right:36px;top:20px;width:170px;height:150px}
+  .bc-art .a1{width:128px;height:128px}
+  .bc-art .a2{width:80px;height:80px}
+  .bc-acts{max-width:560px}
+}
+@media (max-width:380px){.bc-h{font-size:23px}.bc-acts .bc-alt{font-size:15px}}
+/* POLISH_2026-10-20_END */
 </style>
 
 <!-- ── 分享預覽（稜線 App 分享卡系統 · 方案A 暖米白）─────────────────────
@@ -1906,6 +1994,16 @@ footer.rl-signature > p:not(.rl-sig-by):not(.rl-sig-quote) { font-size:13px !imp
     <div id="view-myprofile" style="display:block">
       <div style="padding:20px 14px 90px;display:flex;flex-direction:column;gap:14px;">
 
+        <!-- 2026-10-20 首屏主視覺：一句大標＋唯一主要行動（拍照掃名片）；手動輸入是次要框線鈕 -->
+        <section class="bc-hero" id="mp-hero" aria-label="新增名片">
+          <div class="bc-art" aria-hidden="true"><img class="a1" src="vendor/fluent-3d/cardindex.png" width="64" height="64" alt=""><img class="a2" src="vendor/fluent-3d/camera.png" width="64" height="64" alt=""></div>
+          <h1 class="bc-h">收到名片，<span class="nb">拍一下就存好</span></h1>
+          <div class="bc-acts">
+            <fluent-button appearance="primary" class="btn bc-main" onclick="switchTab('batch')"><i class="ti ti-camera"></i>拍照掃名片</fluent-button>
+            <button type="button" class="btn bc-alt" onclick="switchTab('cards');openFormModal();"><i class="ti ti-edit"></i> 手動輸入</button>
+          </div>
+        </section>
+
         <!-- 個人虛擬名片 -->
         <div id="myprofile-card-section">
           <!-- JS renderMyProfile() 動態渲染 -->
@@ -1915,7 +2013,7 @@ footer.rl-signature > p:not(.rl-sig-by):not(.rl-sig-quote) { font-size:13px !imp
         <div id="myprofile-stats" class="mp-stats" aria-label="名片庫統計"></div>
 
         <!-- QR Code 雙欄 -->
-        <div class="db-section">
+        <div class="db-section mp-qr">
           <h3 style="margin-bottom:16px;justify-content:center;text-align:center;"><i class="ti ti-qrcode" style="color:var(--accent-text);"></i> 掃碼交流</h3>
           <div style="display:flex;flex-wrap:wrap;gap:16px;justify-content:center;text-align:center;">
             <!-- vCard QR -->
@@ -5181,9 +5279,9 @@ function renderMyProfile() {
     const myKeys = ['name', 'title', 'org', 'mobile', 'phone', 'email', 'website'];
     const filled = myKeys.filter(k => c[k]).length;
     statsEl.innerHTML = `
-      <button type="button" class="mp-stat" onclick="setProcessedFilter('all');switchTab('cards');"><b>${total}</b><span>已存名片</span></button>
-      <button type="button" class="mp-stat" onclick="setProcessedFilter('unprocessed');switchTab('cards');"><b>${pending}</b><span>未處理</span></button>
-      <button type="button" class="mp-stat" onclick="openMyCardModal();setTimeout(enterMyCardEditMode,100);"><b>${filled}<small style="font-size:15px;font-weight:600;color:var(--text-secondary);"> / ${myKeys.length}</small></b><span>個人名片欄位</span></button>`
+      <button type="button" class="mp-stat" onclick="setProcessedFilter('all');switchTab('cards');"><img src="vendor/fluent-3d/filebox.png" width="64" height="64" alt=""><b>${total}</b><span>已存名片</span></button>
+      <button type="button" class="mp-stat" onclick="setProcessedFilter('unprocessed');switchTab('cards');"><img src="vendor/fluent-3d/hourglass.png" width="64" height="64" alt=""><b>${pending}</b><span>未處理</span></button>
+      <button type="button" class="mp-stat" onclick="openMyCardModal();setTimeout(enterMyCardEditMode,100);"><img src="vendor/fluent-3d/idcard.png" width="64" height="64" alt=""><b>${filled}<small style="font-size:15px;font-weight:600;color:var(--text-secondary);"> / ${myKeys.length}</small></b><span>個人名片欄位</span></button>`
       + (total === 0 ? `
       <div class="mp-empty">名片庫還是空的，拍照就能自動建檔：<button type="button" class="mp-link-btn" onclick="switchTab('batch')">去拍照掃名片 →</button></div>` : '');
   }
@@ -5196,16 +5294,11 @@ function renderMyProfile() {
   const cardSection = document.getElementById('myprofile-card-section');
   if (cardSection) {
     if (firstRun) {
+      // 2026-10-20 首頁視覺改版：「拍照掃名片／手動輸入」兩顆鈕移到上方主視覺（#mp-hero，各狀態都在），這裡只留說明與個人名片連結
       cardSection.innerHTML = `
-        <div class="db-section" style="text-align:center;padding:28px 18px;">
-          <i class="ti ti-id" style="font-size:52px;color:var(--accent-text);opacity:0.8;display:block;margin-bottom:10px;"></i>
-          <div style="font-size:19px;font-weight:700;color:var(--text-primary);margin-bottom:6px;">新增第一張名片</div>
-          <div style="font-size:15px;color:var(--text-tertiary);margin-bottom:18px;">拍照自動辨識（需 AI 金鑰），或直接手動輸入。存好的名片會自動成為「客戶」。</div>
-          <div class="mp-start-acts">
-            <button class="btn btn-primary" onclick="switchTab('batch')"><i class="ti ti-camera"></i> 拍照掃名片</button>
-            <button class="btn" onclick="switchTab('cards');openFormModal();"><i class="ti ti-edit"></i> 手動輸入</button>
-          </div>
-          <div style="margin-top:12px;font-size:14.5px;color:var(--text-tertiary);">也想分享自己的名片？<button type="button" class="mp-link-btn" onclick="openMyCardModal();setTimeout(enterMyCardEditMode,100);">填寫個人名片 →</button></div>
+        <div class="db-section mp-first">
+          <img src="vendor/fluent-3d/idcard.png" width="64" height="64" alt="">
+          <div class="mp-first-t"><details class="mp-why"><summary>拍照自動辨識（需 AI 金鑰），或直接手動輸入。<i class="ti ti-info-circle" aria-label="說明"></i></summary>存好的名片會自動成為「客戶」。</details>也想分享自己的名片？<button type="button" class="mp-link-btn" onclick="openMyCardModal();setTimeout(enterMyCardEditMode,100);">填寫個人名片 →</button></div>
         </div>`;
     } else if (!c.name) {
       cardSection.innerHTML = `
@@ -5213,7 +5306,7 @@ function renderMyProfile() {
           <i class="ti ti-user-circle" style="font-size:52px;color:var(--text-tertiary);opacity:0.4;display:block;margin-bottom:12px;"></i>
           <div style="font-size:18px;font-weight:600;color:var(--text-primary);margin-bottom:6px;">尚未設定個人名片</div>
           <div style="font-size:15px;color:var(--text-tertiary);margin-bottom:18px;">填寫後即可產生 QR Code 分享給他人</div>
-          <button class="btn btn-primary" onclick="openMyCardModal();setTimeout(enterMyCardEditMode,100);"><i class="ti ti-edit"></i> 立即填寫</button>
+          <button class="btn btn-blue" onclick="openMyCardModal();setTimeout(enterMyCardEditMode,100);"><i class="ti ti-edit"></i> 立即填寫</button>
           ${libEmpty ? '' : `<div style="margin-top:10px;font-size:14.5px;color:var(--text-tertiary);">想整理別人的名片？<button type="button" class="mp-link-btn" onclick="switchTab('batch')">去拍照掃名片 →</button></div>`}
         </div>`;
     } else {
