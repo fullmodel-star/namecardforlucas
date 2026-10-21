@@ -5158,13 +5158,16 @@ function renderHomeScreen() {
   renderSystemStatus();
 
   // KPI 橫列
+  // 2026-10-21：「使用標籤數」＝名片實際用到的不重複標籤數（跟下面標籤雲同一個算法）；
+  // 以前用 customTags.length（設定裡定義的標籤清單長度），0 張名片也顯示 5，跟「暫無標籤」矛盾。
+  const usedTagCount = new Set(cardsList.flatMap(c => Array.isArray(c.tags) ? c.tags : [])).size;
   const kpiRow = document.getElementById('home-kpi-row');
   if (kpiRow) {
     const kpis = [
       { icon:'ti-users',        label:'名片總數量',  value:total,              color:'var(--accent)',      bg:'var(--accent-light)' },
       { icon:'ti-circle-check', label:'處理完成率',  value:rate+'%',           color:'var(--color-green)', bg:'var(--color-green-bg)' },
       { icon:'ti-folder',       label:'分類群組數',  value:customGroups.length,color:'var(--accent)',      bg:'var(--accent-light)' },
-      { icon:'ti-tags',         label:'使用標籤數',  value:customTags.length,  color:'var(--color-amber)', bg:'var(--color-amber-bg)' },
+      { icon:'ti-tags',         label:'使用標籤數',  value:usedTagCount,       color:'var(--color-amber)', bg:'var(--color-amber-bg)' },
     ];
     kpiRow.innerHTML = kpis.map(k => `
       <div class="db-card">

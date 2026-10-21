@@ -158,6 +158,27 @@ if (!flowOnly) {
   await ctx.close();
 }
 
+// 5 QA 2026-10-21 修正（04_管理工具\_docs\QA_2026-10-21\A_100_101\報告.md）：洞察頁「使用標籤數」要跟標籤雲一致（--flow-only 也會跑）
+console.log('5 洞察頁 使用標籤數＝名片實際用到的不重複標籤數');
+{
+  ({ ctx, p, errs } = await open(390, 844));
+  const read = () => p.evaluate(() => {
+    const card = [...document.querySelectorAll('#home-kpi-row .db-card')].find((c) => c.querySelector('h4').textContent.trim() === '使用標籤數');
+    const cloud = document.getElementById('home-tag-cloud');
+    return { kpi: card ? Number(card.querySelector('.db-card-info div').textContent) : NaN, chips: cloud.querySelectorAll('.tag-filter-chip').length, empty: /暫無標籤/.test(cloud.textContent),
+      defined: getCustomTags().length };
+  });
+  await p.evaluate(() => switchTab('home')); await sleep(400);
+  let r = await read();
+  ok(r.kpi === 0 && r.chips === 0 && r.empty, `0 張名片：使用標籤數 ${r.kpi}（標籤雲「暫無標籤」${r.empty ? '✓' : '✗'}；設定裡定義了 ${r.defined} 個標籤不算）`);
+  await p.evaluate(() => { cardsList = [{ id: 'qa1', name: '甲', tags: ['VIP', '客戶'] }, { id: 'qa2', name: '乙', tags: ['客戶', '新創'] }, { id: 'qa3', name: '丙' }]; renderHomeScreen(); });
+  await sleep(200);
+  r = await read();
+  ok(r.kpi === 3 && r.chips === 3, `3 張名片用了 VIP／客戶／新創：使用標籤數 ${r.kpi}＝標籤雲 ${r.chips} 個`);
+  ok(errs.length === 0, '洞察頁 0 例外 ' + errs.join(';'));
+  await ctx.close();
+}
+
 await browser.close();
 console.log(`PASS ${pass} / FAIL ${fail}`);
 process.exit(fail ? 1 : 0);
