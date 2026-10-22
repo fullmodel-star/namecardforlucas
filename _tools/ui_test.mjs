@@ -151,7 +151,7 @@ if (!flowOnly) {
       big: (() => { const i = document.querySelector('.empty .big img'); return i ? i.naturalWidth : -1; })() };
   }) : {};
   ok(/BCSerif/.test(r.h1), 'CRM 標題用同一套宋體');
-  ok(r.fab === 'rgb(31, 114, 104)' || r.fab === 'rgb(30, 107, 98)', 'CRM 主鈕是青瓷綠 ' + r.fab);
+  ok(r.fab === 'rgb(42, 91, 168)' || r.fab === 'rgb(31, 78, 140)', 'CRM 主鈕是海軍藍（10-22 青瓷綠改藍） ' + r.fab);
   ok(r.gear && r.search, 'CRM 的 ⚙ 🔍 換成線條圖示');
   ok(r.big === 128, 'CRM 空狀態用 3D 圖');
   ok(errs.length === 0, 'CRM 0 例外 ' + errs.join(';'));

@@ -6,7 +6,7 @@
 <title>智慧名片管理系統 (終極完全體)</title>
 
 <link rel="manifest" href="./manifest.json">
-<meta name="theme-color" content="#134540">
+<meta name="theme-color" content="#16325A">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -920,8 +920,8 @@ input, select, textarea, button { font-size: 16px; }
 }
 
 /* 虛擬名片主題配色 */
-/* 2026-10-22：預設主題（key 仍叫 indigo，既有名片不用搬資料）改成跟 App 一致的青瓷綠＋象牙金邊；原本的紫色改名 violet 仍可選 */
-.vc-theme-indigo { background: radial-gradient(420px 220px at 100% 0%, rgba(233,207,151,.22), transparent 70%), linear-gradient(135deg, #0F3B37 0%, #1A5E56 55%, #2B7A6F 100%); box-shadow: inset 0 0 0 1px rgba(233,207,151,.45), 0 16px 34px -20px rgba(6,40,36,.9); }
+/* 2026-10-22：預設主題（key 仍叫 indigo，既有名片不用搬資料）改成跟 App 一致的海軍藍＋金邊（10-22 老闆不喜歡綠色，全 App 青瓷綠→藍）；原本的紫色改名 violet 仍可選 */
+.vc-theme-indigo { background: radial-gradient(420px 220px at 100% 0%, rgba(233,207,151,.22), transparent 70%), linear-gradient(135deg, #0F2C55 0%, #1F4E8C 55%, #2F67B0 100%); box-shadow: inset 0 0 0 1px rgba(233,207,151,.45), 0 16px 34px -20px rgba(6,20,45,.9); }
 .vc-theme-violet { background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 50%, #a855f7 100%); }
 .vc-theme-emerald { background: linear-gradient(135deg, #0f766e 0%, #10b981 60%, #34d399 100%); }
 .vc-theme-charcoal { background: linear-gradient(135deg, #1e1b4b 0%, #18181b 60%, #3f3f46 100%); }
@@ -1684,24 +1684,24 @@ footer.rl-signature > p:not(.rl-sig-by):not(.rl-sig-quote) { font-size:13px !imp
 @font-face{font-family:"BCSerif";src:url("vendor/serif-ui/bc-serif.woff2") format("woff2");font-weight:700;font-style:normal;font-display:swap;
   unicode-range:U+0020-002F,U+003A-007E,U+2010-2027,U+3000-303F,U+3400-9FFF,U+FF01-FF0F,U+FF1A-FFEF}
 :root,[data-theme="graphite"],[data-theme="dark"]{
-  --serif:"BCSerif","Noto Serif TC","Songti TC",serif;--brass:#C9A65A;--hero1:#1E6B62;--hero2:#0E3A35;--hero-ink:#F7F3E8;
-  --bg-primary:#0E191A;--bg-secondary:#132224;--bg-tertiary:#192C2E;--bg-glass:rgba(19,34,36,.92);--field-bg:#0B1516;
-  --text-primary:#EAF3F1;--text-secondary:#B7CCC8;--text-tertiary:#93B2AD;--accent-text:#86D6CA;
-  --border-color:#24393B;--border-strong:#33504F;--border-color-glow:rgba(46,140,128,.32);
-  --accent:#1F7268;--accent-solid:#1F7268;--accent-soft:rgba(46,140,128,.20);--accent-hover:#185E56;--accent-light:rgba(46,140,128,.18);--accent-gradient:#1F7268}
+  --serif:"BCSerif","Noto Serif TC","Songti TC",serif;--brass:#C9A65A;--hero1:#1F4E8C;--hero2:#0E2A52;--hero-ink:#F7F3E8;
+  --bg-primary:#0D1520;--bg-secondary:#121C2A;--bg-tertiary:#18263A;--bg-glass:rgba(18,28,42,.92);--field-bg:#0A111B;
+  --text-primary:#EAF0F8;--text-secondary:#B8C6D8;--text-tertiary:#97A9C0;--accent-text:#9CC2F5;
+  --border-color:#24334A;--border-strong:#34485F;--border-color-glow:rgba(66,120,200,.32);
+  --accent:#2A5BA8;--accent-solid:#2A5BA8;--accent-soft:rgba(66,120,200,.20);--accent-hover:#224C8E;--accent-light:rgba(66,120,200,.18);--accent-gradient:#2A5BA8}
 [data-theme="light"]{
-  --hero1:#1E6B62;--hero2:#114A44;
-  --bg-primary:#F5F1E8;--bg-secondary:#FFFDF8;--bg-tertiary:#FFFFFF;--bg-glass:rgba(255,253,248,.92);--field-bg:#EFEADF;
-  --text-primary:#132321;--text-secondary:#2D4845;--text-tertiary:#4C6864;--accent-text:#1A6157;
-  --border-color:#E3DCCB;--border-strong:#D5CBB4;--border-color-glow:rgba(30,107,98,.18);
-  --accent:#1E6B62;--accent-solid:#1E6B62;--accent-soft:rgba(30,107,98,.12);--accent-hover:#155248;--accent-light:rgba(30,107,98,.10);--accent-gradient:#1E6B62}
+  --hero1:#1F4E8C;--hero2:#143762;
+  --bg-primary:#F2F4F8;--bg-secondary:#FCFDFF;--bg-tertiary:#FFFFFF;--bg-glass:rgba(255,253,248,.92);--field-bg:#E7ECF3;
+  --text-primary:#111E33;--text-secondary:#2B3D58;--text-tertiary:#4A5C77;--accent-text:#1D4C8F;
+  --border-color:#DCE3EE;--border-strong:#C9D4E3;--border-color-glow:rgba(31,78,140,.18);
+  --accent:#1F4E8C;--accent-solid:#1F4E8C;--accent-soft:rgba(31,78,140,.12);--accent-hover:#183E72;--accent-light:rgba(31,78,140,.10);--accent-gradient:#1F4E8C}
 /* body 上的 .theme-indigo（ridgeline-ui.css）會把 --accent 蓋回靛藍，這裡同一層蓋成青瓷綠 */
-body.theme-indigo{--accent:#1F7268}
-[data-theme="light"] body.theme-indigo{--accent:#1E6B62}
+body.theme-indigo{--accent:#2A5BA8}
+[data-theme="light"] body.theme-indigo{--accent:#1F4E8C}
 /* 頁首（品牌層：山形＋App 名不變，只換底色） */
-.rl-appbar.theme-indigo{--hdr:#134540}
-[data-theme="light"] .rl-appbar.theme-indigo{--hdr:#1A5B53}
-.rl-appbar .rl-sub{color:#D9ECE8}
+.rl-appbar.theme-indigo{--hdr:#16325A}
+[data-theme="light"] .rl-appbar.theme-indigo{--hdr:#1C4478}
+.rl-appbar .rl-sub{color:#DCE6F4}
 @media (min-width:1100px){body{background:radial-gradient(1100px 520px at 50% -180px,color-mix(in srgb,var(--brass) 14%,transparent),transparent 70%),var(--bg-primary)}}
 .rl-appbar .rl-title,.db-section h3,.btn,.btab span,.bc-h,.mp-stat span,.tool-card-title,#more-tools-toggle,.modal-title,h2{font-family:var(--serif)}
 .rl-appbar .rl-title{font-weight:700;letter-spacing:1px}
@@ -1711,16 +1711,17 @@ body.theme-indigo{--accent:#1F7268}
 /* 首屏主視覺：青瓷名片匣大卡＋一句大標＋唯一主要行動 */
 .bc-hero{position:relative;overflow:hidden;border-radius:22px;padding:22px 20px 20px;color:var(--hero-ink);
   background:linear-gradient(135deg,var(--hero1) 0%,var(--hero2) 100%);
-  box-shadow:0 16px 34px -20px rgba(6,40,36,.9),inset 0 0 0 1px color-mix(in srgb,var(--brass) 50%,transparent)}
+  box-shadow:0 16px 34px -20px rgba(6,20,45,.9),inset 0 0 0 1px color-mix(in srgb,var(--brass) 50%,transparent)}
 .bc-hero::before{content:"";position:absolute;inset:8px;border:1px solid color-mix(in srgb,#E9CF97 34%,transparent);border-radius:16px;pointer-events:none}
 .bc-hero::after{content:"";position:absolute;right:-70px;top:-70px;width:240px;height:240px;border-radius:50%;
   background:radial-gradient(circle,color-mix(in srgb,#E9CF97 26%,transparent),transparent 65%);pointer-events:none}
 .bc-art{position:absolute;right:12px;top:12px;width:96px;height:84px;z-index:1}
 .bc-art img{position:absolute;filter:drop-shadow(0 8px 14px rgba(0,0,0,.35))}
 .bc-art .a1{width:74px;height:74px;right:2px;top:0;transform:rotate(-7deg)}
-/* 2026-10-22：名片盒 3D 圖原色是紫，轉成青瓷色系；頁首 LINE 鈕原本亮綠實心，改成跟旁邊圓鈕同款、只留綠色圖示 */
-.bc-art img.a1{filter:hue-rotate(250deg) saturate(.75) drop-shadow(0 8px 14px rgba(0,0,0,.35))}
+/* 2026-10-22：名片盒 3D 圖原色是紫，轉成藍色系；頁首 LINE 鈕原本亮綠實心，改成跟旁邊圓鈕同款、只留綠色圖示 */
+.bc-art img.a1{filter:hue-rotate(315deg) saturate(.8) drop-shadow(0 8px 14px rgba(0,0,0,.35))}
 #view-cards.searching #tag-cloud,#view-cards.searching #group-filter-select,#view-cards.searching .status-segmented,#view-cards.searching #sort-select{display:none !important}
+#search-scope-note .ti{color:var(--accent-text);vertical-align:-2px}
 .bc-h{min-height:58px} /* 標題只有一行（約 430px 以上寬）時，按鈕列不要頂到 3D 圖 */
 .rl-appbar .lineShareFab,.rl-appbar .reportFab{background:rgba(255,255,255,.14);box-shadow:none}
 .rl-appbar .lineShareFab svg path{fill:#7EE2A8}
@@ -1728,14 +1729,14 @@ body.theme-indigo{--accent:#1F7268}
 .bc-h{position:relative;z-index:2;margin:2px 96px 16px 0;font-size:25px;line-height:1.32;font-weight:700;letter-spacing:1px;color:var(--hero-ink)}
 .bc-h .nb{white-space:nowrap}
 .bc-acts{position:relative;z-index:2;display:flex;gap:10px;align-items:stretch}
-.bc-acts .bc-main{flex:1.6;justify-content:center;background:#FFF8EA;color:#134A44;border:0;font-size:18px;font-weight:700;min-height:52px;border-radius:14px;box-shadow:0 6px 16px -6px rgba(0,0,0,.45)}
+.bc-acts .bc-main{flex:1.6;justify-content:center;background:#FFF8EA;color:#173A6B;border:0;font-size:18px;font-weight:700;min-height:52px;border-radius:14px;box-shadow:0 6px 16px -6px rgba(0,0,0,.45)}
 .bc-acts .bc-main:hover{background:#FFFFFF;opacity:1;transform:none}
 .bc-acts .bc-alt{flex:1;justify-content:center;background:transparent;color:var(--hero-ink);border:1px solid color-mix(in srgb,var(--hero-ink) 55%,transparent);min-height:52px;border-radius:14px;font-size:16px;white-space:nowrap;padding:8px 10px}
 .bc-acts .bc-alt:hover{background:rgba(255,255,255,.08);border-color:var(--hero-ink)}
 .bc-acts .ti{font-size:20px}
 /* Fluent 按鈕：只用它的結構與焦點框，顏色字型由本 App 決定（沒載入時一樣是 .btn 樣式、onclick 照樣能按） */
 fluent-button.bc-main{--fontFamilyBase:var(--serif);--colorBrandBackground:#FFF8EA;--colorBrandBackgroundHover:#FFFFFF;--colorBrandBackgroundPressed:#EEE6D2;
-  --colorNeutralForegroundOnBrand:#134A44;--borderRadiusMedium:14px;--colorStrokeFocus2:#E9CF97;height:auto;cursor:pointer}
+  --colorNeutralForegroundOnBrand:#173A6B;--borderRadiusMedium:14px;--colorStrokeFocus2:#E9CF97;height:auto;cursor:pointer}
 fluent-button.bc-main:not(:defined){display:inline-flex;align-items:center}
 fluent-button.bc-main .ti{margin-right:6px}
 /* 首訪說明卡（原「新增第一張名片」卡，行動鈕移到主視覺） */
@@ -1886,6 +1887,7 @@ fluent-button.bc-main .ti{margin-right:6px}
             <i class="ti ti-search" style="color:var(--text-secondary);"></i>
             <input type="text" id="search-input" placeholder="搜尋姓名、公司、電話..." oninput="onSearchInput()" style="flex:1;background:transparent;border:none;color:var(--text-primary);font-size:17px;outline:none;"/>
           </div>
+          <div id="search-scope-note" style="display:none;font-size:14.5px;line-height:1.6;color:var(--text-secondary);"></div>
           <!-- 標籤篩選 -->
           <div id="tag-cloud" style="display:flex;flex-wrap:wrap;gap:8px;"></div>
           <!-- 群組篩選 -->
@@ -4111,15 +4113,18 @@ function handleSortChange() {
 
 function getFilteredAndSortedCards() {
   let list = [...cardsList];
+  // 2026-10-22：有打搜尋字時搜「全部名片」，群組／標籤／處理狀態篩選先暫停（清掉搜尋字就恢復）。
+  // 以前會疊加篩選：老闆群組停在「企業客戶」時搜「工業技術」永遠 0 筆，篩選區又被鍵盤蓋住看不到原因。
+  const _useFilters = !searchKeyword;
   
-  if (activeProcessedFilter === 'processed') list = list.filter(c => c.processed);
-  else if (activeProcessedFilter === 'unprocessed') list = list.filter(c => !c.processed);
+  if (_useFilters && activeProcessedFilter === 'processed') list = list.filter(c => c.processed);
+  else if (_useFilters && activeProcessedFilter === 'unprocessed') list = list.filter(c => !c.processed);
   
-  if (activeGroupFilter) {
+  if (_useFilters && activeGroupFilter) {
     list = list.filter(c => (c.group || '其他') === activeGroupFilter);
   }
   
-  if (activeTagFilter) {
+  if (_useFilters && activeTagFilter) {
     list = list.filter(c => c.tags && c.tags.includes(activeTagFilter));
   }
   
@@ -4220,7 +4225,13 @@ function renderCardsGrid() {
   // 2026-10-22：打字搜尋時（且沒有其他篩選）先收起標籤／群組／排序，結果直接接在搜尋框下面，
   // 不然第一筆在畫面 560px 左右，手機鍵盤一彈出來就被蓋住，看起來像「搜不出來」
   const _vc = document.getElementById('view-cards');
-  if (_vc) _vc.classList.toggle('searching', !!searchKeyword && activeProcessedFilter === 'all' && !activeGroupFilter && !activeTagFilter);
+  if (_vc) _vc.classList.toggle('searching', !!searchKeyword);
+  const _sn = document.getElementById('search-scope-note');
+  if (_sn) {
+    const _paused = [activeGroupFilter && `群組「${esc(activeGroupFilter)}」`, activeTagFilter && `標籤「#${esc(activeTagFilter)}」`, activeProcessedFilter !== 'all' && (activeProcessedFilter === 'processed' ? '「已處理」' : '「未處理」')].filter(Boolean);
+    _sn.innerHTML = searchKeyword ? `<i class="ti ti-search"></i> 搜尋全部名片${_paused.length ? `（${_paused.join('、')}篩選先暫停，清掉搜尋字就恢復）` : ''}` : '';
+    _sn.style.display = searchKeyword ? '' : 'none';
+  }
 
   if (filtered.length === 0) {
     // 2026-10-13：搜尋／篩選無結果時給下一步，並讓上方張數標籤跟著顯示 0（以前仍寫總張數，與空結果矛盾）
@@ -4439,7 +4450,7 @@ async function selectCard(id) {
         </button>
         <div class="vc-theme-selector" style="margin:0;" role="group" aria-label="名片配色">
           <span style="font-size:12.5px;color:var(--text-tertiary);margin-right:2px;">配色</span>
-          <div class="theme-dot vc-theme-indigo" role="button" tabindex="0" onclick="changeCardTheme('${c.id}', 'indigo')" title="青瓷綠" aria-label="配色：青瓷綠"></div>
+          <div class="theme-dot vc-theme-indigo" role="button" tabindex="0" onclick="changeCardTheme('${c.id}', 'indigo')" title="海軍藍" aria-label="配色：海軍藍"></div>
           <div class="theme-dot vc-theme-emerald" role="button" tabindex="0" onclick="changeCardTheme('${c.id}', 'emerald')" title="森林翡翠" aria-label="配色：森林翡翠"></div>
           <div class="theme-dot vc-theme-charcoal" role="button" tabindex="0" onclick="changeCardTheme('${c.id}', 'charcoal')" title="極致深曜" aria-label="配色：極致深曜"></div>
           <div class="theme-dot vc-theme-sunset" role="button" tabindex="0" onclick="changeCardTheme('${c.id}', 'sunset')" title="溫慢落日" aria-label="配色：溫慢落日"></div>
@@ -5643,7 +5654,7 @@ function renderMyCardModal(myCard, isEditMode) {
         <div class="form-row">
           <label>卡片主題顏色</label>
           <select id="my-theme">
-            <option value="indigo"  ${myCard.theme==='indigo' ?'selected':''}>青瓷綠（預設）</option>
+            <option value="indigo"  ${myCard.theme==='indigo' ?'selected':''}>海軍藍（預設）</option>
             <option value="violet"  ${myCard.theme==='violet' ?'selected':''}>皇家靛藍</option>
             <option value="emerald" ${myCard.theme==='emerald'?'selected':''}>森林翡翠</option>
             <option value="charcoal"${myCard.theme==='charcoal'?'selected':''}>極致深曜</option>

@@ -32,6 +32,17 @@ for (const s of ['王瑋誠', '中衛', '台積', '0912', 'abc']) {
   const exp = { '王瑋誠': '1 張', '中衛': '271 張', '台積': '271 張', '0912': '1355 張', 'abc': '271 張' }[s];
   if (r.label !== exp || !(r.firstY < 420)) { fails++; console.log('  FAIL 預期', exp); }
 }
+// 群組篩選停在別的群組時，打字仍要搜全部名片（老闆 10-22 截圖：群組停在「企業客戶」搜「工業技術」0 筆）
+await p.click('#search-input', { clickCount: 3 }); await p.keyboard.press('Backspace'); await sleep(400);
+await p.evaluate(() => { setGroupFilter('企業客戶'); setTagFilter('客戶'); setProcessedFilter('unprocessed'); });
+await p.type('#search-input', '王瑋誠'); await sleep(600);
+const g = await p.evaluate(() => ({ label: document.getElementById('cards-count-label').textContent, note: document.getElementById('search-scope-note').innerText, firstY: Math.round((document.querySelector('#card-grid .biz-card-row') || document.body).getBoundingClientRect().top) }));
+console.log('篩選中搜尋', JSON.stringify(g));
+if (g.label !== '1 張' || !/企業客戶/.test(g.note) || !(g.firstY < 420)) { fails++; console.log('  FAIL 篩選中搜尋應搜全部'); }
+await p.click('#search-input', { clickCount: 3 }); await p.keyboard.press('Backspace'); await sleep(600);
+const back = await p.evaluate(() => document.getElementById('cards-count-label').textContent);
+console.log('清掉搜尋字恢復篩選', back);
+if (back !== '0 張（共 1355 張）') { fails++; console.log('  FAIL 清掉搜尋字應恢復篩選'); }
 console.log('errors', errs);
 if (errs.length) fails++;
 console.log(fails ? 'FAIL ' + fails : 'PASS');
