@@ -434,7 +434,7 @@ function render(){
   // 2026-10-22：空格分開的每個詞都要符合；全形半形、大小寫、空白不計；只有「看起來像電話」的詞（數字＋符號、≥3 碼）才比電話
   // （以前任何含數字的詞都拿去比電話：搜「3M」會把電話有 3 的人全列出來；欄位直接相接也會跨欄位誤中）
   const nz=s=>(s==null?'':String(s)).normalize('NFKC').toLowerCase().replace(/\s+/g,'');
-  const nd=s=>{let d=(s==null?'':String(s)).normalize('NFKC').replace(/\D/g,''); if(d.startsWith('886')) d='0'+d.slice(3); return d;};
+  const nd=s=>{let d=(s==null?'':String(s)).normalize('NFKC').replace(/\D/g,''); if(d.startsWith('886')) d='0'+d.slice(3); else if(/^9\d{8}$/.test(d)) d='0'+d; return d;};
   const terms=q.normalize('NFKC').split(/\s+/).filter(Boolean).map(t=>({t, d:/^[\d\-()+#.]+$/.test(t)&&t.replace(/\D/g,'').length>=3?nd(t):''}));
   const shown=mergedCache.filter(m=>{
     if(trackedOnly && m.status.key==='grey') return false; // 只看在追的：隱藏尚未追蹤

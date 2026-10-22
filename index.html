@@ -1720,6 +1720,7 @@ body.theme-indigo{--accent:#1F7268}
 .bc-art .a1{width:74px;height:74px;right:2px;top:0;transform:rotate(-7deg)}
 /* 2026-10-22：名片盒 3D 圖原色是紫，轉成青瓷色系；頁首 LINE 鈕原本亮綠實心，改成跟旁邊圓鈕同款、只留綠色圖示 */
 .bc-art img.a1{filter:hue-rotate(250deg) saturate(.75) drop-shadow(0 8px 14px rgba(0,0,0,.35))}
+#view-cards.searching #tag-cloud,#view-cards.searching #group-filter-select,#view-cards.searching .status-segmented,#view-cards.searching #sort-select{display:none !important}
 .bc-h{min-height:58px} /* 標題只有一行（約 430px 以上寬）時，按鈕列不要頂到 3D 圖 */
 .rl-appbar .lineShareFab,.rl-appbar .reportFab{background:rgba(255,255,255,.14);box-shadow:none}
 .rl-appbar .lineShareFab svg path{fill:#7EE2A8}
@@ -2880,9 +2881,28 @@ async function dbGetAllCards() {
     const store = transaction.objectStore('cards');
     const request = store.getAll();
     
-    request.onsuccess = () => resolve(request.result || []);
+    request.onsuccess = () => resolve((request.result || []).map(sanitizeCard));
     request.onerror = () => reject(request.error);
   });
+}
+
+// 2026-10-22：只要有一張名片欄位型別不對（郵遞區號／電話存成數字、標籤存成一串文字而不是清單），
+// 搜尋、標籤統計等用到 toLowerCase／forEach 的地方就整個丟例外，畫面停在原本的清單＝「打什麼都搜不出來」。
+// 讀出來時統一整理成字串／字串陣列（只改記憶體裡的物件；之後編輯存檔才會寫回整理後的樣子）。
+const CARD_TEXT_FIELDS = ['name', 'org', 'title', 'dept', 'email', 'phone', 'phoneExt', 'mobile', 'fax', 'website', 'zip', 'addr', 'note', 'group', 'lineId'];
+function sanitizeCard(c) {
+  if (!c || typeof c !== 'object') return c;
+  for (const k of CARD_TEXT_FIELDS) {
+    const v = c[k];
+    if (v == null || typeof v === 'string') continue;
+    c[k] = Array.isArray(v) ? v.filter(x => x != null && x !== '').map(String).join(' / ') : (typeof v === 'object' ? '' : String(v));
+  }
+  if (c.tags != null && !Array.isArray(c.tags)) {
+    c.tags = typeof c.tags === 'string' ? c.tags.split(/[,，、;；\s]+/).map(s => s.trim()).filter(Boolean) : [];
+  } else if (Array.isArray(c.tags)) {
+    c.tags = c.tags.filter(t => t != null && t !== '').map(String);
+  }
+  return c;
 }
 
 async function dbGetCardImage(id) {
@@ -4044,6 +4064,7 @@ function normSearchText(s) {
 function normPhoneDigits(s) {
   let d = (s == null ? '' : String(s)).normalize('NFKC').replace(/\D/g, '');
   if (d.startsWith('886')) d = '0' + d.slice(3);
+  else if (/^9\d{8}$/.test(d)) d = '0' + d; // 手機存成數字會掉開頭的 0
   return d;
 }
 function cardSearchTerms(q) {
@@ -4056,7 +4077,7 @@ function cardSearchTerms(q) {
 // 每張名片的搜尋字串只算一次；名片物件改了（存檔會換新物件或改欄位）就用欄位簽名判斷要不要重算
 const _cardSearchCache = new WeakMap();
 function cardSearchIndex(c) {
-  const fields = [c.name, c.org, c.title, c.dept, c.email, c.phone, c.phoneExt, c.mobile, c.fax, c.website, c.zip, c.addr, c.note, c.group, c.lineId, (c.tags || []).join(' ')];
+  const fields = [c.name, c.org, c.title, c.dept, c.email, c.phone, c.phoneExt, c.mobile, c.fax, c.website, c.zip, c.addr, c.note, c.group, c.lineId, (Array.isArray(c.tags) ? c.tags : [c.tags]).join(' ')];
   const sig = fields.join('\u0001');
   const hit = _cardSearchCache.get(c);
   if (hit && hit.sig === sig) return hit;
@@ -4069,8 +4090,10 @@ function cardSearchIndex(c) {
   return idx;
 }
 function cardMatchesTerms(c, terms) {
-  const idx = cardSearchIndex(c);
-  return terms.every(t => idx.text.includes(t.text) || (t.digits && idx.phones.includes(t.digits)));
+  try {
+    const idx = cardSearchIndex(c);
+    return terms.every(t => idx.text.includes(t.text) || (t.digits && idx.phones.includes(t.digits)));
+  } catch (e) { return false; } // 單張資料怪掉只略過那張，不讓整個搜尋停擺
 }
 
 function clearCardSearch() {
@@ -4194,6 +4217,10 @@ function renderCardsGrid() {
   // 篩選/搜尋/排序改變才把載入視窗歸零；只變選取狀態則沿用目前視窗
   const _sig = [activeProcessedFilter, activeGroupFilter, activeTagFilter, searchKeyword, (document.getElementById('sort-select')||{}).value].join('|');
   if (_sig !== _lastFilterSig) { _cardRenderLimit = 100; _lastFilterSig = _sig; }
+  // 2026-10-22：打字搜尋時（且沒有其他篩選）先收起標籤／群組／排序，結果直接接在搜尋框下面，
+  // 不然第一筆在畫面 560px 左右，手機鍵盤一彈出來就被蓋住，看起來像「搜不出來」
+  const _vc = document.getElementById('view-cards');
+  if (_vc) _vc.classList.toggle('searching', !!searchKeyword && activeProcessedFilter === 'all' && !activeGroupFilter && !activeTagFilter);
 
   if (filtered.length === 0) {
     // 2026-10-13：搜尋／篩選無結果時給下一步，並讓上方張數標籤跟著顯示 0（以前仍寫總張數，與空結果矛盾）
