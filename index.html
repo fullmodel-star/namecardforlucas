@@ -920,7 +920,9 @@ input, select, textarea, button { font-size: 16px; }
 }
 
 /* 虛擬名片主題配色 */
-.vc-theme-indigo { background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 50%, #a855f7 100%); }
+/* 2026-10-22：預設主題（key 仍叫 indigo，既有名片不用搬資料）改成跟 App 一致的青瓷綠＋象牙金邊；原本的紫色改名 violet 仍可選 */
+.vc-theme-indigo { background: radial-gradient(420px 220px at 100% 0%, rgba(233,207,151,.22), transparent 70%), linear-gradient(135deg, #0F3B37 0%, #1A5E56 55%, #2B7A6F 100%); box-shadow: inset 0 0 0 1px rgba(233,207,151,.45), 0 16px 34px -20px rgba(6,40,36,.9); }
+.vc-theme-violet { background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 50%, #a855f7 100%); }
 .vc-theme-emerald { background: linear-gradient(135deg, #0f766e 0%, #10b981 60%, #34d399 100%); }
 .vc-theme-charcoal { background: linear-gradient(135deg, #1e1b4b 0%, #18181b 60%, #3f3f46 100%); }
 .vc-theme-sunset  { background: linear-gradient(135deg, #c2410c 0%, #ea580c 40%, #f97316 70%, #fcd34d 100%); }
@@ -1716,6 +1718,11 @@ body.theme-indigo{--accent:#1F7268}
 .bc-art{position:absolute;right:12px;top:12px;width:96px;height:84px;z-index:1}
 .bc-art img{position:absolute;filter:drop-shadow(0 8px 14px rgba(0,0,0,.35))}
 .bc-art .a1{width:74px;height:74px;right:2px;top:0;transform:rotate(-7deg)}
+/* 2026-10-22：名片盒 3D 圖原色是紫，轉成青瓷色系；頁首 LINE 鈕原本亮綠實心，改成跟旁邊圓鈕同款、只留綠色圖示 */
+.bc-art img.a1{filter:hue-rotate(250deg) saturate(.75) drop-shadow(0 8px 14px rgba(0,0,0,.35))}
+.bc-h{min-height:58px} /* 標題只有一行（約 430px 以上寬）時，按鈕列不要頂到 3D 圖 */
+.rl-appbar .lineShareFab,.rl-appbar .reportFab{background:rgba(255,255,255,.14);box-shadow:none}
+.rl-appbar .lineShareFab svg path{fill:#7EE2A8}
 .bc-art .a2{width:46px;height:46px;left:0;bottom:-4px;transform:rotate(8deg)}
 .bc-h{position:relative;z-index:2;margin:2px 96px 16px 0;font-size:25px;line-height:1.32;font-weight:700;letter-spacing:1px;color:var(--hero-ink)}
 .bc-h .nb{white-space:nowrap}
@@ -4031,6 +4038,41 @@ function filterCards() {
   renderCardsGrid();
 }
 
+function normSearchText(s) {
+  return (s == null ? '' : String(s)).normalize('NFKC').toLowerCase().replace(/\s+/g, '');
+}
+function normPhoneDigits(s) {
+  let d = (s == null ? '' : String(s)).normalize('NFKC').replace(/\D/g, '');
+  if (d.startsWith('886')) d = '0' + d.slice(3);
+  return d;
+}
+function cardSearchTerms(q) {
+  return String(q || '').normalize('NFKC').toLowerCase().split(/\s+/).filter(Boolean).map(t => ({
+    text: t,
+    // 只有「看起來像電話」（數字＋常見符號、至少 3 碼）才拿去比電話，避免「3M」之類的詞去撞電話號碼
+    digits: /^[\d\-()+#.]+$/.test(t) && t.replace(/\D/g, '').length >= 3 ? normPhoneDigits(t) : ''
+  }));
+}
+// 每張名片的搜尋字串只算一次；名片物件改了（存檔會換新物件或改欄位）就用欄位簽名判斷要不要重算
+const _cardSearchCache = new WeakMap();
+function cardSearchIndex(c) {
+  const fields = [c.name, c.org, c.title, c.dept, c.email, c.phone, c.phoneExt, c.mobile, c.fax, c.website, c.zip, c.addr, c.note, c.group, c.lineId, (c.tags || []).join(' ')];
+  const sig = fields.join('\u0001');
+  const hit = _cardSearchCache.get(c);
+  if (hit && hit.sig === sig) return hit;
+  const idx = {
+    sig,
+    text: fields.map(normSearchText).join('\u0001'),
+    phones: [c.phone, c.mobile, c.fax].map(normPhoneDigits).filter(Boolean).join('\u0001')
+  };
+  _cardSearchCache.set(c, idx);
+  return idx;
+}
+function cardMatchesTerms(c, terms) {
+  const idx = cardSearchIndex(c);
+  return terms.every(t => idx.text.includes(t.text) || (t.digits && idx.phones.includes(t.digits)));
+}
+
 function clearCardSearch() {
   const si = document.getElementById('search-input'); if (si) si.value = '';
   searchKeyword = '';
@@ -4059,10 +4101,10 @@ function getFilteredAndSortedCards() {
   }
   
   if (searchKeyword) {
-    list = list.filter(c =>
-      [c.name, c.org, c.title, c.dept, c.email, c.phone, c.phoneExt, c.mobile, c.fax, c.website, c.zip, c.addr, c.note, c.group].some(f => f && f.toLowerCase().includes(searchKeyword)) ||
-      (c.tags && c.tags.some(t => t.toLowerCase().includes(searchKeyword)))
-    );
+    // 2026-10-22：空格分開的每個詞都要符合（例：「王 中衛」）；全形半形、大小寫、空白不計；
+    // 電話不管有沒有 - ( ) 空格或 +886 都比得到（例：0920235196 找得到 0920-235196）
+    const terms = cardSearchTerms(searchKeyword);
+    list = list.filter(c => cardMatchesTerms(c, terms));
   }
   
   const sortVal = document.getElementById('sort-select').value;
@@ -4370,7 +4412,7 @@ async function selectCard(id) {
         </button>
         <div class="vc-theme-selector" style="margin:0;" role="group" aria-label="名片配色">
           <span style="font-size:12.5px;color:var(--text-tertiary);margin-right:2px;">配色</span>
-          <div class="theme-dot vc-theme-indigo" role="button" tabindex="0" onclick="changeCardTheme('${c.id}', 'indigo')" title="皇家靛藍" aria-label="配色：皇家靛藍"></div>
+          <div class="theme-dot vc-theme-indigo" role="button" tabindex="0" onclick="changeCardTheme('${c.id}', 'indigo')" title="青瓷綠" aria-label="配色：青瓷綠"></div>
           <div class="theme-dot vc-theme-emerald" role="button" tabindex="0" onclick="changeCardTheme('${c.id}', 'emerald')" title="森林翡翠" aria-label="配色：森林翡翠"></div>
           <div class="theme-dot vc-theme-charcoal" role="button" tabindex="0" onclick="changeCardTheme('${c.id}', 'charcoal')" title="極致深曜" aria-label="配色：極致深曜"></div>
           <div class="theme-dot vc-theme-sunset" role="button" tabindex="0" onclick="changeCardTheme('${c.id}', 'sunset')" title="溫慢落日" aria-label="配色：溫慢落日"></div>
@@ -5574,7 +5616,8 @@ function renderMyCardModal(myCard, isEditMode) {
         <div class="form-row">
           <label>卡片主題顏色</label>
           <select id="my-theme">
-            <option value="indigo"  ${myCard.theme==='indigo' ?'selected':''}>皇家靛藍</option>
+            <option value="indigo"  ${myCard.theme==='indigo' ?'selected':''}>青瓷綠（預設）</option>
+            <option value="violet"  ${myCard.theme==='violet' ?'selected':''}>皇家靛藍</option>
             <option value="emerald" ${myCard.theme==='emerald'?'selected':''}>森林翡翠</option>
             <option value="charcoal"${myCard.theme==='charcoal'?'selected':''}>極致深曜</option>
             <option value="sunset"  ${myCard.theme==='sunset' ?'selected':''}>溫慢落日</option>
@@ -7147,9 +7190,9 @@ function renderGraphTab() {
   });
 
   // 搜尋過濾（公司名 + 人名）
-  const q = (document.getElementById('org-search')?.value||'').trim().toLowerCase();
+  const q = normSearchText(document.getElementById('org-search')?.value||'');
   let entries = Object.entries(orgMap).filter(([name, people]) =>
-    !q || name.toLowerCase().includes(q) || people.some(c => (c.name||'').toLowerCase().includes(q))
+    !q || normSearchText(name).includes(q) || people.some(c => normSearchText(c.name).includes(q))
   );
 
   // 排序
