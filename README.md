@@ -1,5 +1,7 @@
 # 智慧名片系統 UI/UX 與 PWA (漸進式網頁應用) 部署驗證報告
 
+> **2026-10-24 資料 bug 修正（sw bizcard-pwa-v75；工作區修改，未 commit、未 push）**：編輯名片不再弄丟表單外欄位（googleContactId、lineId…）；完整備份與客戶分頁備份帶 `cards_snapshot`，還原後「名片已刪但有紀錄」的客戶照樣出現；匯入沒有可用資料時照實說明。驗證 `_tools/data_test.mjs` 73/73。詳見更新記錄。
+
 > **2026-10-21 QA 修正（sw bizcard-pwa-v71；已 commit、未 push）**：洞察頁「使用標籤數」改成名片實際用到的不重複標籤數，與標籤雲一致。詳見更新記錄。
 
 > **2026-10-20 首頁視覺改版「青瓷名片匣」（sw bizcard-pwa-v69→v70；已 commit、未 push＝未上線）**

@@ -4846,13 +4846,17 @@ function exportToCsv(mode = 'all', explicitList = null) {
 
 // 讀取客戶追蹤(CrmDB)+案子(DealDB)供打包進完整備份（同源 IndexedDB，換手機才不會只剩名片）
 async function readCrmForBackup() {
-  const out = { crm: [], manual_cards: [], settings: [], deals: [] };
+  const out = { crm: [], manual_cards: [], settings: [], deals: [], cards_snapshot: [] };
   const getAll = (db, s) => new Promise(r => { if (!db.objectStoreNames.contains(s)) return r([]); const g = db.transaction([s], 'readonly').objectStore(s).getAll(); g.onsuccess = () => r(g.result || []); g.onerror = () => r([]); });
   try {
     const names = indexedDB.databases ? (await indexedDB.databases()).map(d => d.name) : ['CrmDB', 'DealDB'];
     if (names.includes('CrmDB')) {
       const db = await new Promise(res => { const q = indexedDB.open('CrmDB'); q.onsuccess = e => res(e.target.result); q.onerror = () => res(null); });
-      if (db) { out.crm = await getAll(db, 'crm'); out.manual_cards = await getAll(db, 'manual_cards'); out.settings = await getAll(db, 'settings'); db.close(); }
+      if (db) { out.crm = await getAll(db, 'crm'); out.manual_cards = await getAll(db, 'manual_cards'); out.settings = await getAll(db, 'settings');
+        // 名片快照：只帶「有往來紀錄」的客戶（含名片已刪者），還原後客戶分頁才看得到「名片已刪但有紀錄」的客戶
+        const tracked = new Set(out.crm.map(r => r && r.cardId));
+        out.cards_snapshot = (await getAll(db, 'cards_snapshot')).filter(s => s && s.id && tracked.has(s.id));
+        db.close(); }
     }
     if (names.includes('DealDB')) {
       const db = await new Promise(res => { const q = indexedDB.open('DealDB'); q.onsuccess = e => res(e.target.result); q.onerror = () => res(null); });
@@ -4861,15 +4865,22 @@ async function readCrmForBackup() {
   } catch (e) {}
   return out;
 }
+// 備份裡「真的能寫回」的客戶追蹤筆數（有 cardId 的紀錄、有 id 的手動客戶／案子、有 key 的設定）；快照單獨存在沒有意義，不計
+function countValidCrm(d) {
+  if (!d || typeof d !== 'object') return 0;
+  const n = (arr, key) => Array.isArray(arr) ? arr.filter(r => r && typeof r === 'object' && r[key] != null).length : 0;
+  return n(d.crm, 'cardId') + n(d.manual_cards, 'id') + n(d.deals, 'id') + n(d.settings, 'key');
+}
 // 把備份裡的客戶追蹤資料寫回 CrmDB/DealDB（用與 crm.html 相同的 v2/v1 結構）
 async function restoreCrmFromBackup(crmData) {
   if (!crmData) return;
-  const putAll = (db, s, key, arr) => new Promise((res, rej) => { if (!arr || !arr.length || !db.objectStoreNames.contains(s)) return res(); const tx = db.transaction([s], 'readwrite'); const os = tx.objectStore(s); arr.forEach(r => { if (r && r[key] != null) os.put(r); }); tx.oncomplete = res; tx.onerror = e => rej(e.target.error); });
+  const putAll = (db, s, key, arr) => new Promise((res, rej) => { if (!Array.isArray(arr) || !arr.length || !db.objectStoreNames.contains(s)) return res(); const tx = db.transaction([s], 'readwrite'); const os = tx.objectStore(s); arr.forEach(r => { if (r && r[key] != null) os.put(r); }); tx.oncomplete = res; tx.onerror = e => rej(e.target.error); });
   try {
     const db = await new Promise((res, rej) => { const q = indexedDB.open('CrmDB', 2); q.onupgradeneeded = e => { const d = e.target.result; if (!d.objectStoreNames.contains('crm')) d.createObjectStore('crm', { keyPath: 'cardId' }); if (!d.objectStoreNames.contains('cards_snapshot')) d.createObjectStore('cards_snapshot', { keyPath: 'id' }); if (!d.objectStoreNames.contains('manual_cards')) d.createObjectStore('manual_cards', { keyPath: 'id' }); if (!d.objectStoreNames.contains('settings')) d.createObjectStore('settings', { keyPath: 'key' }); }; q.onsuccess = e => res(e.target.result); q.onerror = e => rej(e.target.error); });
     await putAll(db, 'crm', 'cardId', crmData.crm);
     await putAll(db, 'manual_cards', 'id', crmData.manual_cards);
     await putAll(db, 'settings', 'key', crmData.settings);
+    await putAll(db, 'cards_snapshot', 'id', Array.isArray(crmData.cards_snapshot) ? crmData.cards_snapshot : []); // 舊版備份沒有此欄＝略過
     db.close();
     if ((crmData.deals || []).length) {
       const dd = await new Promise((res, rej) => { const q = indexedDB.open('DealDB', 1); q.onupgradeneeded = e => { const d = e.target.result; if (!d.objectStoreNames.contains('deals')) { const st = d.createObjectStore('deals', { keyPath: 'id' }); st.createIndex('cardId', 'cardId', { unique: false }); } }; q.onsuccess = e => res(e.target.result); q.onerror = e => rej(e.target.error); });
@@ -4930,8 +4941,11 @@ function importFullJsonBackup(event) {
       const cardEntries = isNew ? parsed.cards : (Array.isArray(parsed) ? parsed : null);
       // 「客戶追蹤」單獨備份檔（來自客戶分頁匯出）：認得它、只還原 CRM，不再誤報「格式無效」
       if (!cardEntries && parsed && (Array.isArray(parsed.crm) || Array.isArray(parsed.manual_cards))) {
-        if (confirm('這是「客戶追蹤」的備份檔，要還原客戶紀錄與提醒嗎？')) {
-          await restoreCrmFromBackup({ crm: parsed.crm || [], manual_cards: parsed.manual_cards || [], settings: parsed.settings || [], deals: parsed.deals || [] });
+        const nCrmOnly = countValidCrm(parsed);
+        if (!nCrmOnly) {
+          alert('這個「客戶追蹤」備份檔裡沒有可匯入的資料（沒有任何有效的客戶紀錄），資料沒有變動。');
+        } else if (confirm('這是「客戶追蹤」的備份檔，要還原客戶紀錄與提醒嗎？')) {
+          await restoreCrmFromBackup({ crm: parsed.crm || [], manual_cards: parsed.manual_cards || [], settings: parsed.settings || [], deals: parsed.deals || [], cards_snapshot: parsed.cards_snapshot || [] });
           updateCrmBadge();
           showToast('✓ 已還原客戶追蹤資料，請到「客戶」分頁查看');
         }
@@ -4943,24 +4957,35 @@ function importFullJsonBackup(event) {
         return;
       }
 
+      // 只算真的能匯入的：有 card 且有 id 的名片；沒有任何可匯入的就照實說，不顯示「將匯入 N 筆」
+      const validCards = cardEntries.filter(item => item && typeof item === 'object' && item.card && typeof item.card === 'object' && item.card.id);
+      const skipped = cardEntries.length - validCards.length;
       const extras = [];
-      if (isNew && parsed.myCard) extras.push('個人名片');
-      if (isNew && Array.isArray(parsed.groups)) extras.push(`${parsed.groups.length} 個群組`);
-      if (isNew && Array.isArray(parsed.tags)) extras.push(`${parsed.tags.length} 個標籤`);
-      const extraTxt = extras.length ? `，以及 ${extras.join('、')}` : '';
+      if (isNew && parsed.myCard && typeof parsed.myCard === 'object') extras.push('個人名片');
+      if (isNew && Array.isArray(parsed.groups) && parsed.groups.length) extras.push(`${parsed.groups.length} 個群組`);
+      if (isNew && Array.isArray(parsed.tags) && parsed.tags.length) extras.push(`${parsed.tags.length} 個標籤`);
+      const nCrm = isNew && parsed.crm && typeof parsed.crm === 'object' ? countValidCrm(parsed.crm) : 0;
+      if (nCrm) extras.push(`客戶追蹤資料 ${nCrm} 筆`);
+      if (!validCards.length && !extras.length) {
+        alert(`這個檔案裡沒有可匯入的資料${cardEntries.length ? `（${cardEntries.length} 筆內容都不是有效的名片）` : '（裡面沒有名片）'}，資料沒有變動。`);
+        return;
+      }
+      const parts = [];
+      if (validCards.length) parts.push(`${validCards.length} 筆名片`);
+      parts.push(...extras);
+      const what = parts.join('、');
+      const skipTxt = skipped ? `\n（另有 ${skipped} 筆不是有效的名片，會略過）` : '';
 
-      if (confirm(`確認還原此備份？將匯入 ${cardEntries.length} 筆名片${extraTxt}。\n（ID 重複的名片會被覆蓋）`)) {
-        for (const item of cardEntries) {
-          if (item.card && item.card.id) {
-            await dbSaveCard(item.card, item.image);
-          }
+      if (confirm(`確認還原此備份？將匯入 ${what}。${skipTxt}\n（ID 重複的名片會被覆蓋）`)) {
+        for (const item of validCards) {
+          await dbSaveCard(item.card, item.image);
         }
         // 還原個人名片 / 自訂群組 / 自訂標籤
         if (isNew) {
-          if (parsed.myCard) localStorage.setItem('bizcard_user_mycard', JSON.stringify(parsed.myCard));
+          if (parsed.myCard && typeof parsed.myCard === 'object') localStorage.setItem('bizcard_user_mycard', JSON.stringify(parsed.myCard));
           if (Array.isArray(parsed.groups)) localStorage.setItem('bizcard_custom_groups', JSON.stringify(parsed.groups));
           if (Array.isArray(parsed.tags)) localStorage.setItem('bizcard_custom_tags', JSON.stringify(parsed.tags));
-          if (parsed.crm) { await restoreCrmFromBackup(parsed.crm); updateCrmBadge(); }
+          if (nCrm) { await restoreCrmFromBackup(parsed.crm); updateCrmBadge(); }
         }
         cardsList = await dbGetAllCards();
         renderSidebarFilters();
@@ -4968,7 +4993,7 @@ function importFullJsonBackup(event) {
         closeDetailPanel();
         renderDashboard();
         try { renderMyProfile(); } catch(e) {}
-        showToast(`✓ 還原成功：${cardEntries.length} 張名片${extraTxt}${(parsed.crm && parsed.crm.crm && parsed.crm.crm.length) ? `＋客戶追蹤 ${parsed.crm.crm.length} 筆` : ''}`);
+        showToast(`✓ 還原成功：${what}${skipped ? `（略過 ${skipped} 筆無效）` : ''}`);
       }
     } catch(err) {
       alert('無效的備份 JSON 檔案：' + err.message);
@@ -6195,12 +6220,16 @@ async function saveCardForm() {
   const nameEl = document.getElementById('f-name');
   const editId = nameEl.dataset.editId || '';
   const id = editId || 'card_' + crypto.randomUUID();
-  
+  // 2026-10-24：編輯時以既有名片為底，保留表單沒有的欄位（googleContactId、lineId、AI 辨識附帶欄位等），
+  // 再用表單值覆蓋表單內欄位（表單清空＝存空字串，不會保留舊值）。新增名片時底＝空物件，行為不變。
+  const existing = editId ? (cardsList.find(x => x.id === editId) || null) : null;
+
   const cardObj = {
+    ...(existing || {}),
     id: id,
     processed: true,
-    createdAt: editId ? (cardsList.find(x=>x.id===editId)?.createdAt || new Date().toLocaleDateString('zh-TW')) : new Date().toLocaleDateString('zh-TW'),
-    createdAtTs: editId ? (cardsList.find(x=>x.id===editId)?.createdAtTs || Date.now()) : Date.now(),
+    createdAt: editId ? (existing?.createdAt || new Date().toLocaleDateString('zh-TW')) : new Date().toLocaleDateString('zh-TW'),
+    createdAtTs: editId ? (existing?.createdAtTs || Date.now()) : Date.now(),
     name: nameEl.value.trim(),
     title: document.getElementById('f-title').value.trim(),
     org: document.getElementById('f-org').value.trim(),
@@ -6216,7 +6245,7 @@ async function saveCardForm() {
     note: document.getElementById('f-note').value.trim(),
     group: document.getElementById('f-group').value,
     tags: [...currentFormModalTags],
-    theme: editId ? (cardsList.find(x=>x.id===editId)?.theme || 'indigo') : 'indigo'
+    theme: editId ? (existing?.theme || 'indigo') : 'indigo'
   };
   
   if (!cardObj.name) {

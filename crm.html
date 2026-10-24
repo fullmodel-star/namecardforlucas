@@ -683,10 +683,14 @@ function toast(msg){
    匯出 / 匯入備份（本機資料保命）
    ============================================================ */
 async function exportBackup(){
+  const crmRecs=await getAll(crmDb,'crm');
+  const tracked=new Set(crmRecs.map(r=>r&&r.cardId));
   const data={ v:1, exportedAt:new Date().toISOString(),
-    crm: await getAll(crmDb,'crm'),
+    crm: crmRecs,
     manual_cards: await getAll(crmDb,'manual_cards'),
-    settings: await getAll(crmDb,'settings') };
+    settings: await getAll(crmDb,'settings'),
+    // 有往來紀錄的客戶名片快照（含名片已刪者），還原後「名片已刪但有紀錄」的客戶才看得到；舊版備份沒有此欄照樣能匯入
+    cards_snapshot: (await getAll(crmDb,'cards_snapshot')).filter(s=>s&&s.id&&tracked.has(s.id)) };
   const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
   const url=URL.createObjectURL(blob);
   const a=document.createElement('a');
@@ -700,10 +704,15 @@ async function importBackup(ev){
   try{
     const data=JSON.parse(await file.text());
     if(!data||(!data.crm&&!data.manual_cards&&!data.settings)){ toast('檔案格式不符'); ev.target.value=''; return; }
-    for(const r of (data.crm||[])) if(r&&r.cardId) await putRec('crm',r);
-    for(const r of (data.manual_cards||[])) if(r&&r.id) await putRec('manual_cards',r);
-    for(const r of (data.settings||[])) if(r&&r.key) await putRec('settings',r);
-    await loadConfig(); closeSheets(); toast('已還原備份 ✓'); await refresh();
+    const arr=k=>Array.isArray(data[k])?data[k].filter(r=>r&&typeof r==='object'):[];
+    const crmOk=arr('crm').filter(r=>r.cardId), manOk=arr('manual_cards').filter(r=>r.id), setOk=arr('settings').filter(r=>r.key), snapOk=arr('cards_snapshot').filter(r=>r.id);
+    const total=crmOk.length+manOk.length+setOk.length;
+    if(!total){ toast('檔案裡沒有可匯入的資料，客戶紀錄沒有變動'); ev.target.value=''; return; }
+    for(const r of crmOk) await putRec('crm',r);
+    for(const r of manOk) await putRec('manual_cards',r);
+    for(const r of setOk) await putRec('settings',r);
+    for(const r of snapOk) await putRec('cards_snapshot',r);
+    await loadConfig(); closeSheets(); toast(`已還原備份 ✓（客戶紀錄 ${crmOk.length} 筆、手動客戶 ${manOk.length} 位）`); await refresh();
   }catch(e){ toast('匯入失敗'); console.error(e); }
   ev.target.value='';
 }

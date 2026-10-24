@@ -203,8 +203,33 @@ st = await rawState(p1);
 {
   const d = byId(st.cards).card_seedD || {};
   check('編輯 D 後職稱已存', d.title === '協理', 1);
-  suspect('編輯名片後保留 googleContactId（Google 通訊錄連結）', d.googleContactId === 'people/c_TEST', 1, `編輯後=${JSON.stringify(d.googleContactId)}`);
-  suspect('編輯名片後保留 lineId（表單沒有此欄）', d.lineId === 'zhao_line', 1, `編輯後=${JSON.stringify(d.lineId)}`);
+  // 2026-10-24 修正 saveCardForm 後由「疑似BUG」改為正式斷言
+  check('編輯名片後保留 googleContactId（Google 通訊錄連結）', d.googleContactId === 'people/c_TEST', 1, `編輯後=${JSON.stringify(d.googleContactId)}`);
+  check('編輯名片後保留 lineId（表單沒有此欄）', d.lineId === 'zhao_line', 1, `編輯後=${JSON.stringify(d.lineId)}`);
+  check('編輯 D 後表單內其他欄位、建立時間、主題照舊', d.name === '趙先生' && d.org === '甲公司' && d.mobile === '0911-000-000' && d.createdAtTs === 1000 && d.createdAt === '2026/10/1' && d.theme === 'indigo', 6, JSON.stringify({ n: d.name, o: d.org, ts: d.createdAtTs }));
+}
+// 使用者在編輯時清空某欄＝存成空字串（不能被當成「保留舊值」）
+await p1.evaluate(() => editCard('card_seedD')); await sleep(300);
+await setField(p1, 'org', ''); await setField(p1, 'mobile', ''); await clickText(p1, /儲存名片/, '#form-modal-bg'); await sleep(700);
+await reloadApp(p1);
+st = await rawState(p1);
+{
+  const d = byId(st.cards).card_seedD || {};
+  check('編輯時清空公司與手機：存成空字串、其他表單外欄位仍保留', d.org === '' && d.mobile === '' && d.title === '協理' && d.googleContactId === 'people/c_TEST' && d.lineId === 'zhao_line', 5, JSON.stringify({ org: d.org, mobile: d.mobile, title: d.title, g: d.googleContactId, l: d.lineId }));
+  check('編輯 D 兩次後張數仍 4', st.cards.length === 4, st.cards.length);
+}
+// 新增名片行為不變：不會帶入上一張編輯過的名片的表單外欄位
+await addViaForm(p1, { name: '新增測試甲', org: '新公司' });
+await reloadApp(p1);
+st = await rawState(p1);
+{
+  const n = st.cards.find((c) => c.name === '新增測試甲');
+  const keys = n ? Object.keys(n).sort() : [];
+  const expectKeys = ['id', 'processed', 'createdAt', 'createdAtTs', ...FORM_FIELDS, 'group', 'tags', 'theme'].sort();
+  check('新增名片只有表單欄位（沒有 googleContactId／lineId 等殘留）、id 是新的', n && stable(keys) === stable(expectKeys) && n.id !== 'card_seedD' && /^card_/.test(n.id), keys.length, keys.join(','));
+  if (n) await p1.evaluate((id) => new Promise((r) => { const t = db.transaction(['cards'], 'readwrite'); t.objectStore('cards').delete(id); t.oncomplete = r; }), n.id);
+  await reloadApp(p1);
+  st = await rawState(p1);
 }
 // 刪除：先按取消、再按確定
 const beforeDel = byId(st.cards);
@@ -289,6 +314,11 @@ let bk = null; try { bk = JSON.parse(exported); } catch (e) {}
 check('匯出得到 JSON（_format=bizcard-backup）', bk && bk._format === 'bizcard-backup', bk ? 1 : 0);
 check('匯出含全部名片＋照片', bk && bk.cards.length === snapBefore.cards.length && bk.cards.some((x) => x.card.id === ids.A && x.image === 'data:image/png;base64,TESTIMG'), bk ? bk.cards.length : 0);
 check('匯出含客戶追蹤（crm＋手動客戶）', bk && bk.crm && bk.crm.crm.length === snapBefore.crm.length && bk.crm.manual_cards.length === 1, bk && bk.crm ? bk.crm.crm.length : 0);
+{
+  const sn = (bk && bk.crm && Array.isArray(bk.crm.cards_snapshot)) ? bk.crm.cards_snapshot : [];
+  const tracked = new Set(snapBefore.crm.map((r) => r.cardId));
+  check('匯出含有往來紀錄客戶的名片快照（含已刪名片 C）、且只帶有紀錄的', sn.some((s) => s.id === ids.C && s.name === '林志豪') && sn.every((s) => tracked.has(s.id)), sn.length, sn.map((s) => s.name).join(','));
+}
 const bkPath = path.join(TMP, 'backup.json'); fs.writeFileSync(bkPath, exported || '');
 // 清空：換到同源的另一頁，刪掉三個資料庫與 localStorage
 await p1.goto(ORIGIN + '/privacy.html', { waitUntil: 'networkidle0' });
@@ -308,7 +338,8 @@ fr = await openCrmFrame(p1, 2);
 {
   const v = await fr.evaluate((c) => ({ list: document.getElementById('list').innerText, hasC: mergedCache.some((x) => x.card.id === c) }), ids.C);
   check('匯入後 CRM 畫面看得到王小明與手動客戶', /王小明/.test(v.list) && /黃手動/.test(v.list), 2);
-  suspect('還原後「名片已刪但有紀錄」的客戶（林志豪）仍出現在 CRM', v.hasC, 1, `CRM 有紀錄 ${snapBefore.crm.length} 筆，畫面有林志豪=${v.hasC}`);
+  // 2026-10-24 備份加入 cards_snapshot 後由「疑似BUG」改為正式斷言
+  check('還原後「名片已刪但有紀錄」的客戶（林志豪）仍出現在 CRM', v.hasC && /林志豪/.test(v.list) && /名片已刪/.test(v.list), 1, `CRM 有紀錄 ${snapBefore.crm.length} 筆，畫面有林志豪=${v.hasC}`);
 }
 // 同一份再匯入一次：不應變多
 await p1.evaluate(() => switchTab('myprofile')); await sleep(300);
@@ -318,18 +349,32 @@ check('同一份備份匯入兩次不會變多（id 相同覆蓋）', st.cards.l
 // 格式錯誤的檔
 const goodState = stable(await rawState(p1));
 const BAD = [['not_json.json', '這不是 JSON {'], ['empty.json', ''], ['null.json', 'null'], ['no_cards.json', '{"foo":1}'], ['cards_string.json', '{"cards":"abc"}'],
-  ['cards_garbage.json', '{"cards":[{"nope":1},{"card":{"name":"沒有id"}}]}'], ['number.json', '12345']];
-let badOk = 0; const badDetail = [];
+  ['cards_garbage.json', '{"cards":[{"nope":1},{"card":{"name":"沒有id"}}]}'], ['number.json', '12345'],
+  // 2026-10-24 新增：格式對、但沒有任何可用資料
+  ['empty_array.json', '[]'], ['old_garbage_array.json', '[{"nope":1},null,"x"]'],
+  ['new_empty.json', '{"_format":"bizcard-backup","version":3,"cards":[],"crm":{"crm":[{"x":1}],"manual_cards":[],"settings":[],"deals":[]}}'],
+  ['crm_only_garbage.json', '{"crm":[{"nope":1}],"manual_cards":[]}']];
+// 「格式對但沒有可用資料」的檔：不准說「將匯入 N 筆」或「還原成功／已還原」，要照實說沒有可匯入的資料
+const NO_DATA = ['cards_garbage.json', 'empty_array.json', 'old_garbage_array.json', 'new_empty.json', 'crm_only_garbage.json'];
+let badOk = 0, noDataOk = 0; const badDetail = [], noDataBad = [];
 for (const [fn, body] of BAD) {
   const fp = path.join(TMP, fn); fs.writeFileSync(fp, body);
   const nd = p1._st.dialogs.length;
+  await p1.evaluate(() => { const t = document.getElementById('toast'); if (t) t.textContent = ''; });
   await (await p1.$('#import-backup-file')).uploadFile(fp); await sleep(1200);
   const now = stable(await rawState(p1));
-  const msgs = p1._st.dialogs.slice(nd).map((d) => d.msg.slice(0, 20));
+  const msgsFull = p1._st.dialogs.slice(nd).map((d) => d.msg);
+  const toastTxt = await p1.evaluate(() => (document.getElementById('toast') || {}).textContent || '');
+  const msgs = msgsFull.map((m) => m.slice(0, 20));
   if (now === goodState) badOk++; else badDetail.push(fn);
   badDetail.push(`${fn}:${msgs.join('/') || '無提示'}`);
+  if (NO_DATA.includes(fn)) {
+    const all = msgsFull.join('\n') + '\n' + toastTxt;
+    if (!/將匯入|還原成功|已還原/.test(all) && /沒有可匯入的資料/.test(all)) noDataOk++; else noDataBad.push(`${fn}:${all.replace(/\n/g, ' ').slice(0, 40)}`);
+  }
 }
 check('匯入格式錯誤的檔：名片／照片／CRM／設定全都不變', badOk === BAD.length, BAD.length, badDetail.join('；'));
+check('匯入沒有可用資料的檔：不說「將匯入 N 筆／還原成功」，照實說沒有可匯入的資料', noDataOk === NO_DATA.length, NO_DATA.length, noDataBad.join('；'));
 // CRM 分頁自己的匯入：格式錯誤也不能動到資料
 fr = await openCrmFrame(p1, 2);
 const crmBefore = stable((await rawState(p1)).crm);
@@ -337,8 +382,46 @@ const crmBadRes = await fr.evaluate(async () => { const out = [];
   for (const body of ['{"x":1}', 'not json', '{"crm":"oops"}']) { const t0 = document.getElementById('toast').textContent; await importBackup({ target: { files: [new File([body], 'b.json')], value: '' } }); out.push(document.getElementById('toast').textContent); }
   return out; });
 check('CRM 分頁匯入格式錯誤：CRM 紀錄不變', stable((await rawState(p1)).crm) === crmBefore, 3, crmBadRes.join('／'));
+check('CRM 分頁匯入沒有可用資料（{"crm":"oops"}）：不說「已還原備份」', !/已還原/.test(crmBadRes[2] || '') && /沒有可匯入的資料/.test(crmBadRes[2] || ''), crmBadRes.length, crmBadRes[2] || '');
+// CRM 分頁自己的匯出→匯入也帶名片快照
+const crmOwn = await fr.evaluate(async () => {
+  const blobs = []; const o = URL.createObjectURL; URL.createObjectURL = (b) => { blobs.push(b); return o.call(URL, b); };
+  await exportBackup(); URL.createObjectURL = o;
+  return blobs.length ? await blobs[blobs.length - 1].text() : null;
+});
+{
+  let d = null; try { d = JSON.parse(crmOwn); } catch (e) {}
+  const sn = d && Array.isArray(d.cards_snapshot) ? d.cards_snapshot : [];
+  check('CRM 分頁匯出含有紀錄客戶的名片快照（含已刪名片 C）', sn.some((s) => s.id === ids.C), sn.length);
+}
 check('第 1～3 節沒有頁面例外', p1._st.errs.length === 0, 1, p1._st.errs.join(';'));
 await ctx1.close();
+
+// =====================================================================
+console.log('\n3b 舊格式備份（沒有 cards_snapshot）仍能正常匯入（新的空瀏覽器設定檔）');
+{
+  const ctxL = await browser.createBrowserContext();
+  const pL = await newPage(ctxL);
+  await gotoApp(pL);
+  const legacy = bk ? JSON.parse(JSON.stringify(bk)) : null;
+  if (legacy && legacy.crm) delete legacy.crm.cards_snapshot;
+  const lp = path.join(TMP, 'legacy_no_snapshot.json'); fs.writeFileSync(lp, legacy ? JSON.stringify(legacy) : '');
+  await (await pL.$('#import-backup-file')).uploadFile(lp);
+  await waitUntil(() => pL.evaluate((n) => cardsList.length === n, snapBefore.cards.length), 10000); await sleep(800);
+  const sL = await rawState(pL);
+  check('舊格式備份（無快照）：名片、客戶紀錄、手動客戶都還原', legacy && !('cards_snapshot' in legacy.crm) && sL.cards.length === snapBefore.cards.length && sL.crm.length === snapBefore.crm.length && sL.manual.length === snapBefore.manual.length, sL.cards.length, `名片 ${sL.cards.length}／CRM ${sL.crm.length}／手動 ${sL.manual.length}`);
+  // 更舊的純陣列格式
+  const ctxA = await browser.createBrowserContext();
+  const pA = await newPage(ctxA);
+  await gotoApp(pA);
+  const arrPath = path.join(TMP, 'legacy_array.json'); fs.writeFileSync(arrPath, JSON.stringify(bk ? bk.cards : []));
+  await (await pA.$('#import-backup-file')).uploadFile(arrPath);
+  await waitUntil(() => pA.evaluate((n) => cardsList.length === n, snapBefore.cards.length), 10000); await sleep(500);
+  const sA = await rawState(pA);
+  check('最舊的純陣列備份：名片照樣還原', sA.cards.length === snapBefore.cards.length && stable(byId(sA.cards)) === stable(byId(snapBefore.cards)), sA.cards.length);
+  check('第 3b 節沒有頁面例外', pL._st.errs.length === 0 && pA._st.errs.length === 0, 1, pL._st.errs.concat(pA._st.errs).join(';'));
+  await ctxL.close(); await ctxA.close();
+}
 
 // =====================================================================
 console.log('\n4 重複偵測與合併（規則依程式 normField：去頭尾空白、轉小寫、去掉 - 與空白；姓名或 Email 相同就算同一組）');
